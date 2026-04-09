@@ -1,0 +1,3 @@
+[theme]
+base="dark"
+primaryColor="#ff00ff" # Makes Streamlit's native highlights match your neon pink

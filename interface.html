@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vegas Black Vault — Sin City Heist Engine</title>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Font Awesome 6 CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            display: ["'Bebas Neue'", "cursive"],
+            body:    ["'Rajdhani'", "sans-serif"],
+            mono:    ["'Share Tech Mono'", "monospace"]
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Design tokens ─────────────────────────────────── */
+    :root {
+      --neon-pink:      #ff2d78;
+      --neon-blue:      #00d4ff;
+      --neon-purple:    #b400ff;
+      --neon-gold:      #ffd700;
+      --neon-green:     #00ff9f;
+      --neon-orange:    #ff6b00;
+      --bg-void:        #04030a;
+      --bg-panel:       #0a0814;
+      --bg-surface:     #100e1c;
+      --bg-card:        #14111f;
+      --border-dim:     rgba(255,255,255,0.06);
+      --border-glow:    rgba(180,0,255,0.3);
+      --text-primary:   #f0e8ff;
+      --text-secondary: #8a7fa0;
+      --text-dim:       #4a4360;
+    }
+
+    html, body {
+      height: 100%; overflow: hidden;
+      background: var(--bg-void);
+      font-family: 'Rajdhani', sans-serif;
+      color: var(--text-primary);
+    }
+
+    /* ── Custom scrollbar ─────────────────────────────── */
+    ::-webkit-scrollbar              { width: 3px; }
+    ::-webkit-scrollbar-track        { background: transparent; }
+    ::-webkit-scrollbar-thumb        { background: rgba(180,0,255,0.3); border-radius: 2px; }
+
+    /* ── Ambient background glow + grid ───────────────── */
+    #bg-city {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      background:
+        radial-gradient(ellipse at 20% 80%, rgba(180,0,255,0.07) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 20%, rgba(0,212,255,0.05) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(255,45,120,0.04) 0%, transparent 60%);
+    }
+    #bg-city::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        repeating-linear-gradient(90deg, transparent, transparent 80px,
+          rgba(255,255,255,0.008) 80px, rgba(255,255,255,0.008) 81px),
+        repeating-linear-gradient(0deg,  transparent, transparent 80px,
+          rgba(255,255,255,0.008) 80px, rgba(255,255,255,0.008) 81px);
+    }
+
+    /* ── CRT scanlines ────────────────────────────────── */
+    #scanline {
+      position: fixed; inset: 0; z-index: 1; pointer-events: none;
+      background: repeating-linear-gradient(0deg,
+        transparent, transparent 2px,
+        rgba(0,0,0,0.12) 2px, rgba(0,0,0,0.12) 4px);
+      animation: scanMove 8s linear infinite;
+    }
+    @keyframes scanMove {
+      from { background-position: 0 0; }
+      to   { background-position: 0 100px; }
+    }
+
+    /* ── Film grain ───────────────────────────────────── */
+    #noise {
+      position: fixed; inset: 0; z-index: 2; pointer-events: none; opacity: 0.025;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+      background-size: 256px 256px;
+    }
+
+    /* ── App shell ────────────────────────────────────── */
+    #app {
+      position: relative; z-index: 5;
+      display: flex; flex-direction: column;
+      height: 100vh; overflow: hidden;
+    }
+
+    /* ── Top bar ──────────────────────────────────────── */
+    #topbar {
+      height: 64px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px;
+      border-bottom: 1px solid var(--border-dim);
+      background: rgba(10,8,20,0.92);
+      backdrop-filter: blur(20px);
+      position: relative; z-index: 10;
+    }
+    .logo {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 28px; letter-spacing: 3px; line-height: 1;
+      background: linear-gradient(135deg, var(--neon-pink) 0%, var(--neon-purple) 50%, var(--neon-blue) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 12px rgba(255,45,120,0.6));
+    }
+    .logo-sub {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px; letter-spacing: 6px; opacity: 0.8; margin-top: 2px;
+      color: var(--neon-gold); text-shadow: 0 0 8px rgba(255,215,0,0.5);
+    }
+    .phase-badge {
+      display: flex; align-items: center; gap: 8px;
+      padding: 6px 16px;
+      border: 1px solid rgba(255,215,0,0.3); border-radius: 2px;
+      background: rgba(255,215,0,0.06);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px; letter-spacing: 2px; color: var(--neon-gold);
+    }
+    .phase-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--neon-gold); box-shadow: 0 0 8px var(--neon-gold);
+      animation: pulseDot 2s ease-in-out infinite;
+    }
+    @keyframes pulseDot {
+      0%,100% { opacity:1; transform:scale(1); }
+      50%      { opacity:0.5; transform:scale(0.7); }
+    }
+    #top-meta {
+      display: flex; gap: 20px; align-items: center;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 11px; color: var(--text-secondary); letter-spacing: 1px;
+    }
+    .live { color: var(--neon-pink); text-shadow: 0 0 6px var(--neon-pink); }
+
+    /* ── Connection status pill (top-right) ───────────── */
+    #conn-status {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 10px;
+      border-radius: 2px; font-family: 'Share Tech Mono', monospace;
+      font-size: 10px; letter-spacing: 2px; cursor: default;
+      transition: all 0.3s;
+    }
+    #conn-status.connected    { border: 1px solid rgba(0,255,159,0.3); color: var(--neon-green); background: rgba(0,255,159,0.06); }
+    #conn-status.disconnected { border: 1px solid rgba(255,107,0,0.3);  color: var(--neon-orange); background: rgba(255,107,0,0.06); }
+    #conn-dot { width:6px; height:6px; border-radius:50%; background:currentColor; }
+
+    /* ── Event banner ─────────────────────────────────── */
+    #event-banner {
+      display: none; flex-shrink: 0;
+      margin: 0 24px;
+      padding: 10px 16px; border-radius: 2px;
+      align-items: center; gap: 12px;
+      font-size: 12px; letter-spacing: 1px;
+      animation: eventIn 0.5s cubic-bezier(0.16,1,0.3,1);
+    }
+    #event-banner.show    { display: flex; }
+    #event-banner.danger  { background: rgba(255,45,120,0.1);  border: 1px solid rgba(255,45,120,0.35); color: #ff6fa0; }
+    #event-banner.success { background: rgba(0,255,159,0.07);  border: 1px solid rgba(0,255,159,0.28);  color: #7fffd4; }
+    #event-banner.warning { background: rgba(255,107,0,0.1);   border: 1px solid rgba(255,107,0,0.35);  color: #ffaa55; }
+    @keyframes eventIn {
+      from { opacity:0; transform:scaleX(0.95); }
+      to   { opacity:1; transform:scaleX(1); }
+    }
+
+    /* ── Main layout ──────────────────────────────────── */
+    #main-layout { display: flex; flex: 1; overflow: hidden; }
+
+    /* ── Sidebar ──────────────────────────────────────── */
+    #sidebar {
+      width: 280px; flex-shrink: 0;
+      display: flex; flex-direction: column;
+      border-right: 1px solid var(--border-dim);
+      background: rgba(10,8,20,0.88);
+      backdrop-filter: blur(20px);
+      overflow-y: auto; overflow-x: hidden;
+    }
+    .section-label {
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px; letter-spacing: 4px;
+      color: var(--text-dim); margin-bottom: 12px;
+    }
+
+    /* Heat */
+    #heat-section { padding: 20px; border-bottom: 1px solid var(--border-dim); }
+    #heat-value { font-family:'Bebas Neue',cursive; font-size:52px; line-height:1; letter-spacing:2px; }
+    #heat-label { font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:3px; margin-top:2px; margin-bottom:12px; opacity:0.7; }
+    #heat-track { width:100%; height:8px; background:rgba(255,255,255,0.06); border-radius:1px; overflow:hidden; }
+    #heat-fill  { height:100%; border-radius:1px; transition:width 0.8s cubic-bezier(0.16,1,0.3,1); position:relative; }
+    #heat-fill::after { content:''; position:absolute; right:0; top:0; bottom:0; width:4px; filter:blur(4px); background:inherit; border-radius:2px; }
+    #heat-ticks { display:flex; justify-content:space-between; margin-top:6px; font-family:'Share Tech Mono',monospace; font-size:9px; color:var(--text-dim); }
+    #heat-status { margin-top:10px; padding:6px 10px; border-radius:2px; font-family:'Share Tech Mono',monospace; font-size:11px; letter-spacing:1px; transition:all 0.4s; }
+
+    /* Operations panel — Scout / Hack / Plan / Escape buttons */
+    #ops-section { padding: 16px 20px; border-bottom: 1px solid var(--border-dim); }
+    .ops-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+    .ops-btn {
+      padding: 10px 6px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border-dim); border-radius: 2px;
+      color: var(--text-secondary); cursor: pointer;
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 10px; letter-spacing: 2px;
+      display: flex; flex-direction: column; align-items: center; gap: 6px;
+      transition: all 0.2s;
+    }
+    .ops-btn i { font-size: 16px; }
+    .ops-btn:hover { background:rgba(180,0,255,0.1); border-color:rgba(180,0,255,0.4); color:var(--text-primary); }
+    .ops-btn.scout:hover  { border-color:rgba(0,212,255,0.5); color:var(--neon-blue); }
+    .ops-btn.hack:hover   { border-color:rgba(0,255,159,0.5); color:var(--neon-green); }
+    .ops-btn.plan:hover   { border-color:rgba(255,215,0,0.5); color:var(--neon-gold); }
+    .ops-btn.escape:hover { border-color:rgba(255,45,120,0.5); color:var(--neon-pink); }
+    .ops-btn:active       { transform:scale(0.96); }
+
+    /* Crew */
+    #crew-section { padding:16px 20px; border-bottom:1px solid var(--border-dim); }
+    .crew-member {
+      display:flex; align-items:center; gap:10px;
+      padding:10px; margin-bottom:6px;
+      background:rgba(255,255,255,0.03);
+      border:1px solid var(--border-dim); border-radius:2px;
+      cursor:pointer; transition:all 0.2s;
+    }
+    .crew-member:hover  { border-color:rgba(180,0,255,0.3); background:rgba(180,0,255,0.06); }
+    .crew-member.active { border-color:rgba(0,212,255,0.32); background:rgba(0,212,255,0.05); }
+    .crew-avatar { width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .crew-info   { flex:1; }
+    .crew-name   { font-size:13px; font-weight:600; letter-spacing:1px; }
+    .crew-role   { font-size:10px; letter-spacing:2px; color:var(--text-secondary); margin-top:1px; }
+    .crew-dot    { width:6px; height:6px; border-radius:50%; background:var(--neon-green); box-shadow:0 0 6px var(--neon-green); transition:all 0.3s; }
+    .crew-dot.offline { background:var(--text-dim); box-shadow:none; }
+    #add-crew-btn {
+      width:100%; padding:8px; margin-top:4px; background:transparent;
+      border:1px dashed rgba(255,255,255,0.1); border-radius:2px;
+      color:var(--text-dim); font-family:'Share Tech Mono',monospace;
+      font-size:11px; letter-spacing:2px; cursor:pointer; transition:all 0.2s;
+    }
+    #add-crew-btn:hover { border-color:rgba(180,0,255,0.4); color:var(--neon-purple); background:rgba(180,0,255,0.05); }
+
+    /* Tools */
+    #tools-section { padding:16px 20px; border-bottom:1px solid var(--border-dim); }
+    .tool-item { display:flex; align-items:center; gap:8px; padding:7px 10px; margin-bottom:4px; font-size:12px; letter-spacing:0.5px; border-left:2px solid transparent; transition:all 0.3s; }
+    .tool-item.acquired { border-left-color:var(--neon-green); color:var(--text-primary); }
+    .tool-item.needed   { border-left-color:rgba(255,255,255,0.08); color:var(--text-dim); }
+    .tool-dot { width:5px; height:5px; border-radius:50%; flex-shrink:0; }
+
+    /* Plan */
+    #plan-section { padding:16px 20px; }
+    .plan-step      { display:flex; gap:10px; margin-bottom:10px; font-size:12px; letter-spacing:0.5px; }
+    .plan-step-num  { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--neon-purple); flex-shrink:0; margin-top:1px; width:20px; text-align:right; }
+    .plan-step-text { color:var(--text-secondary); line-height:1.5; flex:1; }
+
+    /* ── Chat area ────────────────────────────────────── */
+    #chat-area { flex:1; display:flex; flex-direction:column; overflow:hidden; }
+    #messages-container { flex:1; overflow-y:auto; padding:24px; display:flex; flex-direction:column; gap:20px; }
+
+    /* Messages */
+    .message { display:flex; gap:14px; animation:msgIn 0.4s cubic-bezier(0.16,1,0.3,1); }
+    .message.user { flex-direction:row-reverse; }
+    @keyframes msgIn {
+      from { opacity:0; transform:translateY(16px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .msg-avatar {
+      width:36px; height:36px; border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:15px; flex-shrink:0; margin-top:2px;
+    }
+    .msg-avatar.ai {
+      background:linear-gradient(135deg, rgba(180,0,255,0.3), rgba(0,212,255,0.2));
+      border:1px solid rgba(180,0,255,0.4); box-shadow:0 0 12px rgba(180,0,255,0.2);
+      color:var(--neon-purple);
+    }
+    .msg-avatar.user-av {
+      background:linear-gradient(135deg, rgba(255,45,120,0.3), rgba(255,107,0,0.2));
+      border:1px solid rgba(255,45,120,0.4); color:var(--neon-pink);
+    }
+    .msg-body { max-width:72%; display:flex; flex-direction:column; gap:4px; }
+    .message.user .msg-body { align-items:flex-end; }
+    .msg-sender { font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:2px; }
+    .msg-sender.ai-sender   { color:var(--neon-purple); }
+    .msg-sender.user-sender { color:var(--neon-pink); }
+    .msg-bubble { padding:14px 18px; border-radius:2px; font-size:14px; line-height:1.7; }
+    .msg-bubble.ai-bubble   { background:rgba(20,17,31,0.9); border:1px solid rgba(180,0,255,0.2); border-left:2px solid var(--neon-purple); color:var(--text-primary); }
+    .msg-bubble.user-bubble { background:rgba(255,45,120,0.1); border:1px solid rgba(255,45,120,0.25); border-right:2px solid var(--neon-pink); color:var(--text-primary); text-align:right; }
+    .msg-meta { font-family:'Share Tech Mono',monospace; font-size:9px; color:var(--text-dim); letter-spacing:1px; display:flex; gap:8px; }
+    .heat-delta-pos { color:var(--neon-orange); }
+    .heat-delta-neg { color:var(--neon-green); }
+
+    /* Typing indicator */
+    .typing-indicator { display:flex; align-items:center; gap:5px; padding:14px 18px; background:rgba(20,17,31,0.9); border:1px solid rgba(180,0,255,0.2); border-left:2px solid var(--neon-purple); border-radius:2px; width:fit-content; }
+    .typing-dot { width:5px; height:5px; border-radius:50%; background:var(--neon-purple); animation:typingBounce 1.2s ease-in-out infinite; }
+    .typing-dot:nth-child(2) { animation-delay:0.2s; }
+    .typing-dot:nth-child(3) { animation-delay:0.4s; }
+    @keyframes typingBounce {
+      0%,60%,100% { transform:translateY(0); opacity:0.5; }
+      30%          { transform:translateY(-6px); opacity:1; }
+    }
+
+    /* Welcome screen */
+    #welcome-screen { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:60px 40px; text-align:center; animation:fadeIn 0.8s ease; }
+    @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+    .welcome-title { font-family:'Bebas Neue',cursive; font-size:48px; letter-spacing:4px; background:linear-gradient(135deg, var(--neon-pink), var(--neon-purple), var(--neon-blue)); -webkit-background-clip:text;background-clip: text; -webkit-text-fill-color:transparent; filter:drop-shadow(0 0 20px rgba(255,45,120,0.4)); margin-bottom:12px; }
+    .welcome-sub   { color:var(--text-secondary); font-size:13px; letter-spacing:2px; font-family:'Share Tech Mono',monospace; margin-bottom:32px; }
+    #starter-grid  { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; max-width:560px; width:100%; }
+    .starter-card  { padding:14px 16px; background:rgba(255,255,255,0.03); border:1px solid var(--border-dim); border-radius:2px; cursor:pointer; text-align:left; transition:all 0.2s; font-size:13px; color:var(--text-secondary); letter-spacing:0.5px; line-height:1.5; }
+    .starter-card:hover { border-color:rgba(180,0,255,0.4); background:rgba(180,0,255,0.07); color:var(--text-primary); transform:translateY(-2px); }
+    .starter-icon  { font-size:18px; display:block; margin-bottom:6px; }
+
+    /* ── Input area ───────────────────────────────────── */
+    #input-area { padding:16px 24px 20px; flex-shrink:0; border-top:1px solid var(--border-dim); background:rgba(10,8,20,0.92); backdrop-filter:blur(20px); }
+    #quick-actions { display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; }
+    .quick-btn { padding:5px 12px; background:transparent; border:1px solid var(--border-dim); border-radius:2px; color:var(--text-secondary); font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:1px; cursor:pointer; transition:all 0.2s; }
+    .quick-btn:hover { border-color:rgba(0,212,255,0.4); color:var(--neon-blue); background:rgba(0,212,255,0.05); }
+    .quick-btn:active { transform:scale(0.97); }
+    #input-row  { display:flex; gap:10px; align-items:flex-end; }
+    #chat-input {
+      flex:1; background:rgba(255,255,255,0.04); border:1px solid var(--border-dim); border-radius:2px;
+      padding:12px 16px; color:var(--text-primary); font-family:'Rajdhani',sans-serif; font-size:15px;
+      resize:none; outline:none; transition:border-color 0.2s; min-height:48px; max-height:120px; line-height:1.5;
+    }
+    #chat-input::placeholder { color:var(--text-dim); font-size:13px; letter-spacing:0.5px; }
+    #chat-input:focus { border-color:rgba(180,0,255,0.4); }
+    #send-btn {
+      width:48px; height:48px; flex-shrink:0;
+      background:linear-gradient(135deg, var(--neon-purple), var(--neon-pink));
+      border:none; border-radius:2px; color:#fff; font-size:16px;
+      cursor:pointer; display:flex; align-items:center; justify-content:center;
+      transition:all 0.2s; box-shadow:0 0 20px rgba(180,0,255,0.3);
+    }
+    #send-btn:hover:not(:disabled) { transform:scale(1.05); box-shadow:0 0 30px rgba(180,0,255,0.5); }
+    #send-btn:disabled { opacity:0.4; cursor:not-allowed; transform:none; }
+
+    /* ── Responsive ───────────────────────────────────── */
+    @media (max-width:768px) {
+      #sidebar { width:220px; }
+      .welcome-title { font-size:34px; }
+      #starter-grid { grid-template-columns:1fr; }
+      .logo { font-size:22px; }
+      #top-meta { display:none; }
+    }
+    @media (max-width:540px) {
+      #sidebar { display:none; }
+      .msg-body { max-width:90%; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Atmospheric layers ──────────────────────────────── -->
+<div id="bg-city"></div>
+<div id="scanline"></div>
+<div id="noise"></div>
+
+<!-- ══════════════════════════════════════════════════════
+     APP  (visible by default — no modal gate)
+══════════════════════════════════════════════════════ -->
+<div id="app">
+
+  <!-- ── Top Bar ──────────────────────────────────────── -->
+  <div id="topbar">
+    <div>
+      <div class="logo">VEGAS BLACK VAULT</div>
+      <div class="logo-sub">SIN CITY HEIST ENGINE v2.7</div>
+    </div>
+
+    <div class="phase-badge">
+      <div class="phase-dot"></div>
+      <span id="phase-text">PLANNING</span>
+    </div>
+
+    <div id="top-meta">
+      <span class="live"><i class="fas fa-circle" style="font-size:7px"></i>&nbsp;LIVE</span>
+      <span id="clock">00:00:00</span>
+      <span>LV-NV-89109</span>
+      <!-- Python bridge connection indicator -->
+      <div id="conn-status" class="disconnected">
+        <div id="conn-dot"></div>
+        <span id="conn-label">OFFLINE</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Event Banner ─────────────────────────────────── -->
+  <div id="event-banner" role="alert">
+    <span style="font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;flex-shrink:0">
+      <i class="fas fa-bolt"></i>&nbsp;EVENT
+    </span>
+    <span id="event-msg"></span>
+    <span id="event-heat" style="margin-left:auto;font-family:'Share Tech Mono',monospace;font-size:10px;flex-shrink:0"></span>
+  </div>
+
+  <!-- ── Main Layout ──────────────────────────────────── -->
+  <div id="main-layout">
+
+    <!-- ════════════════ SIDEBAR ════════════════ -->
+    <div id="sidebar">
+
+      <!-- Heat Level -->
+      <div id="heat-section">
+        <div class="section-label">// HEAT LEVEL</div>
+        <div id="heat-value">22</div>
+        <div id="heat-label">COLD</div>
+        <div id="heat-track"><div id="heat-fill" style="width:22%"></div></div>
+        <div id="heat-ticks"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div>
+        <div id="heat-status">GHOST MODE — minimal exposure</div>
+      </div>
+
+      <!-- Operations — Scout / Hack / Plan / Escape -->
+      <div id="ops-section">
+        <div class="section-label">// OPERATIONS</div>
+        <div class="ops-grid">
+
+          <button class="ops-btn scout"
+                  onclick="sendToPython('scout')"
+                  title="Scout the perimeter">
+            <i class="fas fa-binoculars"></i>
+            SCOUT
+          </button>
+
+          <button class="ops-btn hack"
+                  onclick="sendToPython('hack')"
+                  title="Hack security systems">
+            <i class="fas fa-terminal"></i>
+            HACK
+          </button>
+
+          <button class="ops-btn plan"
+                  onclick="sendToPython('plan')"
+                  title="Refine the plan">
+            <i class="fas fa-map"></i>
+            PLAN
+          </button>
+
+          <button class="ops-btn escape"
+                  onclick="sendToPython('escape')"
+                  title="Trigger escape protocol">
+            <i class="fas fa-person-running"></i>
+            ESCAPE
+          </button>
+
+        </div>
+      </div>
+
+      <!-- Crew Status -->
+      <div id="crew-section">
+        <div class="section-label">// CREW STATUS</div>
+        <div id="crew-list"><!-- rendered by JS --></div>
+        <button id="add-crew-btn"
+                onclick="sendToPython('add_crew')">
+          <i class="fas fa-plus"></i>&nbsp;RECRUIT SPECIALIST
+        </button>
+      </div>
+
+      <!-- Equipment -->
+      <div id="tools-section">
+        <div class="section-label">// EQUIPMENT</div>
+        <div id="tools-list"><!-- rendered by JS --></div>
+      </div>
+
+      <!-- Current Plan (hidden until steps exist) -->
+      <div id="plan-section" style="display:none; padding:16px 20px;">
+        <div class="section-label">// CURRENT PLAN</div>
+        <div id="plan-list"></div>
+      </div>
+
+    </div><!-- /sidebar -->
+
+    <!-- ════════════════ CHAT AREA ════════════════ -->
+    <div id="chat-area">
+      <div id="messages-container">
+
+        <!-- Welcome screen -->
+        <!-- Message anchor -->
+        <div id="msg-anchor"></div>
+      </div>
+    </div><!-- /chat-area -->
+  </div><!-- /main-layout -->
+</div><!-- /app -->
+
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   1.  PYTHON BRIDGE
+   ─────────────────────────────────────────────────────────
+   sendToPython(value)  →  posts a message to the Streamlit
+   parent frame.  value can be a string (action name) or any
+   JSON-serialisable object.
+
+   Streamlit can inject responses by calling:
+     receiveFromPython({ type, ... })
+   via postMessage back to this iframe, or by directly calling
+   window.receiveFromPython({ ... }) through an injected script.
+════════════════════════════════════════════════════════════ */
+
+/**
+ * Send any action / payload up to Streamlit.
+ * @param {string|object} value  – action key or structured payload
+ */
+function sendToPython(value) {
+  const payload = (typeof value === "object") ? value : { action: value };
+  payload._source = "vegas_heist_ui";         // tag so Streamlit can identify origin
+  payload._ts     = Date.now();
+
+  try {
+    window.parent.postMessage(payload, "*");
+  } catch (e) {
+    console.warn("[Bridge] postMessage failed:", e);
+  }
+  updateConnStatus(true);
+}
+/*
+ * Streamlit can call this function via:
+ * components.html(f"<scr" + "ipt>window.receiveFromPython({json.dumps(data)})</scr" + "ipt>")
+ * or via postMessage from the parent window.
+ */
+function receiveFromPython(payload) {
+  if (!payload || !payload.type) return;
+  updateConnStatus(true);
+
+  switch (payload.type) {
+    case "ping":
+      break;
+
+    case "ai_response":
+      hideTyping();
+      if (payload.content) {
+        const delta = Number(payload.heatDelta) || 0;
+        appendMessage("assistant", payload.content, delta);
+        applyHeat(delta);
+      }
+      setInputLock(false);
+      break;
+
+    case "heat_set":
+      heat = Math.max(0, Math.min(100, Number(payload.value) || heat));
+      renderHeat();
+      break;
+
+    case "phase_set": {
+      const idx = PHASES.indexOf((payload.value || "").toUpperCase());
+      if (idx >= 0) { phaseIndex = idx; document.getElementById("phase-text").textContent = PHASES[idx]; }
+      break;
+    }
+
+    case "event":
+      showEvent(payload.event || "warning", payload.msg || "", Number(payload.heatDelta) || 0);
+      break;
+
+    case "tool_unlock":
+      if (payload.tool && !acquiredTools.includes(payload.tool)) {
+        acquiredTools.push(payload.tool);
+        renderTools();
+      }
+      break;
+
+    case "plan_step":
+      if (payload.text) addPlanStep(payload.text);
+      break;
+
+    case "crew_update": {
+      const member = CREW_ROSTER.find(c => c.id === payload.crewId);
+      if (member) { member.active = !!payload.active; renderCrew(); }
+      break;
+    }
+
+    default:
+      console.info("[Bridge] unknown payload type:", payload.type);
+  }
+}
+
+/* Listen for postMessage FROM the parent (Streamlit) */
+window.addEventListener("message", (e) => {
+  if (e.data && e.data._source !== "vegas_heist_ui") {
+    receiveFromPython(e.data);
+  }
+});
+
+/* Connection status indicator */
+let connTimeout = null;
+function updateConnStatus(online) {
+  const el  = document.getElementById("conn-status");
+  const lbl = document.getElementById("conn-label");
+  el.className  = "conn-status " + (online ? "connected" : "disconnected");
+  lbl.textContent = online ? "ONLINE" : "OFFLINE";
+  clearTimeout(connTimeout);
+  if (online) {
+    connTimeout = setTimeout(() => updateConnStatus(false), 8000);
+  }
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   2.  STATIC DATA
+════════════════════════════════════════════════════════════ */
+const PHASES = ["PLANNING", "SETUP", "EXECUTION", "ESCAPE"];
+
+const CREW_ROSTER = [
+  { id:1, name:"CIPHER",  role:"MASTER HACKER",  icon:"fas fa-laptop-code", color:"rgba(0,212,255,0.22)",   active:true  },
+  { id:2, name:"SHADE",   role:"INSIDE MAN",     icon:"fas fa-user-secret", color:"rgba(180,0,255,0.22)",  active:true  },
+  { id:3, name:"VEGA",    role:"WHEELMAN",       icon:"fas fa-car-burst",   color:"rgba(255,45,120,0.22)", active:true  },
+  { id:4, name:"GHOST",   role:"SAFECRACKER",    icon:"fas fa-lock-open",   color:"rgba(0,255,159,0.18)",  active:false },
+  { id:5, name:"DUCHESS", role:"DECOY",          icon:"fas fa-mask",        color:"rgba(255,215,0,0.18)",  active:false },
+];
+
+const ALL_TOOLS = [
+  "VAULT SCHEMATICS","FREQUENCY JAMMER","EMP DEVICE",
+  "FAKE CREDENTIALS","ESCAPE VAN","SURVEILLANCE LOOP","BIOMETRIC SPOOFER"
+];
+
+const PLAN_TEMPLATES = [
+  "Confirm entry through loading dock",
+  "Neutralize camera sectors 3–7",
+  "SHADE triggers fire alarm — main floor clears",
+  "CIPHER opens vault — 4 minute window",
+  "GHOST extracts assets — DUCHESS maintains decoy"
+];
+
+const RANDOM_EVENTS = [
+  { type:"danger",  msg:"Security patrol ahead of schedule — adapt or abort",   heatDelta:+12 },
+  { type:"warning", msg:"Police frequency spike detected in sector 7",          heatDelta:+8  },
+  { type:"success", msg:"Inside contact confirms guard rotation — window open", heatDelta:-6  },
+  { type:"danger",  msg:"Unknown vehicle outside the casino — possible tail",   heatDelta:+15 },
+  { type:"success", msg:"Surveillance blind spot confirmed — 47 second gap",    heatDelta:-10 },
+  { type:"warning", msg:"High roller event tonight — doubled floor security",   heatDelta:+10 },
+  { type:"success", msg:"CIPHER neutralised camera system — sector 3 clear",   heatDelta:-8  },
+  { type:"danger",  msg:"SHADE missed check-in — possible compromise",          heatDelta:+20 },
+];
+
+
+/* ════════════════════════════════════════════════════════════
+   3.  STATE
+════════════════════════════════════════════════════════════ */
+let heat         = 22;
+let phaseIndex   = 0;
+let messageCount = 0;
+let isLoading    = false;
+let planCount    = 0;
+let acquiredTools= ["VAULT SCHEMATICS","ESCAPE VAN"];
+let eventTimer   = null;
+
+
+/* ════════════════════════════════════════════════════════════
+   4.  CLOCK
+════════════════════════════════════════════════════════════ */
+function updateClock() {
+  document.getElementById("clock").textContent =
+    new Date().toLocaleTimeString("en-US",{ hour12:false, hour:"2-digit", minute:"2-digit", second:"2-digit" });
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+
+/* ════════════════════════════════════════════════════════════
+   5.  HEAT BAR
+════════════════════════════════════════════════════════════ */
+function heatInfo(h) {
+  if (h <= 25) return { color:"#00ff9f", glow:"rgba(0,255,159,0.5)",  label:"COLD",     bg:"rgba(0,255,159,0.1)",   border:"rgba(0,255,159,0.3)",  status:"GHOST MODE — minimal exposure" };
+  if (h <= 50) return { color:"#ffd700", glow:"rgba(255,215,0,0.5)",  label:"WARM",     bg:"rgba(255,215,0,0.1)",   border:"rgba(255,215,0,0.3)",  status:"CAUTION — stay disciplined" };
+  if (h <= 75) return { color:"#ff6b00", glow:"rgba(255,107,0,0.5)",  label:"HOT",      bg:"rgba(255,107,0,0.1)",   border:"rgba(255,107,0,0.35)", status:"DANGER — consider abort protocol" };
+  return              { color:"#ff2d78", glow:"rgba(255,45,120,0.6)", label:"CRITICAL", bg:"rgba(255,45,120,0.12)", border:"rgba(255,45,120,0.5)", status:"CRITICAL — every move is watched" };
+}
+
+function applyHeat(delta) {
+  heat = Math.max(0, Math.min(100, heat + delta));
+  renderHeat();
+}
+
+function renderHeat() {
+  const info = heatInfo(heat);
+  const val  = document.getElementById("heat-value");
+  const lbl  = document.getElementById("heat-label");
+  const fill = document.getElementById("heat-fill");
+  const stat = document.getElementById("heat-status");
+
+  val.textContent  = heat;
+  val.style.color  = info.color;
+  val.style.textShadow = `0 0 20px ${info.glow}`;
+  lbl.textContent  = info.label;
+  lbl.style.color  = info.color;
+  fill.style.width      = heat + "%";
+  fill.style.background = `linear-gradient(90deg, ${info.color}99, ${info.color})`;
+  fill.style.boxShadow  = `0 0 8px ${info.glow}`;
+  stat.textContent      = info.status;
+  stat.style.color      = info.color;
+  stat.style.background = info.bg;
+  stat.style.border     = `1px solid ${info.border}`;
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   6.  CREW
+════════════════════════════════════════════════════════════ */
+function renderCrew() {
+  const list = document.getElementById("crew-list");
+  list.innerHTML = "";
+  CREW_ROSTER.forEach(m => {
+    const div = document.createElement("div");
+    div.className = "crew-member" + (m.active ? " active" : "");
+    div.title     = m.active ? "Click to stand down" : "Click to activate";
+    div.innerHTML = `
+      <div class="crew-avatar" style="background:${m.color}">
+        <i class="${m.icon}" style="font-size:13px;color:${m.active ? "var(--neon-blue)" : "var(--text-dim)"}"></i>
+      </div>
+      <div class="crew-info">
+        <div class="crew-name">${m.name}</div>
+        <div class="crew-role">${m.role}</div>
+      </div>
+      <div class="crew-dot ${m.active ? "" : "offline"}"></div>
+    `;
+    div.addEventListener("click", () => {
+      m.active = !m.active;
+      renderCrew();
+      /* Notify Python of crew toggle */
+      sendToPython({ action: "toggle_crew", crewId: m.id, active: m.active, name: m.name });
+    });
+    list.appendChild(div);
+  });
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   7.  TOOLS
+════════════════════════════════════════════════════════════ */
+function renderTools() {
+  const list = document.getElementById("tools-list");
+  list.innerHTML = "";
+  ALL_TOOLS.forEach(t => {
+    const acq = acquiredTools.includes(t);
+    const div = document.createElement("div");
+    div.className = "tool-item " + (acq ? "acquired" : "needed");
+    div.innerHTML = `
+      <div class="tool-dot" style="background:${acq ? "var(--neon-green)" : "var(--text-dim)"};box-shadow:${acq ? "0 0 5px var(--neon-green)" : "none"}"></div>
+      ${t}
+    `;
+    list.appendChild(div);
+  });
+}
+
+function unlockNextTool() {
+  const next = ALL_TOOLS.find(t => !acquiredTools.includes(t));
+  if (next) { acquiredTools.push(next); renderTools(); }
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   8.  PLAN
+════════════════════════════════════════════════════════════ */
+function addPlanStep(text) {
+  const resolvedText = text || PLAN_TEMPLATES[planCount];
+  if (!resolvedText) return;
+  document.getElementById("plan-section").style.display = "block";
+  const div = document.createElement("div");
+  div.className = "plan-step";
+  div.innerHTML = `
+    <div class="plan-step-num">0${planCount + 1}</div>
+    <div class="plan-step-text">${escHtml(resolvedText)}</div>
+  `;
+  document.getElementById("plan-list").appendChild(div);
+  planCount++;
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   9.  RANDOM EVENTS
+════════════════════════════════════════════════════════════ */
+function triggerRandomEvent() {
+  const ev = RANDOM_EVENTS[Math.floor(Math.random() * RANDOM_EVENTS.length)];
+  showEvent(ev.type, ev.msg, ev.heatDelta);
+}
+
+function showEvent(type, msg, heatDelta) {
+  const banner = document.getElementById("event-banner");
+  banner.className   = "event-banner show " + type;
+  document.getElementById("event-msg").textContent  = msg;
+  document.getElementById("event-heat").textContent =
+    "HEAT " + (heatDelta > 0 ? "+" + heatDelta : heatDelta);
+  applyHeat(heatDelta);
+  clearTimeout(eventTimer);
+  eventTimer = setTimeout(() => banner.classList.remove("show"), 6000);
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   10. PHASE
+════════════════════════════════════════════════════════════ */
+function advancePhase() {
+  if (phaseIndex < PHASES.length - 1) {
+    phaseIndex++;
+    document.getElementById("phase-text").textContent = PHASES[phaseIndex];
+  }
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   11. MESSAGES
+════════════════════════════════════════════════════════════ */
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g,"&amp;").replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+}
+
+function fmtTime(ts) {
+  return new Date(ts).toLocaleTimeString("en-US",{ hour12:false });
+}
+
+function hideWelcome() {
+  const w = document.getElementById("welcome-screen");
+  if (w) w.style.display = "none";
+}
+
+function appendMessage(role, content, delta) {
+  hideWelcome();
+  const container = document.getElementById("messages-container");
+  const anchor    = document.getElementById("msg-anchor");
+  const ts        = Date.now();
+  const isUser    = role === "user";
+
+  let deltaHtml = "";
+  if (delta !== undefined && delta !== 0) {
+    const cls  = delta > 0 ? "heat-delta-pos" : "heat-delta-neg";
+    const sign = delta > 0 ? "+" : "";
+    deltaHtml  = `<span class="${cls}">HEAT ${sign}${delta}</span>`;
+  }
+
+  const wrap = document.createElement("div");
+  wrap.className = "message" + (isUser ? " user" : "");
+  wrap.innerHTML = `
+    <div class="msg-avatar ${isUser ? "user-av" : "ai"}">
+      <i class="${isUser ? "fas fa-crosshairs" : "fas fa-eye"}"></i>
+    </div>
+    <div class="msg-body">
+      <div class="msg-sender ${isUser ? "user-sender" : "ai-sender"}">
+        ${isUser ? "MASTERMIND" : "ORACLE // HEIST AI"}
+      </div>
+      <div class="msg-bubble ${isUser ? "user-bubble" : "ai-bubble"}">
+        ${escHtml(content)}
+      </div>
+      <div class="msg-meta">
+        <span>${fmtTime(ts)}</span>
+        ${deltaHtml}
+      </div>
+    </div>
+  `;
+  container.insertBefore(wrap, anchor);
+  anchor.scrollIntoView({ behavior:"smooth", block:"nearest" });
+}
+
+let typingEl = null;
+function showTyping() {
+  hideWelcome();
+  if (typingEl) return;
+  const container = document.getElementById("messages-container");
+  const anchor    = document.getElementById("msg-anchor");
+  typingEl = document.createElement("div");
+  typingEl.className = "message";
+  typingEl.innerHTML = `
+    <div class="msg-avatar ai"><i class="fas fa-eye"></i></div>
+    <div class="msg-body">
+      <div class="msg-sender ai-sender">ORACLE // PROCESSING</div>
+      <div class="typing-indicator">
+        <div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div>
+      </div>
+    </div>
+  `;
+  container.insertBefore(typingEl, anchor);
+  anchor.scrollIntoView({ behavior:"smooth", block:"nearest" });
+}
+
+function hideTyping() {
+  if (typingEl) { typingEl.remove(); typingEl = null; }
+}
+
+
+/* ════════════════════════════════════════════════════════════
+   12. USER INPUT HANDLING
+   All user submissions are forwarded to Python via sendToPython.
+   The UI shows the user bubble immediately and waits for Python
+   to call receiveFromPython({ type:"ai_response", ... }).
+════════════════════════════════════════════════════════════ */
+function setInputLock(locked) {
+  isLoading = locked;
+  document.getElementById("send-btn").disabled = locked || !document.getElementById("chat-input").value.trim();
+}
+
+function submitUserMessage(text) {
+  if (!text || isLoading) return;
+  appendMessage("user", text);
+  showTyping();
+  setInputLock(true);
+
+  /* Local side-effects */
+  messageCount++;
+  if (messageCount === 3)  advancePhase();
+  if (messageCount === 7)  advancePhase();
+  if (messageCount === 13) advancePhase();
+  if (messageCount % 3 === 0) unlockNextTool();
+  if (messageCount % 2 === 0 && planCount < PLAN_TEMPLATES.length) addPlanStep();
+  if (messageCount % 4 === 0) triggerRandomEvent();
+
+  /* Send the full message to Python */
+  sendToPython({ action: "user_message", value: text, messageCount });
+}
+
+/* Starter cards */
+function sendFromStarter(card) {
+  const lines = card.innerText.split("\n").map(s => s.trim()).filter(Boolean);
+  const text  = lines[lines.length - 1];
+  submitUserMessage(text);
+}
+
+/* Quick-action chips */
+function sendQuick(btn) {
+  submitUserMessage(btn.textContent.trim());
+}
+
+/* Textarea send button */
+const chatInput = document.getElementById("chat-input");
+const sendBtn   = document.getElementById("send-btn");
+
+chatInput.addEventListener("input", () => {
+  sendBtn.disabled = !chatInput.value.trim() || isLoading;
+  chatInput.style.height = "auto";
+  chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + "px";
+});
+
+chatInput.addEventListener("keydown", e => {
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    const text = chatInput.value.trim();
+    if (text) {
+      chatInput.value = ""; chatInput.style.height = "auto";
+      submitUserMessage(text);
+    }
+  }
+});
+
+sendBtn.addEventListener("click", () => {
+  const text = chatInput.value.trim();
+  if (text) {
+    chatInput.value = ""; chatInput.style.height = "auto";
+    /* Also notify Python that the send button was pressed */
+    sendToPython({ action: "send_button_clicked", value: text });
+    submitUserMessage(text);
+  }
+});
+
+
+/* ════════════════════════════════════════════════════════════
+   13. INIT
+════════════════════════════════════════════════════════════ */
+renderHeat();
+renderCrew();
+renderTools();
+
+/* Let Python know the UI is ready */
+sendToPython({ action: "ui_ready" });
+</script>
+</body>
+</html>
