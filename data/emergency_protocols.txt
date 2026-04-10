@@ -1,0 +1,51 @@
+# SECURITY LOG : EMERGENCY PROTOCOLS
+# ID : EL-02
+# SENSITIVITY : CONFIDENTIAL
+
+## OVERVIEW ##
+Defines system behavior during emergencies.
+
+## FIRE ALARM ##
+Trigger:
+--Smoke detection or manual activation
+
+Effects:
+--Elevators return to Level 1
+--Elevators lock
+--Stairwells open
+--Casino partially evacuated
+
+## POWER OUTAGE ##
+Trigger:
+--Main grid failure
+
+Effects:
+--Backup power activates instantly
+--Surveillance switches to 15 fps
+--Vault systems remain active
+
+## SECURITY BREACH ##
+Trigger:
+--Unauthorized access
+
+Effects:
+--Restricted zones lock
+--Guards converge
+
+## EVACUATION ##
+--Guests directed out
+--Security focuses on containment
+
+## AI INTERPRETATION ##
+Fire:
+--Prioritize evacuation
+
+Breach:
+--Prioritize containment
+
+## LOOPHOLES ##
+--Fire alarm disables elevator usage (forces stair access)
+--Low-power mode reduces camera accuracy
+--Guard focus shifts away from non-critical zones
+--Multiple alerts reduce response efficiency
+--Evacuation routes bypass normal security checkpoints
