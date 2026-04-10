@@ -1,0 +1,46 @@
+# SECURITY LOG : HVAC SYSTEM
+# ID : EL-01
+# SENSITIVITY : CONFIDENTIAL
+
+## OVERVIEW ##
+Central HVAC connects all floors including restricted zones.
+
+## SYSTEM STRUCTURE ##
+Main ducts:
+--Size: 80x80 cm
+
+Secondary ducts:
+--Size: 40x40 cm
+
+Vertical shafts:
+--Connect Level 2 to B3
+
+## AIRFLOW ##
+--Constant circulation
+--Temperature regulated at 22–24°C
+
+## CONTROL ##
+Main control panel located in B2 engineering room
+
+## CONNECTIONS ##
+--Level 2 kitchen → vertical shaft
+--B3 → maintenance ducts
+--B4 → isolated but partially connected
+
+## LIMITATIONS ##
+--Noise increases with movement
+--Filters block some paths
+
+## AI INTERPRETATION ##
+Normal:
+--Stable airflow
+
+Disruption:
+--Fan shutdown triggers alert
+
+## LOOPHOLES ##
+--Fan shutdown reduces noise detection
+--Airflow delay allows temporary heat masking
+--Maintenance ducts not fully monitored
+--Kitchen vents bypass camera coverage
+--Filters removable with tools (time: ~20 sec)
