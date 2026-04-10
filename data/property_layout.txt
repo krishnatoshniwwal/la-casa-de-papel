@@ -1,0 +1,61 @@
+#SECURITY LOG: THE VELVET ACE
+#ID : BP-11
+#SENSITIVITY : PUBLIC
+
+
+## OVERVIEW ## 
+Property Name : The velvet ace resort and casino
+The resort covers a total of 2,500,000 square feet. 
+The hotel towers has 1200 rooms spread across 22 floors.
+The casino floor covers an area of 150,000 square feet.
+The resort has a basement parking facility of 2500 vehicles split in 2 floors B1,B2 each with elevator access to the casino floor and the hotel lobby.
+There is also a B3 for casino operations.
+The casino is on the ground floor. 
+The first floor covers the hotel lobby and the hotel lounge.
+The second and third floor covers 3 fine dine restaurants, 1 convention hall and 1 entertainment theatre. 
+The floors 4-25 covers the hotel rooms. 
+The B2 and B1 level also covers electrical transformers, water systems, waste management and loading docks.
+Guests can access B2 and B1 via elevators which go from B2 to level 1 (hotel lobby).
+Separate staff-only elevators which run from B2 to level 25 (top floor).
+B3 is an ultra secure sub basement which covers count room, survellience HQ, security command center and storage vaults. 
+B3 can be accessed only via secure service elevators requiring keycard+biometric and B3 is accessible only after multi-layer authentication.
+
+## CASINO LAYOUT ## 
+The casino floor covers an area of 150,000 square feet.
+The casino is located on the ground floor (Level 0).
+The casino floor is divided into slot machines, table games, high-limit gaming, bars, cashier area, restrooms, ATMs, and retail sections.
+The slot machine zone occupies approximately 90,000 square feet and contains around 1,800 machines arranged in dense clusters with curved pathways.
+Low-denomination machines are placed near entrances, while higher-denomination machines are located deeper inside.
+The table games area covers approximately 35,000 square feet and consists of around 120 tables.
+Tables are grouped into pits of 10–15 tables, each monitored by a pit boss.
+The high-limit gaming area covers approximately 10,000 square feet and is located in a discreet section with controlled access.
+The casino floor includes 5 bar and lounge areas distributed across the gaming zones.
+The cashier (cage) area is centrally located with 20–30 cashier windows and secure access to B3.
+Restrooms are placed along the edges of the casino floor behind gaming zones.
+The casino includes 6 ATM clusters positioned near high-traffic areas.
+Retail sections are located along the perimeter and near exit pathways.
+Multiple entrances connect the casino floor to street access, parking levels (B1/B2), and the hotel lobby (Level 1).
+The layout uses curved pathways and indirect routes to avoid straight lines and increase player movement.
+Exit paths are not directly visible and require movement through gaming or retail areas.
+
+## HOTEL LAYOUT ## 
+Level 1 contains the hotel lobby, reception, concierge services, and hotel lounge.
+It includes check-in counters, waiting areas, bell desk, and luggage storage.
+Guest elevators and escalators to the casino are located here.
+Level 2 contains fine dining restaurants and premium hospitality spaces.
+It includes 3 restaurants, private dining rooms, kitchens, and service corridors.
+Level 3 contains a convention hall, an entertainment theatre, and additional dining spaces.
+It includes pre-function areas, seating zones, stage/backstage areas, and event support rooms.
+Levels 4–10 contain standard hotel rooms.
+Each floor includes 40–60 rooms, central corridors, housekeeping rooms, and service access points.
+Levels 11–18 contain deluxe rooms and upgraded accommodations.
+Rooms are larger with improved layouts, better views, and additional amenities.
+Levels 19–23 contain premium rooms and junior suites.
+These floors have lower room density and enhanced privacy features.
+Levels 24–25 contain luxury suites and VIP accommodations.
+These floors include large suites, private access control, and dedicated service areas.
+Guest elevators connect Level 1 to Level 25 with zoned access for efficiency.
+Service elevators connect all floors for housekeeping, room service, and operations.
+Each hotel floor includes fire exits, utility shafts, and maintenance access areas.
+The podium levels (Level 1–3) act as a transition layer separating public, entertainment, and residential spaces.
+The vertical layout ensures efficient movement, privacy in upper floors, and clear separation of functions.

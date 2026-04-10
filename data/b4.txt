@@ -1,0 +1,57 @@
+#SECURITY LOG : THE B4
+#ID : BP-12
+#SENSITIVITY : HIGHLY CONFIDENTIAL
+
+B4 (Deep Subterranean Vault Level) — Ultra-Secure Valuables Storage
+Access Level: Extreme restriction (higher than B3)
+Depth: ~20–30 meters below ground
+
+## Primary Function ## 
+Storage of ultra-high-value physical assets:
+Diamonds & gemstones
+High-value jewelry
+Bullion (gold/silver bars)
+High-stakes collateral from VIP clients
+Rare collectibles (art, watches, etc.)
+
+## STRUCTURAL DESIGN ## 
+Reinforced concrete walls (~1–2 meters thick)
+Steel alloy inner lining
+Blast-resistant design
+Seismic isolation supports
+Vault Chambers:
+--Main central vault hall
+--Multiple private vault rooms / safety deposit boxes
+Layout:
+--1 central corridor
+--10–20 vault chambers branching out
+--Individual client vault compartments
+Vault Doors
+--Multi-ton (20–50 ton) vault doors
+--Time-lock mechanisms
+--Dual-control unlocking (2 authorized personnel required)
+
+## SECURITY LAYERS ##
+Physical Isolation
+--No direct connection to public areas
+--Access only via:
+----Dedicated secure elevator (from B3)
+----Reinforced stairwell
+
+Multi-Factor Authentication:
+To even reach vault zone
+--Level 1: Keycard (restricted clearance)
+--Level 2: Biometric (iris + fingerprint)
+--Level 3: Dual authorization (two-person rule)
+--Level 4: Time-based lock windows
+
+Active Monitoring
+--24/7 surveillance (controlled from B3)
+--Motion sensors + thermal sensors
+--Alarm systems
+
+Staffing (Very Limited)
+--Vault security officers: 10–15 (rotational)
+--Vault custodians: 5–8
+--Audit/compliance officers: 3–5
+--No unnecessary personnel allowed
