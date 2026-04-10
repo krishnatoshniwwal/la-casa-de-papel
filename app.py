@@ -1,6 +1,8 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import json
+from brain import HeistBrain
+
 
 st.set_page_config(page_title="Vegas Heist", layout="wide")
 # --- HIDE STREAMLIT MARGINS ---
@@ -42,23 +44,37 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # --- 1. INITIALIZE GAME MEMORY ---
+if "brain" not in st.session_state:
+    st.session_state.brain = HeistBrain()
+    # Note: If database doesn't exist, you'd run st.session_state.brain.index_documents()
 if "heat_level" not in st.session_state:
     st.session_state.heat_level = 0
 if "latest_ai_message" not in st.session_state:
     st.session_state.latest_ai_message = "Oracle Online. Awaiting your first move."
 
-# --- 2. NATIVE INPUT (The safe way to talk to Python) ---
-# We use Streamlit's native chat box to send messages TO Python
-# because getting clicks OUT of a custom HTML iframe is notoriously buggy.
+# --- 2. NATIVE INPUT (The real version) ---
 user_move = st.chat_input("Enter your command...")
 
 if user_move:
-    # --- MEMBER B's LOGIC GOES HERE ---
-    # Example: response, heat_added = rag_engine.process(user_move)
-    
-    # For now, we simulate a response:
-    st.session_state.latest_ai_message = f"Executing '{user_move}'... The system logs have been updated."
-    st.session_state.heat_level += 5
+    # 1. Use the Brain to get a real story
+    with st.spinner("Analyzing security logs..."):
+        full_response = st.session_state.brain.play_move(user_move)
+        
+        # 2. Split the story from the Heat score
+        if "HEAT:" in full_response:
+            parts = full_response.split("HEAT:")
+            story_text = parts[0].strip()
+            try:
+                # Update the heat level globally
+                st.session_state.heat_level = int(parts[1].strip().split()[0])
+            except:
+                st.session_state.heat_level += 10
+        else:
+            story_text = full_response
+            st.session_state.heat_level += 10
+
+        # 3. Send the REAL story to the UI
+        st.session_state.latest_ai_message = story_text
 
 # --- 3. LOAD THE HTML ---
 try:

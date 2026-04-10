@@ -50,7 +50,6 @@ class HeistBrain:
     def play_move(self, user_move):
         """The core game logic: Finds facts and tells a story."""
         if not self.vectorstore:
-            # Load the existing database if it wasn't just created
             self.vectorstore = Chroma(
                 persist_directory=self.db_path, 
                 embedding_function=self.embeddings
@@ -60,26 +59,41 @@ class HeistBrain:
         relevant_docs = self.vectorstore.similarity_search(user_move, k=2)
         context = "\n---\n".join([d.page_content for d in relevant_docs])
         
-        # 2. Ask Gemini to be the Game Master
+        # 2. Build the high-pressure prompt
         prompt = f"""
-        You are the 'Sin City' style Game Master for a high-stakes Las Vegas heist. 
-        Use the following SECURITY FACTS to judge the player's move.
-        
-        SECURITY FACTS:
-        {context}
-        
+        Act as a Sin City noir Game Master. 
+        SECURITY FACTS: {context}
         PLAYER MOVE: {user_move}
-        
-        If the move works with the facts, describe a tense success. 
-        If they ignore a danger mentioned in the facts, describe them getting caught.
-        Keep it gritty, immersive, and brief.
+
+        JUDGMENT RULES:
+        1. Keep the story to EXACTLY 2 sentences. 
+        2. Be gritty, cold, and immersive.
+        3. If the facts show they failed, describe a brutal capture.
+        4. CRITICAL: You MUST end with 'HEAT: [number]' (1-100).
+
+        Example Output: The camera flickers, a blind eye in a city of sin. You slip through the door before the red light returns. HEAT: 15
         """
         
+        # 3. Get the AI response
         response = self.llm.invoke(prompt)
-        # Check if response is a list (typical in Gemini 3.0/2026 SDK)
+        
+        # 4. Extract content safely
+        res_text = ""
+        
+        # Check if content is a list and if it actually has items
         if isinstance(response.content, list):
-            return response.content[0]['text']
-        return response.content
+            if len(response.content) > 0:
+                # If it's a dict with 'text', get it; otherwise stringify the item
+                item = response.content[0]
+                res_text = item.get('text', str(item)) if isinstance(item, dict) else str(item)
+            else:
+                # Handle the "empty list" case (Safety Filter trigger)
+                res_text = "The Oracle is silent. The static on the line suggests your move was... problematic. HEAT: 50"
+        else:
+            # If it's just a regular string, we're good
+            res_text = response.content
+
+        return res_text
 
 # --- THE TEST BLOCK ---
 if __name__ == "__main__":
