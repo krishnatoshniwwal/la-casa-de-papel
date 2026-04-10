@@ -1,0 +1,88 @@
+# SECURITY LOG : SURVEILLANCE NETWORK
+# ID : TL-02
+# SENSITIVITY : HIGHLY CONFIDENTIAL
+
+## OVERVIEW ##
+Centralized AI-assisted surveillance system monitors all areas including casino, hotel, B3, and B4.
+
+## SYSTEM STRUCTURE ##
+Primary Control:
+--B3 Surveillance HQ
+--Sealed room with no external windows
+--24/7 staffed
+
+Secondary Control:
+--Level 1 security office
+--Limited override capability
+
+Backup Node:
+--B2 server rack
+--Failsafe recording only
+
+## CAMERA NETWORK ##
+Total Cameras: ~1240
+
+Casino Floor:
+--620 cameras
+--High-density overlapping coverage
+
+Hotel Floors:
+--320 cameras
+--Corridor + elevator focus
+
+Restricted Zones:
+--300 cameras
+--High precision tracking
+
+## CAMERA TYPES ##
+--Fixed dome cameras
+--PTZ (pan-tilt-zoom)
+--Thermal cameras (B3/B4)
+
+## PERFORMANCE ##
+Frame Rate:
+--Normal: 30 fps
+--Low power: 15 fps
+
+Tracking:
+--Auto-tracking enabled in high-risk zones
+--Facial recognition in lobby + casino
+
+## AI PROCESSING ##
+Detection Types:
+--Motion tracking
+--Facial recognition
+--Behavioral anomaly detection
+
+Priority Levels:
+--High (restricted zones)
+--Medium (casino)
+--Low (hotel floors)
+
+## BLIND SPOTS ##
+--Level 2 kitchen corridor (steam interference)
+--Stairwell L3–L4 (2 sec overlap gap)
+--B3 maintenance shaft junction
+
+## POWER SYSTEM ##
+Primary:
+--Main grid
+
+Backup:
+--90 min full system
+
+Emergency:
+--4 hours reduced mode
+
+## FAILURE RESPONSE ##
+--Signal loss triggers alert
+--Nearby cameras increase scan frequency
+
+## LOOPHOLES ##
+--Camera rotation cycle creates 1–2 sec blind sweep
+--Frame drop in low power mode enables motion blur
+--AI prioritizes highest threat → distractions reduce tracking
+--Level 1 node has weaker security than B3
+--Thermal cameras have slower refresh (~0.5 sec lag)
+--Overlapping camera zones create brief confusion in tracking IDs
+--Multiple simultaneous anomalies reduce detection accuracy
