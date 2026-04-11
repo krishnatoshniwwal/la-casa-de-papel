@@ -2,12 +2,12 @@ import os
 from dotenv import load_dotenv
 from langchain_community.document_loaders import DirectoryLoader, TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_groq import ChatGroq                        
+from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI                    
 from langchain_huggingface import HuggingFaceEmbeddings         
 from langchain_chroma import Chroma
 
 load_dotenv()
-api_key = os.getenv("GROQ_API_KEY")
+api_key = os.getenv("GOOGLE_API_KEY")
 
 ZONES = {
     "LOBBY": {
@@ -191,17 +191,18 @@ KEY_ITEM_HINTS = {
 
 class HeistBrain:
     def __init__(self):
-        self.embeddings = HuggingFaceEmbeddings(
-            model_name="sentence-transformers/all-MiniLM-L6-v2",
-            model_kwargs={"device": "cpu"},
-            encode_kwargs={"batch_size": 32}
+        self.embeddings = GoogleGenerativeAIEmbeddings(
+            model="models/gemini-embedding-001",
+            google_api_key=api_key,
+            task_type="retrieval_document"
         )
-        self.llm = ChatGroq(
-            model="llama-3.3-70b-versatile",
+        self.llm = ChatGoogleGenerativeAI(
+            model="gemini-flash-latest", 
             temperature=0.75,
-            max_retries=3,
-            api_key=api_key,
+            max_retries=3, # Automatically handles exponential backoff
+            google_api_key=api_key
         )
+        
         self.db_path = "./chroma_db"
         self.vectorstore = None
         self.current_zone = "LOBBY"
@@ -507,13 +508,7 @@ class HeistBrain:
     """
 
         response = self.llm.invoke(prompt)
-
-        raw = ""
-        if isinstance(response.content, list):
-            item = response.content[0] if response.content else {}
-            raw = item.get("text", str(item)) if isinstance(item, dict) else str(item)
-        else:
-            raw = str(response.content)
+        raw = str(response.content)
 
         lines = raw.strip().split("\n")
         tags = {}
