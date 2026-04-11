@@ -46,8 +46,27 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-if "brain" not in st.session_state:
-    st.session_state.brain = HeistBrain()
+# --- FIX 1: Use cache_resource so HeistBrain is built ONCE and shared
+# across all reruns and all users — not rebuilt every session.
+@st.cache_resource
+def get_brain():
+    brain = HeistBrain()
+    # FIX 2: Pre-warm the vectorstore at startup instead of lazy-loading
+    # on the first message (which caused the noticeable first-message delay).
+    brain.vectorstore = brain.vectorstore or __import__('langchain_chroma').Chroma(
+        persist_directory=brain.db_path,
+        embedding_function=brain.embeddings
+    )
+    return brain
+
+# FIX 3: Cache the raw HTML file read — file I/O on every rerun is wasteful.
+@st.cache_data
+def get_ui_code():
+    try:
+        with open("interface.html", "r", encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        return ""
 
 if "heat_level" not in st.session_state:
     st.session_state.heat_level = 0
@@ -55,22 +74,22 @@ if "heat_level" not in st.session_state:
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
+brain = get_brain()
 
 user_move = st.chat_input("Enter your command...")
 
 if user_move:
     st.session_state.chat_history.append({"role": "user", "content": user_move})
 
-    # --- THE FLOATING NEON HUD LOADER ---
     loading_placeholder = st.empty()
     loading_placeholder.markdown("""
         <style>
             .cyber-loader-container {
                 position: fixed;
-                bottom: 100px; /* Hovers perfectly above the chat input */
+                bottom: 100px;
                 left: 50%;
                 transform: translateX(-50%);
-                z-index: 999999; /* Forces it to the absolute top layer */
+                z-index: 999999;
             }
             .cyber-loader {
                 border: 1px solid #b400ff;
@@ -98,13 +117,8 @@ if user_move:
         </div>
     """, unsafe_allow_html=True)
 
-    # 1. Call the AI
-    full_response = st.session_state.brain.play_move(user_move)
-    
-    # 2. Destroy the floating widget the exact millisecond the AI finishes
+    full_response = brain.play_move(user_move)
     loading_placeholder.empty()
-    
-    # --- END WIDGET ---
 
     if "HEAT:" in full_response:
         parts = full_response.split("HEAT:")
@@ -120,15 +134,6 @@ if user_move:
 
     st.session_state.chat_history.append({"role": "assistant", "content": story_text})
 
-# --- 3. LOAD THE HTML (CACHED FOR SPEED) ---
-@st.cache_data
-def get_ui_code():
-    try:
-        with open("interface.html", "r", encoding="utf-8") as f:
-            return f.read()
-    except FileNotFoundError:
-        return ""
-
 ui_code = get_ui_code()
 if not ui_code:
     st.error("Error: Could not find interface.html in this folder.")
@@ -136,7 +141,9 @@ if not ui_code:
 
 current_heat = st.session_state.heat_level
 
-# We use JS to set the heat now, which triggers your custom neon colors!
+# FIX 4: Don't do string replacement on the HTML for heat —
+# drive the heat purely via JS injection, keeping the cached
+# HTML string untouched (so cache_data actually helps).
 history_js = f"window.receiveFromPython({{type: 'heat_set', value: {current_heat}}});\n"
 
 for msg in st.session_state.chat_history:
@@ -147,9 +154,7 @@ for msg in st.session_state.chat_history:
 injection_script = f"""
 <script>
     setTimeout(() => {{
-        // Ensure the welcome screen is gone
         if(typeof hideWelcome === 'function') hideWelcome();
-        
         {history_js}
         const anchor = document.getElementById('msg-anchor');
         if(anchor) anchor.scrollIntoView();
@@ -157,6 +162,4 @@ injection_script = f"""
 </script>
 """
 
-final_html = ui_code + injection_script
-
-components.html(final_html, height=750, scrolling=False)
+components.html(ui_code + injection_script, height=750, scrolling=False)

@@ -5,20 +5,28 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Vegas Black Vault — Sin City Heist Engine</title>
 
-  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Font Awesome 6 CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
-
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-
+  <!-- Google Fonts -->
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
 
-
+  <script>
+    tailwind.config = {
+      theme:{
+        extend: {
+          fontFamily: {
+            display: ["'Bebas Neue'", "cursive"],
+            body:    ["'Rajdhani'", "sans-serif"],
+            mono:    ["'Share Tech Mono'", "monospace"]
+          }
+        }
+      }
+    }
+  </script>
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -87,7 +95,7 @@
 
     /* ── Film grain ───────────────────────────────────── */
     #noise {
-      position: fixed; inset: 0; z-index: 2; pointer-events: none; display: none;;
+      position: fixed; inset: 0; z-index: 2; pointer-events: none; opacity: 0.025;
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
       background-size: 256px 256px;
     }
@@ -412,43 +420,25 @@
       <!-- Heat Level -->
       <div id="heat-section">
         <div class="section-label">// HEAT LEVEL</div>
-        <div id="heat-value">0</div>
+        <div id="heat-value"0</div>
         <div id="heat-label">COLD</div>
         <div id="heat-track"><div id="heat-fill" style="width:0%"></div></div>
         <div id="heat-ticks"><span>0</span><span>25</span><span>50</span><span>75</span><span>100</span></div>
         <div id="heat-status">GHOST MODE — minimal exposure</div>
       </div>
 
-      <!-- Operations — Scout / Hack / Plan / Escape -->
+      <!-- Operations — Map only -->
       <div id="ops-section">
         <div class="section-label">// OPERATIONS</div>
-        <div class="ops-grid">
-
-          <button class="ops-btn scout" onclick="triggerScout()" title="Scout the perimeter">
-            <i class="fas fa-binoculars"></i> SCOUT
-          </button>
-          <button class="ops-btn hack" onclick="triggerHack()" title="Hack security systems">
-            <i class="fas fa-terminal"></i> HACK
-          </button>
-          <button class="ops-btn plan" onclick="document.getElementById('blueprint-modal').style.display='flex'" title="View Vault Schematics">
-            <i class="fas fa-map"></i> BLUEPRINT
-          </button>
-          <button class="ops-btn escape" onclick="triggerEscape()" title="Trigger escape protocol">
-            <i class="fas fa-person-running"></i> ESCAPE
-          </button>
-
-        </div>
-      </div>
-
-      <!-- Crew Status -->
-      <div id="crew-section">
-        <div class="section-label">// CREW STATUS</div>
-        <div id="crew-list"><!-- rendered by JS --></div>
-        <button id="add-crew-btn"
-                onclick="sendToPython('add_crew')">
-          <i class="fas fa-plus"></i>&nbsp;RECRUIT SPECIALIST
+        <button class="ops-btn plan" style="width:100%;flex-direction:row;gap:10px;padding:12px 16px;"
+                onclick="document.getElementById('map-modal').style.display='flex'"
+                title="View property map">
+          <i class="fas fa-map"></i>
+          LAYOUT MAP
         </button>
       </div>
+
+
 
       <!-- Equipment -->
       <div id="tools-section">
@@ -468,57 +458,512 @@
     <div id="chat-area">
       <div id="messages-container">
 
-        <!-- Welcome screen -->
+        <!-- ── Welcome screen ──────────────────────────── -->
+        <div id="welcome-screen"></div>
+
         <!-- Message anchor -->
         <div id="msg-anchor"></div>
       </div>
+
+
+
     </div><!-- /chat-area -->
   </div><!-- /main-layout -->
 </div><!-- /app -->
-<div id="blueprint-modal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(4,3,10,0.95); align-items:center; justify-content:center; backdrop-filter:blur(10px);">
-    <div style="border:1px solid var(--neon-blue); padding:24px; background:#0a0814; width:90%; max-width:1000px; box-shadow: 0 0 30px rgba(0,212,255,0.1);">
-      
-      <div style="display:flex; justify-content:space-between; font-family:'Share Tech Mono',monospace; margin-bottom:20px;">
-         <span style="color:var(--neon-blue); letter-spacing: 2px;">// THE VELVET ACE: B3 & B4 TACTICAL SCHEMATICS</span>
-         <button onclick="document.getElementById('blueprint-modal').style.display='none'" style="color:var(--neon-pink); background:none; border:none; cursor:pointer; font-family:inherit; letter-spacing:1px;">[X] CLOSE</button>
+
+<!-- ══════════════════════════════════════════════════════
+     MAP MODAL
+══════════════════════════════════════════════════════ -->
+<div id="map-modal" style="display:none; position:fixed; inset:0; z-index:9999;
+     background:rgba(4,3,10,0.97); align-items:center; justify-content:center;
+     backdrop-filter:blur(12px);">
+
+  <div style="width:95%; max-width:1100px; height:88vh; display:flex; flex-direction:column;
+       border:1px solid rgba(0,212,255,0.3); background:#04030a;
+       box-shadow:0 0 40px rgba(0,212,255,0.08);">
+
+    <!-- Header -->
+    <div style="display:flex; justify-content:space-between; align-items:center;
+         padding:14px 20px; border-bottom:1px solid rgba(255,255,255,0.06);
+         background:rgba(10,8,20,0.9); flex-shrink:0;">
+      <div>
+        <div style="font-family:'Bebas Neue',cursive; font-size:22px; letter-spacing:4px;
+             background:linear-gradient(135deg,#ff2d78,#b400ff,#00d4ff);
+             -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">
+          THE VELVET ACE — TACTICAL LAYOUT
+        </div>
+        <div style="font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:3px;
+             color:#ffd700; margin-top:2px;">// CLASSIFIED — SECURITY LOG BP-11 / BP-12</div>
       </div>
-
-      <div style="height:500px; display:grid; grid-template-columns: 1fr 1.5fr 1fr; grid-template-rows: 1fr 1.5fr 1fr; gap:16px; padding:20px; background: repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(0,212,255,0.03) 40px, rgba(0,212,255,0.03) 41px), repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(0,212,255,0.03) 40px, rgba(0,212,255,0.03) 41px); border: 1px dashed rgba(0,212,255,0.3);">
-         
-         <div style="border:1px solid var(--text-dim); display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--text-secondary); font-family:'Share Tech Mono'; font-size:12px; text-align:center;">
-            SECURE ELEVATOR<br><span style="color:var(--neon-orange); font-size:10px; margin-top:4px;">[Biometric + Keycard]</span>
-         </div>
-         <div style="border:1px solid rgba(255,255,255,0.1); border-bottom: none; display:flex; align-items:center; justify-content:center; color:var(--neon-blue); font-family:'Share Tech Mono'; font-size:14px; letter-spacing: 2px;">
-            B3 CENTRAL CORRIDOR<br>(Laser Grid Active)
-         </div>
-         <div style="border:1px solid var(--neon-purple); display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--neon-purple); font-family:'Share Tech Mono'; font-size:12px; text-align:center; background:rgba(180,0,255,0.05);">
-            HVAC MAINTENANCE<br><span style="color:var(--text-dim); font-size:10px; margin-top:4px;">[Connects L2 to B3]</span>
-         </div>
-
-         <div style="border:1px solid var(--neon-pink); display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--neon-pink); font-family:'Share Tech Mono'; font-size:12px; text-align:center; background:rgba(255,45,120,0.05);">
-            SURVEILLANCE HQ<br><span style="font-size:10px; margin-top:4px;">Primary Control Node</span><br><span style="color:var(--text-dim); font-size:10px;">[No Windows]</span>
-         </div>
-         <div style="border:2px solid var(--neon-gold); display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--neon-gold); box-shadow: inset 0 0 20px rgba(255,215,0,0.1); font-family:'Bebas Neue'; font-size:32px; letter-spacing:6px; text-shadow: 0 0 10px rgba(255,215,0,0.5);">
-            B4 DEEP VAULT<br>
-            <span style="font-size:12px; font-family:'Share Tech Mono'; color:var(--text-primary); letter-spacing: 1px; margin-top:10px; text-shadow:none;">TIME-LOCK DUAL CONTROL</span>
-         </div>
-         <div style="border:1px solid var(--neon-pink); display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--neon-pink); font-family:'Share Tech Mono'; font-size:12px; text-align:center;">
-            SECURITY COMMAND<br><span style="font-size:10px; margin-top:4px;">Guards: Daniel Kim, Rick Green</span>
-         </div>
-
-         <div style="border:1px solid var(--text-dim); display:flex; align-items:center; justify-content:center; color:var(--text-secondary); font-family:'Share Tech Mono'; font-size:12px; text-align:center;">
-            B2 ENGINEERING<br><span style="font-size:10px;">(Backup Servers)</span>
-         </div>
-         <div style="border:1px solid rgba(255,255,255,0.1); border-top: none; display:flex; align-items:center; justify-content:center; color:var(--neon-blue); font-family:'Share Tech Mono'; font-size:14px; letter-spacing: 2px;">
-            STAIRWELL L3-L4
-         </div>
-         <div style="border:1px solid var(--neon-green); display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--neon-green); font-family:'Share Tech Mono'; font-size:12px; text-align:center; background:rgba(0,255,159,0.05);">
-            COUNT ROOM<br><span style="font-size:10px; margin-top:4px;">High-Value Transition</span>
-         </div>
-
-      </div>
+      <button onclick="document.getElementById('map-modal').style.display='none'"
+              style="background:rgba(255,45,120,0.1); border:1px solid rgba(255,45,120,0.4);
+                     color:#ff2d78; font-family:'Share Tech Mono',monospace; font-size:11px;
+                     letter-spacing:2px; padding:8px 16px; cursor:pointer; border-radius:2px;">
+        [X] CLOSE
+      </button>
     </div>
-  </div>
+
+    <!-- Tab Bar -->
+    <div style="display:flex; gap:0; border-bottom:1px solid rgba(255,255,255,0.06); flex-shrink:0;">
+      <button class="map-tab active-tab" onclick="showTab('overview')" id="tab-overview"
+              style="padding:10px 22px; font-family:'Share Tech Mono',monospace; font-size:10px;
+                     letter-spacing:2px; cursor:pointer; border:none; border-bottom:2px solid #00d4ff;
+                     background:rgba(0,212,255,0.08); color:#00d4ff;">BUILDING OVERVIEW</button>
+      <button class="map-tab" onclick="showTab('b3')" id="tab-b3"
+              style="padding:10px 22px; font-family:'Share Tech Mono',monospace; font-size:10px;
+                     letter-spacing:2px; cursor:pointer; border:none; border-bottom:2px solid transparent;
+                     background:transparent; color:#4a4360;">B3 — OPERATIONS</button>
+      <button class="map-tab" onclick="showTab('b4')" id="tab-b4"
+              style="padding:10px 22px; font-family:'Share Tech Mono',monospace; font-size:10px;
+                     letter-spacing:2px; cursor:pointer; border:none; border-bottom:2px solid transparent;
+                     background:transparent; color:#4a4360;">B4 — DEEP VAULT</button>
+      <button class="map-tab" onclick="showTab('casino')" id="tab-casino"
+              style="padding:10px 22px; font-family:'Share Tech Mono',monospace; font-size:10px;
+                     letter-spacing:2px; cursor:pointer; border:none; border-bottom:2px solid transparent;
+                     background:transparent; color:#4a4360;">L0 — CASINO FLOOR</button>
+    </div>
+
+    <!-- Tab Content -->
+    <div style="flex:1; overflow-y:auto; padding:20px;">
+
+      <!-- ── OVERVIEW TAB ── -->
+      <div id="tab-content-overview">
+        <div style="display:grid; grid-template-columns:220px 1fr; gap:20px; height:100%;">
+
+          <!-- Building cross-section -->
+          <div style="display:flex; flex-direction:column; gap:3px;">
+            <div style="font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:3px;
+                 color:#4a4360; margin-bottom:8px;">// VERTICAL CROSS-SECTION</div>
+
+            <!-- floors -->
+            <div class="floor-row" style="background:rgba(255,215,0,0.07); border:1px solid rgba(255,215,0,0.25); border-radius:2px; padding:7px 10px;">
+              <span style="font-family:'Share Tech Mono',monospace; font-size:10px; color:#ffd700;">L24–25</span>
+              <span style="font-family:'Share Tech Mono',monospace; font-size:9px; color:#8a7fa0; margin-left:8px;">VIP SUITES</span>
+            </div>
+            <div class="floor-row" style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:2px; padding:7px 10px;">
+              <span style="font-family:'Share Tech Mono',monospace; font-size:10px; color:#f0e8ff;">L4–23</span>
+              <span style="font-family:'Share Tech Mono',monospace; font-size:9px; color:#8a7fa0; margin-left:8px;">HOTEL ROOMS (1,200)</span>
+            </div>
+            <div class="floor-row" style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:2px; padding:7px 10px;">
+              <span style="font-family:'Share Tech Mono',monospace; font-size:10px; color:#f0e8ff;">L3</span>
+              <span style="font-family:'Share Tech Mono',monospace; font-size:9px; color:#8a7fa0; margin-left:8px;">CONVENTION / THEATRE</span>
+            </div>
+            <div class="floor-row" style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:2px; padding:7px 10px;">
+              <span style="font-family:'Share Tech Mono',monospace; font-size:10px; color:#f0e8ff;">L2</span>
+              <span style="font-family:'Share Tech Mono',monospace; font-size:9px; color:#8a7fa0; margin-left:8px;">3 RESTAURANTS · KITCHENS</span>
+            </div>
+            <div class="floor-row" style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:2px; padding:7px 10px;">
+              <span style="font-family:'Share Tech Mono',monospace; font-size:10px; color:#f0e8ff;">L1</span>
+              <span style="font-family:'Share Tech Mono',monospace; font-size:9px; color:#8a7fa0; margin-left:8px;">HOTEL LOBBY · LOUNGE</span>
+            </div>
+            <div class="floor-row" style="background:rgba(0,212,255,0.06); border:1px solid rgba(0,212,255,0.25); border-radius:2px; padding:7px 10px;">
+              <span style="font-family:'Share Tech Mono',monospace; font-size:10px; color:#00d4ff;">L0</span>
+              <span style="font-family:'Share Tech Mono',monospace; font-size:9px; color:#00d4ff; margin-left:8px;">CASINO FLOOR 150K SQ FT</span>
+            </div>
+            <div style="text-align:center; color:#4a4360; font-size:9px; font-family:'Share Tech Mono',monospace; padding:2px;">▼ BELOW GROUND ▼</div>
+            <div class="floor-row" style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.06); border-radius:2px; padding:7px 10px;">
+              <span style="font-family:'Share Tech Mono',monospace; font-size:10px; color:#f0e8ff;">B1–B2</span>
+              <span style="font-family:'Share Tech Mono',monospace; font-size:9px; color:#8a7fa0; margin-left:8px;">PARKING · UTILITIES</span>
+            </div>
+            <div class="floor-row" style="background:rgba(180,0,255,0.08); border:1px solid rgba(180,0,255,0.35); border-radius:2px; padding:7px 10px;">
+              <span style="font-family:'Share Tech Mono',monospace; font-size:10px; color:#b400ff;">B3</span>
+              <span style="font-family:'Share Tech Mono',monospace; font-size:9px; color:#b400ff; margin-left:8px;">SECURITY OPS ⚠</span>
+            </div>
+            <div class="floor-row" style="background:rgba(255,215,0,0.1); border:2px solid rgba(255,215,0,0.5); border-radius:2px; padding:7px 10px; box-shadow:0 0 12px rgba(255,215,0,0.1);">
+              <span style="font-family:'Share Tech Mono',monospace; font-size:10px; color:#ffd700;">B4</span>
+              <span style="font-family:'Share Tech Mono',monospace; font-size:9px; color:#ffd700; margin-left:8px;">🎯 DEEP VAULT — TARGET</span>
+            </div>
+          </div>
+
+          <!-- Overview details -->
+          <div style="display:grid; grid-template-columns:1fr 1fr; grid-template-rows:auto auto; gap:14px;">
+
+            <div style="border:1px solid rgba(0,212,255,0.2); padding:16px; background:rgba(0,212,255,0.03); border-radius:2px;">
+              <div style="font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:3px; color:#00d4ff; margin-bottom:12px;">// ACCESS ROUTES</div>
+              <div style="font-size:12px; color:#8a7fa0; line-height:2;">
+                <div>🔵 <span style="color:#f0e8ff;">Guest elevators</span> — L1 to L25 (zoned)</div>
+                <div>🔵 <span style="color:#f0e8ff;">Staff elevators</span> — B2 to L25 (keycard)</div>
+                <div>🟡 <span style="color:#ffd700;">Secure elevator</span> — B3 access (keycard + biometric)</div>
+                <div>🟣 <span style="color:#b400ff;">B3→B4 elevator</span> — iris + fingerprint + dual auth</div>
+                <div>🔴 <span style="color:#ff2d78;">Reinforced stairwell</span> — B3↔B4 only</div>
+                <div>🟢 <span style="color:#00ff9f;">HVAC vertical shaft</span> — L2 kitchen → B3 (80×80cm)</div>
+              </div>
+            </div>
+
+            <div style="border:1px solid rgba(255,45,120,0.2); padding:16px; background:rgba(255,45,120,0.03); border-radius:2px;">
+              <div style="font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:3px; color:#ff2d78; margin-bottom:12px;">// SURVEILLANCE</div>
+              <div style="font-size:12px; color:#8a7fa0; line-height:2;">
+                <div>📷 <span style="color:#f0e8ff;">Total cameras:</span> ~1,240</div>
+                <div>📷 <span style="color:#f0e8ff;">Casino floor:</span> 620 cameras</div>
+                <div>📷 <span style="color:#f0e8ff;">Hotel floors:</span> 320 cameras</div>
+                <div>📷 <span style="color:#f0e8ff;">Restricted zones:</span> 300 cameras</div>
+                <div>⚠ <span style="color:#ffd700;">Blind spot:</span> L2 kitchen corridor (steam)</div>
+                <div>⚠ <span style="color:#ffd700;">Blind spot:</span> Stairwell L3–L4 (2 sec gap)</div>
+                <div>⚠ <span style="color:#ffd700;">Blind spot:</span> B3 maintenance shaft junction</div>
+              </div>
+            </div>
+
+            <div style="border:1px solid rgba(0,255,159,0.2); padding:16px; background:rgba(0,255,159,0.03); border-radius:2px;">
+              <div style="font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:3px; color:#00ff9f; margin-bottom:12px;">// GUARD COVERAGE</div>
+              <div style="font-size:12px; color:#8a7fa0; line-height:2;">
+                <div>⏱ <span style="color:#f0e8ff;">Casino patrol loop:</span> 12 min</div>
+                <div>⏱ <span style="color:#f0e8ff;">Hotel sweep:</span> 25 min per floor</div>
+                <div>⏱ <span style="color:#f0e8ff;">B3 patrol:</span> every 10 min</div>
+                <div>🔄 <span style="color:#f0e8ff;">Shift change:</span> 06:00 / 14:00 / 22:00</div>
+                <div>⚠ <span style="color:#ffd700;">Overlap window:</span> 10 min reduced coverage</div>
+                <div>⚠ <span style="color:#ffd700;">Breaks:</span> 08:00 · 10:00 · 12:00 · 16:00...</div>
+              </div>
+            </div>
+
+            <div style="border:1px solid rgba(255,107,0,0.2); padding:16px; background:rgba(255,107,0,0.03); border-radius:2px;">
+              <div style="font-family:'Share Tech Mono',monospace; font-size:10px; letter-spacing:3px; color:#ff6b00; margin-bottom:12px;">// GUARD PRESENCE</div>
+              <div style="font-size:12px; color:#8a7fa0; line-height:2;">
+                <div>🔴 <span style="color:#ff2d78;">Guard</span> — B3 corridor, highly alert</div>
+                <div>🟡 <span style="color:#ffd700;">Guard</span> — B3 patrol, distracted at times</div>
+                <div>🟢 <span style="color:#00ff9f;">Guard</span> — B2 parking, relaxed, slow reaction</div>
+                <div>⚪ <span style="color:#f0e8ff;">Custodian ×2</span> — B4, strict dual-control protocol</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ── B3 TAB ── -->
+      <div id="tab-content-b3" style="display:none;">
+        <div style="font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:3px; color:#b400ff; margin-bottom:16px;">// B3 — OPERATIONS LEVEL · DEPTH ~10–15m · ACCESS: KEYCARD + BIOMETRIC</div>
+
+        <svg viewBox="0 0 900 480" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-height:480px; background:rgba(10,8,20,0.8); border:1px solid rgba(180,0,255,0.2); border-radius:2px;">
+          <!-- Grid background -->
+          <defs>
+            <pattern id="grid-b3" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>
+            </pattern>
+          </defs>
+          <rect width="900" height="480" fill="url(#grid-b3)"/>
+
+          <!-- Outer walls -->
+          <rect x="30" y="30" width="840" height="420" fill="none" stroke="rgba(180,0,255,0.5)" stroke-width="2" rx="2"/>
+
+          <!-- Central corridor -->
+          <rect x="30" y="200" width="840" height="80" fill="rgba(180,0,255,0.04)" stroke="rgba(180,0,255,0.3)" stroke-width="1"/>
+          <text x="450" y="244" font-family="Share Tech Mono,monospace" font-size="11" fill="#b400ff" text-anchor="middle" letter-spacing="3">CENTRAL CORRIDOR</text>
+
+          <!-- Surveillance HQ (top-left) -->
+          <rect x="50" y="50" width="200" height="130" fill="rgba(255,45,120,0.08)" stroke="rgba(255,45,120,0.5)" stroke-width="1.5" rx="2"/>
+          <text x="150" y="95" font-family="Share Tech Mono,monospace" font-size="10" fill="#ff2d78" text-anchor="middle" letter-spacing="2">SURVEILLANCE</text>
+          <text x="150" y="112" font-family="Share Tech Mono,monospace" font-size="10" fill="#ff2d78" text-anchor="middle" letter-spacing="2">HQ</text>
+          <text x="150" y="132" font-family="Share Tech Mono,monospace" font-size="8" fill="#8a7fa0" text-anchor="middle">NO WINDOWS · 24/7 STAFFED</text>
+          <text x="150" y="170" font-family="Share Tech Mono,monospace" font-size="9" fill="#ff2d78" text-anchor="middle">📷 PRIMARY CONTROL NODE</text>
+
+          <!-- Security Command (top-center) -->
+          <rect x="300" y="50" width="200" height="130" fill="rgba(255,107,0,0.06)" stroke="rgba(255,107,0,0.4)" stroke-width="1.5" rx="2"/>
+          <text x="400" y="95" font-family="Share Tech Mono,monospace" font-size="10" fill="#ff6b00" text-anchor="middle" letter-spacing="2">SECURITY</text>
+          <text x="400" y="112" font-family="Share Tech Mono,monospace" font-size="10" fill="#ff6b00" text-anchor="middle" letter-spacing="2">COMMAND</text>
+          <text x="400" y="135" font-family="Share Tech Mono,monospace" font-size="8" fill="#8a7fa0" text-anchor="middle">GUARDS ON ROTATION</text>
+          <text x="400" y="170" font-family="Share Tech Mono,monospace" font-size="8" fill="#ff6b00" text-anchor="middle">⚠ PATROL EVERY 10 MIN</text>
+
+          <!-- Count Room (top-right) -->
+          <rect x="560" y="50" width="180" height="130" fill="rgba(255,215,0,0.06)" stroke="rgba(255,215,0,0.35)" stroke-width="1.5" rx="2"/>
+          <text x="650" y="95" font-family="Share Tech Mono,monospace" font-size="10" fill="#ffd700" text-anchor="middle" letter-spacing="2">COUNT ROOM</text>
+          <text x="650" y="115" font-family="Share Tech Mono,monospace" font-size="8" fill="#8a7fa0" text-anchor="middle">HIGH-VALUE TRANSIT</text>
+          <text x="650" y="132" font-family="Share Tech Mono,monospace" font-size="8" fill="#8a7fa0" text-anchor="middle">CASH PROCESSING</text>
+
+          <!-- Secure Elevator (top-far-right) -->
+          <rect x="790" y="50" width="70" height="130" fill="rgba(0,212,255,0.06)" stroke="rgba(0,212,255,0.4)" stroke-width="1.5" rx="2"/>
+          <text x="825" y="90" font-family="Share Tech Mono,monospace" font-size="8" fill="#00d4ff" text-anchor="middle">SECURE</text>
+          <text x="825" y="104" font-family="Share Tech Mono,monospace" font-size="8" fill="#00d4ff" text-anchor="middle">ELEV.</text>
+          <text x="825" y="120" font-family="Share Tech Mono,monospace" font-size="8" fill="#8a7fa0" text-anchor="middle">↑ CASINO</text>
+          <text x="825" y="134" font-family="Share Tech Mono,monospace" font-size="8" fill="#ffd700" text-anchor="middle">↓ B4</text>
+          <text x="825" y="156" font-family="Share Tech Mono,monospace" font-size="7" fill="#ff6b00" text-anchor="middle">BIOMETRIC</text>
+
+          <!-- Maintenance Shaft (blind spot marker) -->
+          <rect x="780" y="210" width="80" height="60" fill="rgba(0,255,159,0.06)" stroke="rgba(0,255,159,0.35)" stroke-width="1" stroke-dasharray="4,3" rx="2"/>
+          <text x="820" y="235" font-family="Share Tech Mono,monospace" font-size="8" fill="#00ff9f" text-anchor="middle">MAINT.</text>
+          <text x="820" y="248" font-family="Share Tech Mono,monospace" font-size="8" fill="#00ff9f" text-anchor="middle">SHAFT</text>
+          <text x="820" y="261" font-family="Share Tech Mono,monospace" font-size="7" fill="#00ff9f" text-anchor="middle">⚠ BLIND SPOT</text>
+
+          <!-- Biometric checkpoint on corridor -->
+          <rect x="410" y="192" width="80" height="16" fill="rgba(255,215,0,0.15)" stroke="rgba(255,215,0,0.6)" stroke-width="1" rx="1"/>
+          <text x="450" y="204" font-family="Share Tech Mono,monospace" font-size="8" fill="#ffd700" text-anchor="middle">BIOMETRIC GATE</text>
+
+          <!-- Stairwell (bottom) -->
+          <rect x="50" y="310" width="100" height="120" fill="rgba(255,45,120,0.06)" stroke="rgba(255,45,120,0.35)" stroke-width="1.5" rx="2"/>
+          <text x="100" y="355" font-family="Share Tech Mono,monospace" font-size="9" fill="#ff2d78" text-anchor="middle">STAIR</text>
+          <text x="100" y="370" font-family="Share Tech Mono,monospace" font-size="9" fill="#ff2d78" text-anchor="middle">WELL</text>
+          <text x="100" y="388" font-family="Share Tech Mono,monospace" font-size="8" fill="#8a7fa0" text-anchor="middle">B3 ↔ B4</text>
+          <text x="100" y="402" font-family="Share Tech Mono,monospace" font-size="7" fill="#8a7fa0" text-anchor="middle">REINFORCED</text>
+
+          <!-- Storage -->
+          <rect x="200" y="310" width="160" height="120" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.1)" stroke-width="1" rx="2"/>
+          <text x="280" y="368" font-family="Share Tech Mono,monospace" font-size="10" fill="#8a7fa0" text-anchor="middle">STORAGE</text>
+
+          <!-- Server/Backup -->
+          <rect x="420" y="310" width="160" height="120" fill="rgba(0,212,255,0.04)" stroke="rgba(0,212,255,0.2)" stroke-width="1" rx="2"/>
+          <text x="500" y="362" font-family="Share Tech Mono,monospace" font-size="9" fill="#00d4ff" text-anchor="middle">BACKUP</text>
+          <text x="500" y="378" font-family="Share Tech Mono,monospace" font-size="9" fill="#00d4ff" text-anchor="middle">SERVERS</text>
+
+          <!-- HVAC duct indicator -->
+          <line x1="640" y1="30" x2="640" y2="200" stroke="rgba(0,255,159,0.3)" stroke-width="2" stroke-dasharray="6,4"/>
+          <text x="648" y="110" font-family="Share Tech Mono,monospace" font-size="8" fill="#00ff9f" transform="rotate(90,648,110)">HVAC DUCT ↓ FROM L2</text>
+
+          <!-- Legend -->
+          <rect x="620" y="310" width="240" height="120" fill="rgba(10,8,20,0.8)" stroke="rgba(255,255,255,0.06)" stroke-width="1" rx="2"/>
+          <text x="635" y="330" font-family="Share Tech Mono,monospace" font-size="8" fill="#4a4360" letter-spacing="2">// LEGEND</text>
+          <rect x="635" y="338" width="8" height="8" fill="rgba(255,45,120,0.3)" stroke="#ff2d78" stroke-width="1"/>
+          <text x="648" y="346" font-family="Share Tech Mono,monospace" font-size="8" fill="#8a7fa0">HIGH SECURITY</text>
+          <rect x="635" y="354" width="8" height="8" fill="rgba(255,215,0,0.3)" stroke="#ffd700" stroke-width="1"/>
+          <text x="648" y="362" font-family="Share Tech Mono,monospace" font-size="8" fill="#8a7fa0">RESTRICTED ACCESS</text>
+          <rect x="635" y="370" width="8" height="8" fill="rgba(0,255,159,0.2)" stroke="#00ff9f" stroke-width="1"/>
+          <text x="648" y="378" font-family="Share Tech Mono,monospace" font-size="8" fill="#8a7fa0">EXPLOITABLE ZONE</text>
+          <line x1="635" y1="390" x2="643" y2="390" stroke="#00ff9f" stroke-width="2" stroke-dasharray="3,2"/>
+          <text x="648" y="394" font-family="Share Tech Mono,monospace" font-size="8" fill="#8a7fa0">HVAC / BLIND SPOT</text>
+          <line x1="635" y1="408" x2="643" y2="408" stroke="#00d4ff" stroke-width="2"/>
+          <text x="648" y="412" font-family="Share Tech Mono,monospace" font-size="8" fill="#8a7fa0">ELEVATOR / STAIR</text>
+        </svg>
+
+      </div>
+
+      <!-- ── B4 TAB ── -->
+      <div id="tab-content-b4" style="display:none;">
+        <div style="font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:3px; color:#ffd700; margin-bottom:16px;">// B4 — DEEP VAULT · DEPTH ~20–30m · WALLS: 1–2m REINFORCED CONCRETE · STEEL ALLOY LINING</div>
+
+        <svg viewBox="0 0 900 460" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-height:460px; background:rgba(10,8,20,0.8); border:1px solid rgba(255,215,0,0.25); border-radius:2px;">
+          <defs>
+            <pattern id="grid-b4" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+            </pattern>
+          </defs>
+          <rect width="900" height="460" fill="url(#grid-b4)"/>
+          <!-- Heavy outer walls -->
+          <rect x="30" y="30" width="840" height="400" fill="none" stroke="rgba(255,215,0,0.4)" stroke-width="3" rx="2"/>
+          <!-- Wall thickness indicator -->
+          <rect x="30" y="30" width="840" height="400" fill="none" stroke="rgba(255,215,0,0.1)" stroke-width="20" rx="2"/>
+
+          <!-- Central corridor (horizontal spine) -->
+          <rect x="30" y="190" width="840" height="80" fill="rgba(255,215,0,0.04)" stroke="rgba(255,215,0,0.25)" stroke-width="1"/>
+          <text x="250" y="234" font-family="Share Tech Mono,monospace" font-size="11" fill="#ffd700" letter-spacing="3">CENTRAL CORRIDOR — 1 ACCESS POINT EACH END</text>
+
+          <!-- Secure elevator entry (left) -->
+          <rect x="30" y="190" width="70" height="80" fill="rgba(0,212,255,0.1)" stroke="rgba(0,212,255,0.5)" stroke-width="2"/>
+          <text x="65" y="228" font-family="Share Tech Mono,monospace" font-size="8" fill="#00d4ff" text-anchor="middle">SECURE</text>
+          <text x="65" y="242" font-family="Share Tech Mono,monospace" font-size="8" fill="#00d4ff" text-anchor="middle">ELEV.</text>
+          <text x="65" y="258" font-family="Share Tech Mono,monospace" font-size="7" fill="#8a7fa0" text-anchor="middle">↑ B3</text>
+
+          <!-- Stairwell (right) -->
+          <rect x="800" y="190" width="70" height="80" fill="rgba(255,45,120,0.08)" stroke="rgba(255,45,120,0.4)" stroke-width="1.5"/>
+          <text x="835" y="228" font-family="Share Tech Mono,monospace" font-size="8" fill="#ff2d78" text-anchor="middle">STAIR</text>
+          <text x="835" y="242" font-family="Share Tech Mono,monospace" font-size="8" fill="#ff2d78" text-anchor="middle">WELL</text>
+          <text x="835" y="258" font-family="Share Tech Mono,monospace" font-size="7" fill="#8a7fa0" text-anchor="middle">↑ B3</text>
+
+          <!-- Biometric gate at elevator exit -->
+          <rect x="105" y="204" width="14" height="52" fill="rgba(255,215,0,0.3)" stroke="rgba(255,215,0,0.8)" stroke-width="1.5"/>
+          <text x="112" y="238" font-family="Share Tech Mono,monospace" font-size="7" fill="#ffd700" text-anchor="middle" transform="rotate(90,112,238)">BIOMETRIC GATE</text>
+
+          <!-- TOP VAULT CHAMBERS (above corridor) -->
+          <!-- Chamber 1 -->
+          <rect x="130" y="50" width="90" height="120" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" rx="1"/>
+          <text x="175" y="100" font-family="Share Tech Mono,monospace" font-size="9" fill="#8a7fa0" text-anchor="middle">VAULT</text>
+          <text x="175" y="115" font-family="Share Tech Mono,monospace" font-size="9" fill="#8a7fa0" text-anchor="middle">01</text>
+          <rect x="155" y="165" width="40" height="6" fill="rgba(255,215,0,0.4)" stroke="#ffd700" stroke-width="1"/>
+
+          <!-- Chamber 2 -->
+          <rect x="240" y="50" width="90" height="120" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" rx="1"/>
+          <text x="285" y="100" font-family="Share Tech Mono,monospace" font-size="9" fill="#8a7fa0" text-anchor="middle">VAULT</text>
+          <text x="285" y="115" font-family="Share Tech Mono,monospace" font-size="9" fill="#8a7fa0" text-anchor="middle">02</text>
+          <rect x="265" y="165" width="40" height="6" fill="rgba(255,215,0,0.4)" stroke="#ffd700" stroke-width="1"/>
+
+          <!-- Chamber 3 -->
+          <rect x="350" y="50" width="90" height="120" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" rx="1"/>
+          <text x="395" y="100" font-family="Share Tech Mono,monospace" font-size="9" fill="#8a7fa0" text-anchor="middle">VAULT</text>
+          <text x="395" y="115" font-family="Share Tech Mono,monospace" font-size="9" fill="#8a7fa0" text-anchor="middle">03</text>
+          <rect x="375" y="165" width="40" height="6" fill="rgba(255,215,0,0.4)" stroke="#ffd700" stroke-width="1"/>
+
+          <!-- Chamber 4 -->
+          <rect x="460" y="50" width="90" height="120" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" rx="1"/>
+          <text x="505" y="100" font-family="Share Tech Mono,monospace" font-size="9" fill="#8a7fa0" text-anchor="middle">VAULT</text>
+          <text x="505" y="115" font-family="Share Tech Mono,monospace" font-size="9" fill="#8a7fa0" text-anchor="middle">04</text>
+          <rect x="485" y="165" width="40" height="6" fill="rgba(255,215,0,0.4)" stroke="#ffd700" stroke-width="1"/>
+
+          <!-- Chamber 5 -->
+          <rect x="570" y="50" width="90" height="120" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" rx="1"/>
+          <text x="615" y="100" font-family="Share Tech Mono,monospace" font-size="9" fill="#8a7fa0" text-anchor="middle">VAULT</text>
+          <text x="615" y="115" font-family="Share Tech Mono,monospace" font-size="9" fill="#8a7fa0" text-anchor="middle">05</text>
+          <rect x="595" y="165" width="40" height="6" fill="rgba(255,215,0,0.4)" stroke="#ffd700" stroke-width="1"/>
+
+          <!-- Chamber 6 -->
+          <rect x="680" y="50" width="90" height="120" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" rx="1"/>
+          <text x="725" y="100" font-family="Share Tech Mono,monospace" font-size="9" fill="#8a7fa0" text-anchor="middle">VAULT</text>
+          <text x="725" y="115" font-family="Share Tech Mono,monospace" font-size="9" fill="#8a7fa0" text-anchor="middle">06</text>
+          <rect x="705" y="165" width="40" height="6" fill="rgba(255,215,0,0.4)" stroke="#ffd700" stroke-width="1"/>
+
+          <!-- BOTTOM VAULT CHAMBERS (below corridor) -->
+          <!-- Chamber 7 -->
+          <rect x="130" y="290" width="90" height="120" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" rx="1"/>
+          <text x="175" y="348" font-family="Share Tech Mono,monospace" font-size="9" fill="#8a7fa0" text-anchor="middle">VAULT</text>
+          <text x="175" y="363" font-family="Share Tech Mono,monospace" font-size="9" fill="#8a7fa0" text-anchor="middle">07</text>
+          <rect x="155" y="285" width="40" height="6" fill="rgba(255,215,0,0.4)" stroke="#ffd700" stroke-width="1"/>
+
+          <!-- Chamber 8 -->
+          <rect x="240" y="290" width="90" height="120" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" rx="1"/>
+          <text x="285" y="348" font-family="Share Tech Mono,monospace" font-size="9" fill="#8a7fa0" text-anchor="middle">VAULT</text>
+          <text x="285" y="363" font-family="Share Tech Mono,monospace" font-size="9" fill="#8a7fa0" text-anchor="middle">08</text>
+          <rect x="265" y="285" width="40" height="6" fill="rgba(255,215,0,0.4)" stroke="#ffd700" stroke-width="1"/>
+
+          <!-- Chamber 9 -->
+          <rect x="350" y="290" width="90" height="120" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" rx="1"/>
+          <text x="395" y="348" font-family="Share Tech Mono,monospace" font-size="9" fill="#8a7fa0" text-anchor="middle">VAULT</text>
+          <text x="395" y="363" font-family="Share Tech Mono,monospace" font-size="9" fill="#8a7fa0" text-anchor="middle">09</text>
+          <rect x="375" y="285" width="40" height="6" fill="rgba(255,215,0,0.4)" stroke="#ffd700" stroke-width="1"/>
+
+          <!-- MAIN VAULT (larger, highlighted, center-bottom) -->
+          <rect x="460" y="280" width="210" height="140" fill="rgba(255,215,0,0.07)" stroke="rgba(255,215,0,0.7)" stroke-width="2.5" rx="2"/>
+          <text x="565" y="335" font-family="Bebas Neue,cursive" font-size="20" fill="#ffd700" text-anchor="middle" letter-spacing="4" filter="url(#glow)">MAIN VAULT</text>
+          <text x="565" y="355" font-family="Share Tech Mono,monospace" font-size="8" fill="#ffd700" text-anchor="middle">20–50 TON DOOR · TIME-LOCK</text>
+          <text x="565" y="370" font-family="Share Tech Mono,monospace" font-size="8" fill="#8a7fa0" text-anchor="middle">DUAL CONTROL — 2 PERSONNEL REQ.</text>
+          <text x="565" y="395" font-family="Share Tech Mono,monospace" font-size="8" fill="#ff6b00" text-anchor="middle">UNLOCK: 3s DELAY · OPEN: 20s</text>
+          <!-- Vault door graphic -->
+          <rect x="460" y="280" width="12" height="140" fill="rgba(255,215,0,0.2)" stroke="#ffd700" stroke-width="1"/>
+
+          <!-- Chamber 10 -->
+          <rect x="690" y="290" width="80" height="120" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.15)" stroke-width="1.5" rx="1"/>
+          <text x="730" y="348" font-family="Share Tech Mono,monospace" font-size="9" fill="#8a7fa0" text-anchor="middle">VAULT</text>
+          <text x="730" y="363" font-family="Share Tech Mono,monospace" font-size="9" fill="#8a7fa0" text-anchor="middle">10</text>
+          <rect x="710" y="285" width="40" height="6" fill="rgba(255,215,0,0.4)" stroke="#ffd700" stroke-width="1"/>
+
+          <!-- Thermal + motion sensor indicators along corridor -->
+          <circle cx="200" cy="230" r="5" fill="rgba(255,107,0,0.3)" stroke="#ff6b00" stroke-width="1"/>
+          <circle cx="350" cy="230" r="5" fill="rgba(255,107,0,0.3)" stroke="#ff6b00" stroke-width="1"/>
+          <circle cx="500" cy="230" r="5" fill="rgba(255,107,0,0.3)" stroke="#ff6b00" stroke-width="1"/>
+          <circle cx="650" cy="230" r="5" fill="rgba(255,107,0,0.3)" stroke="#ff6b00" stroke-width="1"/>
+          <text x="200" y="222" font-family="Share Tech Mono,monospace" font-size="7" fill="#ff6b00" text-anchor="middle">THERM</text>
+          <text x="350" y="222" font-family="Share Tech Mono,monospace" font-size="7" fill="#ff6b00" text-anchor="middle">THERM</text>
+          <text x="500" y="222" font-family="Share Tech Mono,monospace" font-size="7" fill="#ff6b00" text-anchor="middle">THERM</text>
+          <text x="650" y="222" font-family="Share Tech Mono,monospace" font-size="7" fill="#ff6b00" text-anchor="middle">THERM</text>
+
+          <!-- Depth label -->
+          <text x="860" y="230" font-family="Share Tech Mono,monospace" font-size="9" fill="#4a4360" text-anchor="middle" transform="rotate(90,860,230)">DEPTH: ~20–30m BELOW GROUND</text>
+        </svg>
+
+      </div>
+
+      <!-- ── CASINO TAB ── -->
+      <div id="tab-content-casino" style="display:none;">
+        <div style="font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:3px; color:#00d4ff; margin-bottom:16px;">// L0 — CASINO FLOOR · 150,000 SQ FT · 620 CAMERAS · 1,800 SLOT MACHINES · 120 TABLES</div>
+
+        <svg viewBox="0 0 900 440" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-height:440px; background:rgba(10,8,20,0.8); border:1px solid rgba(0,212,255,0.2); border-radius:2px;">
+          <defs>
+            <pattern id="grid-casino" width="30" height="30" patternUnits="userSpaceOnUse">
+              <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+            </pattern>
+          </defs>
+          <rect width="900" height="440" fill="url(#grid-casino)"/>
+          <!-- Outer walls -->
+          <rect x="20" y="20" width="860" height="400" fill="none" stroke="rgba(0,212,255,0.3)" stroke-width="2" rx="3"/>
+
+          <!-- Slot zone (largest, left-center) -->
+          <rect x="40" y="40" width="420" height="280" fill="rgba(0,212,255,0.04)" stroke="rgba(0,212,255,0.2)" stroke-width="1" rx="2"/>
+          <text x="250" y="130" font-family="Share Tech Mono,monospace" font-size="13" fill="#00d4ff" text-anchor="middle" letter-spacing="2">SLOT MACHINES</text>
+          <text x="250" y="150" font-family="Share Tech Mono,monospace" font-size="10" fill="#4a4360" text-anchor="middle">~1,800 MACHINES · 90,000 SQ FT</text>
+          <!-- Slot machine clusters -->
+          <rect x="60" y="165" width="55" height="35" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.2)" stroke-width="1" rx="1"/>
+          <rect x="125" y="165" width="55" height="35" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.2)" stroke-width="1" rx="1"/>
+          <rect x="190" y="165" width="55" height="35" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.2)" stroke-width="1" rx="1"/>
+          <rect x="255" y="165" width="55" height="35" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.2)" stroke-width="1" rx="1"/>
+          <rect x="320" y="165" width="55" height="35" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.2)" stroke-width="1" rx="1"/>
+          <rect x="60" y="210" width="55" height="35" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.2)" stroke-width="1" rx="1"/>
+          <rect x="125" y="210" width="55" height="35" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.2)" stroke-width="1" rx="1"/>
+          <rect x="190" y="210" width="55" height="35" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.2)" stroke-width="1" rx="1"/>
+          <rect x="255" y="210" width="55" height="35" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.2)" stroke-width="1" rx="1"/>
+          <rect x="320" y="210" width="55" height="35" fill="rgba(0,212,255,0.08)" stroke="rgba(0,212,255,0.2)" stroke-width="1" rx="1"/>
+          <text x="250" y="270" font-family="Share Tech Mono,monospace" font-size="8" fill="#4a4360" text-anchor="middle">LOW-DENOM NEAR ENTRY · HIGH-DENOM DEEPER</text>
+
+          <!-- Table games (right-center top) -->
+          <rect x="480" y="40" width="240" height="190" fill="rgba(180,0,255,0.04)" stroke="rgba(180,0,255,0.25)" stroke-width="1" rx="2"/>
+          <text x="600" y="90" font-family="Share Tech Mono,monospace" font-size="11" fill="#b400ff" text-anchor="middle" letter-spacing="2">TABLE GAMES</text>
+          <text x="600" y="108" font-family="Share Tech Mono,monospace" font-size="9" fill="#4a4360" text-anchor="middle">~120 TABLES · 35,000 SQ FT</text>
+          <!-- Table clusters (pits) -->
+          <ellipse cx="540" cy="155" rx="30" ry="20" fill="rgba(180,0,255,0.1)" stroke="rgba(180,0,255,0.3)" stroke-width="1"/>
+          <text x="540" y="159" font-family="Share Tech Mono,monospace" font-size="7" fill="#b400ff" text-anchor="middle">PIT A</text>
+          <ellipse cx="610" cy="155" rx="30" ry="20" fill="rgba(180,0,255,0.1)" stroke="rgba(180,0,255,0.3)" stroke-width="1"/>
+          <text x="610" y="159" font-family="Share Tech Mono,monospace" font-size="7" fill="#b400ff" text-anchor="middle">PIT B</text>
+          <ellipse cx="680" cy="155" rx="30" ry="20" fill="rgba(180,0,255,0.1)" stroke="rgba(180,0,255,0.3)" stroke-width="1"/>
+          <text x="680" y="159" font-family="Share Tech Mono,monospace" font-size="7" fill="#b400ff" text-anchor="middle">PIT C</text>
+          <text x="600" y="210" font-family="Share Tech Mono,monospace" font-size="8" fill="#4a4360" text-anchor="middle">PIT BOSS MONITORED</text>
+
+          <!-- High-limit (top-far-right) -->
+          <rect x="740" y="40" width="130" height="190" fill="rgba(255,215,0,0.06)" stroke="rgba(255,215,0,0.35)" stroke-width="1.5" rx="2"/>
+          <text x="805" y="110" font-family="Share Tech Mono,monospace" font-size="9" fill="#ffd700" text-anchor="middle">HIGH</text>
+          <text x="805" y="125" font-family="Share Tech Mono,monospace" font-size="9" fill="#ffd700" text-anchor="middle">LIMIT</text>
+          <text x="805" y="142" font-family="Share Tech Mono,monospace" font-size="8" fill="#4a4360" text-anchor="middle">10,000 SQ FT</text>
+          <text x="805" y="158" font-family="Share Tech Mono,monospace" font-size="8" fill="#4a4360" text-anchor="middle">CONTROLLED</text>
+          <text x="805" y="172" font-family="Share Tech Mono,monospace" font-size="8" fill="#4a4360" text-anchor="middle">ACCESS</text>
+
+          <!-- Cage / Cashier (center-right) -->
+          <rect x="480" y="250" width="180" height="90" fill="rgba(255,107,0,0.06)" stroke="rgba(255,107,0,0.4)" stroke-width="1.5" rx="2"/>
+          <text x="570" y="285" font-family="Share Tech Mono,monospace" font-size="10" fill="#ff6b00" text-anchor="middle" letter-spacing="2">CASHIER CAGE</text>
+          <text x="570" y="302" font-family="Share Tech Mono,monospace" font-size="8" fill="#4a4360" text-anchor="middle">20–30 WINDOWS</text>
+          <text x="570" y="318" font-family="Share Tech Mono,monospace" font-size="8" fill="#ff6b00" text-anchor="middle">⚠ SECURE ACCESS TO B3</text>
+
+          <!-- Bar areas -->
+          <rect x="680" y="250" width="80" height="60" fill="rgba(0,255,159,0.04)" stroke="rgba(0,255,159,0.2)" stroke-width="1" rx="2"/>
+          <text x="720" y="276" font-family="Share Tech Mono,monospace" font-size="8" fill="#00ff9f" text-anchor="middle">BAR</text>
+
+          <!-- Restrooms (perimeter) -->
+          <rect x="40" y="340" width="70" height="50" fill="rgba(255,255,255,0.02)" stroke="rgba(255,255,255,0.08)" stroke-width="1" rx="1"/>
+          <text x="75" y="368" font-family="Share Tech Mono,monospace" font-size="8" fill="#4a4360" text-anchor="middle">WC</text>
+
+          <!-- Exits -->
+          <rect x="390" y="20" width="60" height="20" fill="rgba(255,45,120,0.15)" stroke="rgba(255,45,120,0.5)" stroke-width="1"/>
+          <text x="420" y="34" font-family="Share Tech Mono,monospace" font-size="8" fill="#ff2d78" text-anchor="middle">MAIN EXIT</text>
+
+          <rect x="20" y="180" width="20" height="60" fill="rgba(255,45,120,0.1)" stroke="rgba(255,45,120,0.3)" stroke-width="1"/>
+          <text x="30" y="213" font-family="Share Tech Mono,monospace" font-size="7" fill="#ff2d78" text-anchor="middle" transform="rotate(90,30,213)">SIDE EXIT</text>
+
+          <rect x="860" y="200" width="20" height="60" fill="rgba(255,45,120,0.1)" stroke="rgba(255,45,120,0.3)" stroke-width="1"/>
+          <text x="870" y="233" font-family="Share Tech Mono,monospace" font-size="7" fill="#ff2d78" text-anchor="middle" transform="rotate(90,870,233)">PARKING →</text>
+
+          <!-- Elevator access to B3 -->
+          <rect x="780" y="340" width="80" height="70" fill="rgba(180,0,255,0.08)" stroke="rgba(180,0,255,0.4)" stroke-width="1.5" rx="2"/>
+          <text x="820" y="368" font-family="Share Tech Mono,monospace" font-size="8" fill="#b400ff" text-anchor="middle">STAFF</text>
+          <text x="820" y="382" font-family="Share Tech Mono,monospace" font-size="8" fill="#b400ff" text-anchor="middle">ELEV.</text>
+          <text x="820" y="398" font-family="Share Tech Mono,monospace" font-size="7" fill="#4a4360" text-anchor="middle">→ B3</text>
+
+          <!-- Guard patrol path indicator -->
+          <path d="M 100 350 Q 250 390 420 360 Q 500 345 580 360 Q 680 380 780 350" fill="none" stroke="rgba(255,107,0,0.25)" stroke-width="1.5" stroke-dasharray="6,4"/>
+          <text x="400" y="420" font-family="Share Tech Mono,monospace" font-size="8" fill="#ff6b00" text-anchor="middle">⚠ GUARD PATROL LOOP — 12 MIN CYCLE</text>
+
+          <!-- ATM clusters -->
+          <circle cx="380" cy="355" r="8" fill="rgba(255,215,0,0.1)" stroke="rgba(255,215,0,0.3)" stroke-width="1"/>
+          <text x="380" y="359" font-family="Share Tech Mono,monospace" font-size="6" fill="#ffd700" text-anchor="middle">ATM</text>
+          <circle cx="130" cy="340" r="8" fill="rgba(255,215,0,0.1)" stroke="rgba(255,215,0,0.3)" stroke-width="1"/>
+          <text x="130" y="344" font-family="Share Tech Mono,monospace" font-size="6" fill="#ffd700" text-anchor="middle">ATM</text>
+        </svg>
+
+      </div>
+
+    </div><!-- /tab content -->
+  </div><!-- /modal inner -->
+</div><!-- /map-modal -->
+
+<script>
+function showTab(name) {
+  ['overview','b3','b4','casino'].forEach(t => {
+    document.getElementById('tab-content-' + t).style.display = (t === name) ? 'block' : 'none';
+    const btn = document.getElementById('tab-' + t);
+    if (t === name) {
+      btn.style.borderBottom = '2px solid #00d4ff';
+      btn.style.background   = 'rgba(0,212,255,0.08)';
+      btn.style.color        = '#00d4ff';
+    } else {
+      btn.style.borderBottom = '2px solid transparent';
+      btn.style.background   = 'transparent';
+      btn.style.color        = '#4a4360';
+    }
+  });
+}
+</script>
+
 
 <script>
 /* ════════════════════════════════════════════════════════════
@@ -599,13 +1044,7 @@ function receiveFromPython(payload) {
       if (payload.text) addPlanStep(payload.text);
       break;
 
-    case "crew_update": {
-      const member = CREW_ROSTER.find(c => c.id === payload.crewId);
-      if (member) { member.active = !!payload.active; renderCrew(); }
-      break;
-    }
-
-    default:
+default:
       console.info("[Bridge] unknown payload type:", payload.type);
   }
 }
@@ -636,13 +1075,7 @@ function updateConnStatus(online) {
 ════════════════════════════════════════════════════════════ */
 const PHASES = ["PLANNING", "SETUP", "EXECUTION", "ESCAPE"];
 
-const CREW_ROSTER = [
-  { id:1, name:"CIPHER",  role:"MASTER HACKER",  icon:"fas fa-laptop-code", color:"rgba(0,212,255,0.22)",   active:true  },
-  { id:2, name:"SHADE",   role:"INSIDE MAN",     icon:"fas fa-user-secret", color:"rgba(180,0,255,0.22)",  active:true  },
-  { id:3, name:"VEGA",    role:"WHEELMAN",       icon:"fas fa-car-burst",   color:"rgba(255,45,120,0.22)", active:true  },
-  { id:4, name:"GHOST",   role:"SAFECRACKER",    icon:"fas fa-lock-open",   color:"rgba(0,255,159,0.18)",  active:false },
-  { id:5, name:"DUCHESS", role:"DECOY",          icon:"fas fa-mask",        color:"rgba(255,215,0,0.18)",  active:false },
-];
+
 
 const ALL_TOOLS = [
   "VAULT SCHEMATICS","FREQUENCY JAMMER","EMP DEVICE",
@@ -729,39 +1162,9 @@ function renderHeat() {
 }
 
 
-/* ════════════════════════════════════════════════════════════
-   6.  CREW
-════════════════════════════════════════════════════════════ */
-function renderCrew() {
-  const list = document.getElementById("crew-list");
-  list.innerHTML = "";
-  CREW_ROSTER.forEach(m => {
-    const div = document.createElement("div");
-    div.className = "crew-member" + (m.active ? " active" : "");
-    div.title     = m.active ? "Click to stand down" : "Click to activate";
-    div.innerHTML = `
-      <div class="crew-avatar" style="background:${m.color}">
-        <i class="${m.icon}" style="font-size:13px;color:${m.active ? "var(--neon-blue)" : "var(--text-dim)"}"></i>
-      </div>
-      <div class="crew-info">
-        <div class="crew-name">${m.name}</div>
-        <div class="crew-role">${m.role}</div>
-      </div>
-      <div class="crew-dot ${m.active ? "" : "offline"}"></div>
-    `;
-    div.addEventListener("click", () => {
-      m.active = !m.active;
-      renderCrew();
-      /* Notify Python of crew toggle */
-      sendToPython({ action: "toggle_crew", crewId: m.id, active: m.active, name: m.name });
-    });
-    list.appendChild(div);
-  });
-}
-
 
 /* ════════════════════════════════════════════════════════════
-   7.  TOOLS
+   6.  TOOLS
 ════════════════════════════════════════════════════════════ */
 function renderTools() {
   const list = document.getElementById("tools-list");
@@ -987,66 +1390,11 @@ sendBtn.addEventListener("click", () => {
   }
 });
 
-/* ════════════════════════════════════════════════════════════
-   14. FRONT-END ILLUSIONS (HUD EFFECTS)
-════════════════════════════════════════════════════════════ */
 
-function triggerScout() {
-  const overlay = document.createElement("div");
-  overlay.style.cssText = "position:fixed; inset:0; z-index:9999; background:repeating-linear-gradient(0deg, rgba(0,0,0,0.8), rgba(0,0,0,0.8) 2px, transparent 2px, transparent 4px), url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E'); opacity:0.1; mix-blend-mode: overlay; pointer-events:none;";
-  
-  const text = document.createElement("div");
-  text.style.cssText = "position:fixed; top:20px; right:20px; z-index:10000; color:var(--neon-green); font-family:'Share Tech Mono'; font-size:18px; letter-spacing:2px; animation: blink 1s infinite;";
-  text.innerHTML = "<i class='fas fa-video'></i> CAM-04 OVERRIDE ACTIVE";
-  
-  document.body.appendChild(overlay);
-  document.body.appendChild(text);
-  
-  setTimeout(() => { overlay.remove(); text.remove(); }, 3000);
-}
-
-function triggerHack() {
-  const overlay = document.createElement("div");
-  overlay.style.cssText = "position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.9); display:flex; flex-direction:column; padding:40px; pointer-events:none;";
-  document.body.appendChild(overlay);
-  
-  let lines = 0;
-  const interval = setInterval(() => {
-    const line = document.createElement("div");
-    line.style.cssText = "color:var(--neon-green); font-family:'Share Tech Mono'; font-size:14px; margin-bottom:4px; opacity:0.8;";
-    line.innerText = `> BYPASSING MAINFRAME... [${Math.random().toString(36).substring(2, 10).toUpperCase()}] DECRYPTING B3 BIOMETRICS...`;
-    overlay.appendChild(line);
-    lines++;
-    if(lines > 15) {
-      clearInterval(interval);
-      line.innerText = "> ACCESS GRANTED. CONNECTION CLOSED.";
-      setTimeout(() => overlay.remove(), 1000);
-    }
-  }, 100);
-}
-
-function triggerEscape() {
-  const overlay = document.createElement("div");
-  overlay.style.cssText = "position:fixed; inset:0; z-index:9999; border: 15px solid var(--neon-pink); background:rgba(255,45,120,0.1); pointer-events:none; display:flex; align-items:center; justify-content:center; animation: flash 0.5s infinite alternate;";
-  
-  const text = document.createElement("div");
-  text.style.cssText = "color:var(--neon-pink); font-family:'Bebas Neue'; font-size:80px; letter-spacing:10px; text-shadow: 0 0 20px var(--neon-pink);";
-  text.innerText = "ABORT PROTOCOL INITIATED";
-  
-  overlay.appendChild(text);
-  document.body.appendChild(overlay);
-  
-  const style = document.createElement('style');
-  style.innerHTML = `@keyframes flash { from { opacity: 0.5; } to { opacity: 1; } } @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }`;
-  document.head.appendChild(style);
-
-  setTimeout(() => { overlay.remove(); style.remove(); }, 2500);
-}
 /* ════════════════════════════════════════════════════════════
    13. INIT
 ════════════════════════════════════════════════════════════ */
 renderHeat();
-renderCrew();
 renderTools();
 
 /* Let Python know the UI is ready */
