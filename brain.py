@@ -8,9 +8,6 @@ from langchain_chroma import Chroma
 load_dotenv()
 api_key = os.getenv("GOOGLE_API_KEY")
 
-# ─────────────────────────────────────────────────────────
-#  WORLD MAP  — every zone the player can move through
-# ─────────────────────────────────────────────────────────
 ZONES = {
     "LOBBY": {
         "label": "L1 — Hotel Lobby",
@@ -134,7 +131,6 @@ ZONES = {
     }
 }
 
-# Items the player can acquire and what they unlock
 ITEM_DEFINITIONS = {
     "B3_KEYCARD":        {"label": "B3 Keycard",           "desc": "Grants access to all B3 zones and the secure elevator"},
     "VAULT_PIN":         {"label": "Vault PIN Code",        "desc": "4-digit code for the B4 vault keypad (found in Security Command)"},
@@ -146,7 +142,6 @@ ITEM_DEFINITIONS = {
     "LASER_SPECS":       {"label": "Laser Grid Specs",      "desc": "Emitter positions, recalibration gaps, edge vulnerabilities"},
 }
 
-# Phrases that trigger item discovery (simple keyword matching)
 ITEM_TRIGGERS = {
     "B3_KEYCARD":         ["keycard", "key card", "swipe card", "access card", "badge"],
     "VAULT_PIN":          ["vault pin", "pin code", "combination", "sticky note", "under desk", "4 digit"],
@@ -167,35 +162,31 @@ class HeistBrain:
             task_type="retrieval_document"
         )
         self.llm = ChatGoogleGenerativeAI(
-            model="models/gemini-flash-latest",
+            model="gemini-flash-latest", 
             temperature=0.75,
+            max_retries=3, # Automatically handles exponential backoff
             google_api_key=api_key
         )
         self.db_path = "./chroma_db"
         self.vectorstore = None
-
-        # ── Game State ──────────────────────────────────
         self.current_zone = "LOBBY"
-        self.inventory = []        # list of item keys
-        self.intel_log = []        # list of {label, desc} dicts
+        self.inventory = []
+        self.intel_log = []
         self.heat = 0
         self.move_count = 0
         self.game_over = False
         self.victory = False
 
     def index_documents(self):
-        print("🧠 Indexing casino data...")
         loader = DirectoryLoader("./data", glob="./*.txt", loader_cls=TextLoader)
         docs = loader.load()
-        splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
+        splitter = RecursiveCharacterTextSplitter(chunk_size=250, chunk_overlap=50)
         final_docs = splitter.split_documents(docs)
-        print(f"📄 {len(docs)} files → {len(final_docs)} chunks.")
         self.vectorstore = Chroma.from_documents(
             documents=final_docs,
             embedding=self.embeddings,
             persist_directory=self.db_path
         )
-        print("✅ Brain indexed.")
 
     def _load_vectorstore(self):
         if not self.vectorstore:
@@ -209,7 +200,6 @@ class HeistBrain:
         return z
 
     def _check_item_triggers(self, user_move: str) -> list[str]:
-        """Return list of item keys triggered by this move (keyword match)."""
         move_lower = user_move.lower()
         triggered = []
         for item_key, keywords in ITEM_TRIGGERS.items():
@@ -221,7 +211,6 @@ class HeistBrain:
         return triggered
 
     def _try_move(self, user_move: str) -> str | None:
-        """If user is trying to move, return the target zone key or None."""
         move_lower = user_move.lower()
         zone_hints = {
             "lobby":               "LOBBY",
@@ -247,7 +236,6 @@ class HeistBrain:
             "b4":                  "B4_VAULT_ANTECHAMBER",
             "b3":                  "B3_CORRIDOR",
         }
-        # Only match if user says move/go/enter/head/proceed
         movement_verbs = ["move to", "go to", "enter", "head to", "proceed to", "sneak into",
                           "climb into", "crawl into", "take the elevator", "walk to", "run to", "get to"]
         is_movement = any(v in move_lower for v in movement_verbs)
@@ -259,7 +247,6 @@ class HeistBrain:
         return None
 
     def _can_enter(self, zone_key: str) -> tuple[bool, str]:
-        """Check if player has required items to enter zone."""
         zone = ZONES.get(zone_key, {})
         required = zone.get("required_items", [])
         missing = [r for r in required if r not in self.inventory]
@@ -269,18 +256,6 @@ class HeistBrain:
         return True, ""
 
     def play_move(self, user_move: str) -> dict:
-        """
-        Returns a structured dict with:
-          - story: str
-          - heat_delta: int
-          - zone: str
-          - zone_data: dict
-          - new_items: list of item dicts
-          - event: dict|None
-          - game_over: bool
-          - victory: bool
-          - tags: dict (raw parsed tags for debugging)
-        """
         if self.game_over:
             return self._dead_response()
         if self.victory:
@@ -291,14 +266,12 @@ class HeistBrain:
 
         zone = self._zone_data()
 
-        # ── 1. Check for movement intent ───────────────
         target_zone = self._try_move(user_move)
         blocked_msg = ""
         zone_changed = False
 
         if target_zone:
             if target_zone not in zone.get("exits", []) and target_zone != self.current_zone:
-                # Not connected — GM blocks it with narrative
                 blocked_msg = f"[NOT_CONNECTED: {target_zone} is not reachable from {self.current_zone}]"
             else:
                 can_enter, reason = self._can_enter(target_zone)
@@ -309,7 +282,6 @@ class HeistBrain:
                 else:
                     blocked_msg = f"[ACCESS_DENIED: {reason}]"
 
-        # ── 2. Check item triggers ──────────────────────
         new_item_keys = self._check_item_triggers(user_move)
         new_items = []
         for key in new_item_keys:
@@ -319,11 +291,12 @@ class HeistBrain:
             self.intel_log.append(entry)
             new_items.append(entry)
 
-        # ── 3. Fetch relevant context ───────────────────
-        relevant_docs = self.vectorstore.similarity_search(user_move, k=3)
-        context = "\n---\n".join([d.page_content for d in relevant_docs])
+        try:
+            relevant_docs = self.vectorstore.similarity_search(user_move, k=2)
+            context = "\n---\n".join([d.page_content for d in relevant_docs])
+        except Exception:
+            context = "No additional classified security data retrieved."
 
-        # ── 4. Build GM prompt ──────────────────────────
         zone_summary = (
             f"CURRENT ZONE: {zone.get('label', self.current_zone)}\n"
             f"EXITS: {', '.join(zone.get('exits', []))}\n"
@@ -355,9 +328,9 @@ Your job is to judge player actions FAIRLY using the SECURITY FACTS and ZONE DAT
 {user_move}
 
 ═══ GM RULES ═══
-1. Write EXACTLY 3 sentences of gritty, tense, immersive noir narrative.
+1. Write EXACTLY 1 to 2 short sentences. Be incredibly concise, fast-paced, and punchy. Do not waste words.
 2. Judge the move REALISTICALLY based on the security facts. Smart moves succeed. Stupid moves fail.
-3. If GM BLOCK is set, narrate the failure naturally — don't reveal system internals.
+3. If GM BLOCK is set, narrate the failure naturally.
 4. If player acquired new items, weave their discovery into the story.
 5. After the narrative, output EXACTLY these tags on separate lines:
    HEAT: [integer 0-30 — 0 for brilliant stealth, 30 for reckless exposure]
@@ -375,7 +348,6 @@ STATUS: CLEAR
 
         response = self.llm.invoke(prompt)
 
-        # ── 5. Parse response ───────────────────────────
         raw = ""
         if isinstance(response.content, list):
             item = response.content[0] if response.content else {}
@@ -383,12 +355,11 @@ STATUS: CLEAR
         else:
             raw = str(response.content)
 
-        # Extract tags
         lines = raw.strip().split("\n")
         tags = {}
         story_lines = []
         for line in lines:
-            stripped = line.strip()
+            stripped = line.strip().replace("*", "")
             if stripped.startswith("HEAT:"):
                 try:
                     tags["heat"] = int(stripped.split(":", 1)[1].strip().split()[0])
@@ -406,11 +377,9 @@ STATUS: CLEAR
         status = tags.get("status", "CLEAR")
         gm_location = tags.get("location", self.current_zone)
 
-        # Trust GM location only if it's a valid zone key
         if gm_location in ZONES and not zone_changed:
             self.current_zone = gm_location
 
-        # ── 6. Apply status effects ─────────────────────
         event = None
         if status == "CAPTURED":
             self.game_over = True
@@ -469,16 +438,8 @@ STATUS: CLEAR
             "tags": {},
         }
 
-
 if __name__ == "__main__":
     brain = HeistBrain()
-    # brain.index_documents()   # uncomment only when adding new data files
-
-    move = "I scout the lobby, looking for any cameras or staff I should avoid."
-    print(f"\n🎮 PLAYER: {move}\n")
-    result = brain.play_move(move)
-    print("📖 STORY:", result["story"])
-    print("🌡 HEAT DELTA:", result["heat_delta"])
-    print("📍 ZONE:", result["zone"])
-    print("📦 NEW ITEMS:", result["new_items"])
-    print("🚨 EVENT:", result["event"])
+    print("Building vector database from ./data...")
+    brain.index_documents()
+    print("Database built! You can now run the Streamlit app.")

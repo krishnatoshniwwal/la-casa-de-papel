@@ -449,12 +449,13 @@
 
       <div id="input-area">
         <div id="quick-actions">
+          <!--
           <button class="quick-btn" onclick="sendQuick(this)">SCOUT ROOM</button>
           <button class="quick-btn" onclick="sendQuick(this)">SEARCH FOR ITEMS</button>
           <button class="quick-btn" onclick="sendQuick(this)">CHECK GUARD TIMING</button>
           <button class="quick-btn" onclick="sendQuick(this)">HACK TERMINAL</button>
           <button class="quick-btn" onclick="sendQuick(this)">MOVE TO CASINO</button>
-          <button class="quick-btn" onclick="sendQuick(this)">MOVE TO KITCHEN L2</button>
+          <button class="quick-btn" onclick="sendQuick(this)">MOVE TO KITCHEN L2</button> -->
         </div>
         <div id="input-row">
           <textarea id="chat-input" rows="1" placeholder="Give your orders, Mastermind…"></textarea>
@@ -996,7 +997,7 @@ function sendToPython(value) {
   updateConnStatus(true);
 }
 
-function receiveFromPython(payload) {
+function receiveFromPython(payload){
   if (!payload || !payload.type) return;
   updateConnStatus(true);
 
@@ -1010,6 +1011,7 @@ function receiveFromPython(payload) {
 
     case "zone_update":
       updateZoneScanner(payload.data || {});
+      updateQuickActions(payload.data || {});
       break;
 
     case "visited_zones":
@@ -1142,6 +1144,29 @@ function updateZoneScanner(data) {
   setTimeout(() => { sec.style.background = ""; }, 700);
 }
 
+function updateQuickActions(data) {
+  const container = document.getElementById("quick-actions");
+  if (!container) return;
+  container.innerHTML = ""; // Clear old buttons
+
+  // Always give them a generic scout button
+  const scoutBtn = document.createElement("button");
+  scoutBtn.className = "quick-btn";
+  scoutBtn.textContent = "SCOUT AREA";
+  scoutBtn.onclick = function() { sendQuick(this); };
+  container.appendChild(scoutBtn);
+
+  // Dynamically create buttons for valid exits
+  if (data.exits && data.exits.length > 0) {
+    data.exits.forEach(exitKey => {
+      const btn = document.createElement("button");
+      btn.className = "quick-btn";
+      btn.textContent = "ENTER " + exitKey;
+      btn.onclick = function() { sendQuick(this); };
+      container.appendChild(btn);
+    });
+  }
+}
 
 /* ═══════════════════════════════════════════════
    FOG-OF-WAR MAP TABS

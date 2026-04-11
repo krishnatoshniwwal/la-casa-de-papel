@@ -1,20 +1,7 @@
 import streamlit as st
-import streamlit.components.v1 as components
-import json
-import urllib.parse
 from brain import HeistBrain, ZONES
 
 st.set_page_config(page_title="Vegas Black Vault", layout="wide")
-
-st.markdown("""
-<style>
-  .block-container { padding:0!important; max-width:100%!important; }
-  header, footer, [data-testid="stStatusWidget"] { visibility:hidden!important; }
-  .element-container, .stIFrame, iframe { opacity:1!important; transition:none!important; }
-  [data-testid="stVerticalBlock"] { opacity:1!important; }
-</style>
-""", unsafe_allow_html=True)
-
 
 @st.cache_resource
 def get_brain() -> HeistBrain:
@@ -29,173 +16,107 @@ def get_brain() -> HeistBrain:
         pass
     return brain
 
-
-@st.cache_data
-def get_ui_code() -> str:
-    try:
-        with open("interface.html", "r", encoding="utf-8") as f:
-            return f.read()
-    except FileNotFoundError:
-        return ""
-
-
-defaults = {
-    "heat_level":       0,
-    "chat_history":     [],
-    "inventory":        [],
-    "zone":             "LOBBY",
-    "zone_data":        ZONES["LOBBY"],
-    "visited_zones":    ["LOBBY"],
-    "game_over":        False,
-    "victory":          False,
-    "mission_accepted": False,
-}
-for k, v in defaults.items():
-    if k not in st.session_state:
-        st.session_state[k] = v
-
 brain = get_brain()
+
+# --- STATE INIT ---
+if "heat_level" not in st.session_state:
+    st.session_state.heat_level = 0
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = [{"role": "assistant", "content": "You are in the Hotel Lobby. Give your orders, Mastermind."}]
+if "inventory" not in st.session_state:
+    st.session_state.inventory = []
+if "zone" not in st.session_state:
+    st.session_state.zone = "LOBBY"
+if "game_over" not in st.session_state:
+    st.session_state.game_over = False
+if "victory" not in st.session_state:
+    st.session_state.victory = False
+
+# Sync backend brain with Streamlit state
 brain.current_zone = st.session_state.zone
-brain.inventory    = [item["key"] for item in st.session_state.inventory]
-brain.heat         = st.session_state.heat_level
-brain.game_over    = st.session_state.game_over
-brain.victory      = st.session_state.victory
+brain.inventory = [item["key"] for item in st.session_state.inventory]
+brain.heat = st.session_state.heat_level
+brain.game_over = st.session_state.game_over
+brain.victory = st.session_state.victory
 
-# ── Component Listener ───────────────────────────────────────────────────────
-# The iframe's sendToPython() navigates the parent window to ?msg=<encoded text>,
-# which Streamlit picks up via st.query_params on the next run.
-# We decode it, process the move, clear the param, and the re-render fires
-# the injected JS block that updates the iframe UI.
-raw_msg = st.query_params.get("msg", "")
-if raw_msg:
-    # URL-decode in case the iframe percent-encoded the text
-    try:
-        user_move = urllib.parse.unquote(raw_msg)
-    except Exception:
-        user_move = raw_msg
+# --- SIDEBAR HUD ---
+with st.sidebar:
+    st.title("📟 HEIST HUD")
+    
+    st.subheader("🔥 HEAT LEVEL")
+    st.progress(min(st.session_state.heat_level / 100.0, 1.0))
+    st.write(f"**Heat:** {st.session_state.heat_level}%")
+    
+    st.divider()
+    
+    st.subheader("📍 CURRENT ZONE")
+    zone_data = ZONES.get(st.session_state.zone, {})
+    st.write(f"**{zone_data.get('label', st.session_state.zone)}**")
+    st.caption(zone_data.get("flavor", ""))
+    
+    with st.expander("Zone Scanner", expanded=True):
+        st.write("**Exits:**", " · ".join(zone_data.get("exits", [])) or "None")
+        st.write("**Objects:**", " · ".join(zone_data.get("objects", [])) or "None")
+        st.write("**Threats:**", " · ".join(zone_data.get("threats", [])) or "None")
+        
+    st.divider()
+        
+    st.subheader("🎒 INTEL & INVENTORY")
+    if st.session_state.inventory:
+        for item in st.session_state.inventory:
+            st.write(f"• **{item['label']}**")
+    else:
+        st.write("Empty")
 
-    # Clear the query param immediately so a page refresh doesn't re-fire
-    st.query_params.clear()
+# --- MAIN CHAT AREA ---
+st.title("Vegas Black Vault")
 
-    if user_move and not st.session_state.game_over and not st.session_state.victory:
-        st.session_state.chat_history.append({
-            "role": "user", "content": user_move, "heat_delta": 0
-        })
-        result = brain.play_move(user_move)
+if st.session_state.game_over:
+    st.error("🚨 GAME OVER. Operative captured. Refresh to restart.")
+elif st.session_state.victory:
+    st.success("💎 VICTORY. The Velvet Ace is yours.")
 
-        st.session_state.heat_level  = result["total_heat"]
-        st.session_state.zone        = result["zone"]
-        st.session_state.zone_data   = result["zone_data"]
-        st.session_state.game_over   = result["game_over"]
-        st.session_state.victory     = result["victory"]
+# Render previous messages
+for msg in st.session_state.chat_history:
+    with st.chat_message(msg["role"]):
+        st.write(msg["content"])
+        if msg.get("heat_delta", 0) > 0:
+            st.caption(f"🔥 Heat +{msg['heat_delta']}")
 
-        if result["zone"] not in st.session_state.visited_zones:
-            st.session_state.visited_zones.append(result["zone"])
+# Input Field
+user_move = st.chat_input("What is your next move?")
 
-        existing_keys = {i["key"] for i in st.session_state.inventory}
-        for item in result["new_items"]:
-            if item["key"] not in existing_keys:
-                st.session_state.inventory.append(item)
-
-        st.session_state.chat_history.append({
-            "role":       "assistant",
-            "content":    result["story"],
-            "heat_delta": result["heat_delta"],
-            "event":      result.get("event"),
-            "new_items":  result["new_items"],
-            "zone":       result["zone"],
-            "zone_data":  result["zone_data"],
-        })
-
-
-def build_js() -> str:
-    """Build the JS injection block that syncs Python state into the iframe UI."""
-    lines = []
-
-    # Mission accepted flag
-    accepted = "true" if st.session_state.mission_accepted else "false"
-    lines.append(f"window._missionAccepted = {accepted};")
-    lines.append("if(window._missionAccepted && typeof showGame==='function') showGame();")
-
-    # Heat
-    lines.append(
-        f"window.receiveFromPython({{type:'heat_set', value:{st.session_state.heat_level}}});"
-    )
-
-    # Zone (always send real zone data, even on first load)
-    zone_data = st.session_state.zone_data or ZONES.get(st.session_state.zone, {})
-    zone_js = json.dumps({
-        "zone":    st.session_state.zone,
-        "label":   zone_data.get("label", st.session_state.zone),
-        "exits":   zone_data.get("exits", []),
-        "objects": zone_data.get("objects", []),
-        "threats": zone_data.get("threats", []),
-        "flavor":  zone_data.get("flavor", ""),
+if user_move and not st.session_state.game_over and not st.session_state.victory:
+    # 1. Show user message
+    st.session_state.chat_history.append({"role": "user", "content": user_move})
+    with st.chat_message("user"):
+        st.write(user_move)
+        
+    # 2. Get AI GM response
+    with st.chat_message("assistant"):
+        with st.spinner("Oracle is processing..."):
+            result = brain.play_move(user_move)
+            st.write(result["story"])
+            if result.get("heat_delta", 0) > 0:
+                st.caption(f"🔥 Heat +{result['heat_delta']}")
+    
+    # 3. Save to state
+    st.session_state.chat_history.append({
+        "role": "assistant", 
+        "content": result["story"],
+        "heat_delta": result["heat_delta"]
     })
-    lines.append(f"window.receiveFromPython({{type:'zone_update', data:{zone_js}}});")
-
-    # Visited zones for fog-of-war
-    visited_js = json.dumps(st.session_state.visited_zones)
-    lines.append(
-        f"window.receiveFromPython({{type:'visited_zones', zones:{visited_js}}});"
-    )
-
-    # Inventory
-    inv_js = json.dumps(st.session_state.inventory)
-    lines.append(
-        f"window.receiveFromPython({{type:'inventory_set', items:{inv_js}}});"
-    )
-
-    # Game over / victory
-    if st.session_state.game_over:
-        lines.append("window.receiveFromPython({type:'game_over'});")
-    if st.session_state.victory:
-        lines.append("window.receiveFromPython({type:'victory'});")
-
-    # Replay full chat history (stateless re-render on each Streamlit run)
-    if st.session_state.chat_history:
-        lines.append("if(typeof hideWelcome==='function') hideWelcome();")
-
-    for msg in st.session_state.chat_history:
-        content    = json.dumps(msg["content"])
-        role       = msg["role"]
-        heat_delta = msg.get("heat_delta", 0)
-        lines.append(
-            f"window.appendMessage('{role}', {content}, {heat_delta});"
-        )
-        ev = msg.get("event")
-        if ev:
-            lines.append(
-                f"window.receiveFromPython({{type:'event',"
-                f" event:'{ev.get('type','warning')}',"
-                f" msg:{json.dumps(ev.get('msg',''))},"
-                f" heatDelta:{ev.get('heatDelta',0)}}});"
-            )
-        for item in msg.get("new_items", []):
-            lines.append(
-                f"window.receiveFromPython({{type:'intel_unlock', item:{json.dumps(item)}}});"
-            )
-
-    # Re-enable input after AI reply so user can type the next move
-    if (st.session_state.chat_history
-            and st.session_state.chat_history[-1]["role"] == "assistant"):
-        lines.append("if(typeof setInputLock==='function') setInputLock(false);")
-
-    # Scroll to the latest message
-    lines.append(
-        "const anchor=document.getElementById('msg-anchor');"
-        " if(anchor) anchor.scrollIntoView();"
-    )
-    return "\n".join(lines)
-
-
-# ── Render ───────────────────────────────────────────────────────────────────
-ui_code = get_ui_code()
-if not ui_code:
-    st.error(
-        "interface.html not found — make sure it lives in the same directory as app.py."
-    )
-    st.stop()
-
-injection = f"<script>setTimeout(()=>{{ {build_js()} }}, 80);</script>"
-components.html(ui_code + injection, height=780, scrolling=False)
+    st.session_state.heat_level = result["total_heat"]
+    st.session_state.zone = result["zone"]
+    st.session_state.game_over = result["game_over"]
+    st.session_state.victory = result["victory"]
+    
+    # 4. Handle new inventory items
+    existing_keys = {i["key"] for i in st.session_state.inventory}
+    for item in result["new_items"]:
+        if item["key"] not in existing_keys:
+            st.session_state.inventory.append(item)
+            st.toast(f"Acquired: {item['label']}!", icon="📦")
+            
+    # Force a rerun to update the sidebar HUD
+    st.rerun()
