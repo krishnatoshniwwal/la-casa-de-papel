@@ -3,12 +3,10 @@ import streamlit.components.v1 as components
 import json
 from brain import HeistBrain
 
-
 st.set_page_config(page_title="Vegas Heist", layout="wide")
-# --- HIDE STREAMLIT MARGINS ---
+
 st.markdown("""
     <style>
-        /* 1. Remove padding from the main block */
         .block-container {
             padding-top: 0rem !important;
             padding-bottom: 0rem !important;
@@ -16,67 +14,91 @@ st.markdown("""
             padding-right: 0rem !important;
             max-width: 100% !important;
         }
-        /* 2. Hide the white Streamlit header at the very top */
         header {
             visibility: hidden;
         }
+        .element-container, .stIFrame, iframe {
+            opacity: 1 !important;
+            transition: none !important;
+        }
+        [data-testid="stVerticalBlock"] {
+            opacity: 1 !important;
+        }
+        [data-testid="stStatusWidget"] {
+            visibility: hidden !important;
+        }
     </style>
 """, unsafe_allow_html=True)
+
 st.markdown("""
     <style>
-        /* Target the Streamlit Chat Input Box */
         .stChatInputContainer > div {
-            background-color: #09090b !important; /* Dark background */
-            border: 1px solid #a855f7 !important; /* Purple neon border */
+            background-color: #09090b !important;
+            border: 1px solid #a855f7 !important;
             border-radius: 8px !important;
         }
-        
-        /* Change the text color when you type */
         .stChatInputContainer textarea {
-            color: #22c55e !important; /* Hacker green text */
+            color: #22c55e !important;
         }
-        
-        /* Style the send arrow */
         .stChatInputContainer button {
             color: #a855f7 !important; 
         }
     </style>
 """, unsafe_allow_html=True)
 
-# --- 1. INITIALIZE GAME MEMORY ---
 if "brain" not in st.session_state:
     st.session_state.brain = HeistBrain()
-    # Note: If database doesn't exist, you'd run st.session_state.brain.index_documents()
+
 if "heat_level" not in st.session_state:
     st.session_state.heat_level = 0
-if "latest_ai_message" not in st.session_state:
-    st.session_state.latest_ai_message = "Oracle Online. Awaiting your first move."
 
-# --- 2. NATIVE INPUT (The real version) ---
+if "chat_history" not in st.session_state:
+    st.session_state.chat_history = []
+
 user_move = st.chat_input("Enter your command...")
 
 if user_move:
-    # 1. Use the Brain to get a real story
-    with st.spinner("Analyzing security logs..."):
-        full_response = st.session_state.brain.play_move(user_move)
-        
-        # 2. Split the story from the Heat score
-        if "HEAT:" in full_response:
-            parts = full_response.split("HEAT:")
-            story_text = parts[0].strip()
-            try:
-                # Update the heat level globally
-                st.session_state.heat_level = int(parts[1].strip().split()[0])
-            except:
-                st.session_state.heat_level += 10
-        else:
-            story_text = full_response
-            st.session_state.heat_level += 10
+    st.session_state.chat_history.append({"role": "user", "content": user_move})
 
-        # 3. Send the REAL story to the UI
-        st.session_state.latest_ai_message = story_text
+    # --- THE NEON LOADING WIDGET ---
+    loading_placeholder = st.empty()
+    loading_placeholder.markdown("""
+        <div style="display: flex; justify-content: center; align-items: center; padding: 15px;">
+            <div style="border: 1px solid #b400ff; padding: 8px 24px; color: #00d4ff; font-family: 'Share Tech Mono', monospace; letter-spacing: 3px; font-size: 14px; background: rgba(180,0,255,0.1); border-radius: 2px; animation: pulse 1.2s infinite;">
+                <span style="color: #ff2d78;">//</span> ORACLE DECRYPTING...
+            </div>
+        </div>
+        <style>
+            @keyframes pulse {
+                0% { opacity: 0.6; box-shadow: 0 0 5px rgba(180,0,255,0.2); }
+                50% { opacity: 1; box-shadow: 0 0 15px rgba(180,0,255,0.6), inset 0 0 10px rgba(180,0,255,0.3); }
+                100% { opacity: 0.6; box-shadow: 0 0 5px rgba(180,0,255,0.2); }
+            }
+        </style>
+    """, unsafe_allow_html=True)
 
-# --- 3. LOAD THE HTML ---
+    # 1. Call the AI
+    full_response = st.session_state.brain.play_move(user_move)
+    
+    # 2. Destroy the loading widget the exact millisecond the AI finishes
+    loading_placeholder.empty()
+    
+    # --- END WIDGET ---
+
+    if "HEAT:" in full_response:
+        parts = full_response.split("HEAT:")
+        story_text = parts[0].strip()
+        try:
+            parsed_heat = int(parts[1].strip().split()[0])
+            st.session_state.heat_level = min(100, st.session_state.heat_level + parsed_heat)
+        except:
+            st.session_state.heat_level = min(100, st.session_state.heat_level + 10)
+    else:
+        story_text = full_response
+        st.session_state.heat_level = min(100, st.session_state.heat_level + 10)
+
+    st.session_state.chat_history.append({"role": "assistant", "content": story_text})
+
 try:
     with open("interface.html", "r", encoding="utf-8") as f:
         ui_code = f.read()
@@ -84,34 +106,29 @@ except FileNotFoundError:
     st.error("Error: Could not find interface.html in this folder.")
     st.stop()
 
-# --- 4. THE ANTI-FLICKER INJECTION ---
 current_heat = st.session_state.heat_level
 
-# 1. We aggressively find the hardcoded "22" in your HTML and replace it with the REAL heat
-ui_code = ui_code.replace("let heat         = 22;", f"let heat = {current_heat};")
-ui_code = ui_code.replace('<div id="heat-value">22</div>', f'<div id="heat-value">{current_heat}</div>')
-ui_code = ui_code.replace('style="width:22%"', f'style="width:{current_heat}%"')
+# We use JS to set the heat now, which triggers your custom neon colors!
+history_js = f"window.receiveFromPython({{type: 'heat_set', value: {current_heat}}});\n"
 
-# 2. We inject the JS payload (Without the 500ms delay, because the iframe is fresh anyway)
-payload = {
-    "type": "ai_response",
-    "content": st.session_state.latest_ai_message,
-    "heatDelta": 0 # We set this to 0 because we already hardcoded the new heat above!
-}
+for msg in st.session_state.chat_history:
+    safe_content = json.dumps(msg["content"])
+    role_str = msg["role"]
+    history_js += f"window.appendMessage('{role_str}', {safe_content}, 0);\n"
 
-import json
 injection_script = f"""
 <script>
-    // Fire immediately upon load
-    if (typeof window.receiveFromPython === 'function') {{
-        window.receiveFromPython({json.dumps(payload)});
-    }}
+    setTimeout(() => {{
+        // Ensure the welcome screen is gone
+        if(typeof hideWelcome === 'function') hideWelcome();
+        
+        {history_js}
+        const anchor = document.getElementById('msg-anchor');
+        if(anchor) anchor.scrollIntoView();
+    }}, 50);
 </script>
 """
 
-# Glue them together
 final_html = ui_code + injection_script
 
-# --- 5. RENDER THE MASTERPIECE ---
-components.html(final_html, height=750, scrolling=False) 
-# Note: I changed height to 350 so it only shows the top dashboard, leaving room for the chat!
+components.html(final_html, height=750, scrolling=False)
