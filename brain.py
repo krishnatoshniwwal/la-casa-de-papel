@@ -189,6 +189,35 @@ KEY_ITEM_HINTS = {
 }
 
 
+def _extract_text(response) -> str:
+    """Robustly extract plain text from a LangChain LLM response.
+
+    Handles:
+    - Plain string (legacy)
+    - AIMessage with .content as a string
+    - AIMessage with .content as a list of blocks  [{'type':'text','text':'...'}]
+    """
+    content = response.content if hasattr(response, "content") else response
+
+    # Already a plain string
+    if isinstance(content, str):
+        return content
+
+    # List of content blocks (newer Gemini / Anthropic format)
+    if isinstance(content, list):
+        parts = []
+        for block in content:
+            if isinstance(block, dict):
+                if block.get("type") == "text":
+                    parts.append(block.get("text", ""))
+            elif isinstance(block, str):
+                parts.append(block)
+        return " ".join(parts).strip()
+
+    # Fallback: stringify whatever we got
+    return str(content)
+
+
 class HeistBrain:
     def __init__(self):
         self.embeddings = GoogleGenerativeAIEmbeddings(
@@ -199,7 +228,7 @@ class HeistBrain:
         self.llm = ChatGoogleGenerativeAI(
             model="gemini-flash-latest", 
             temperature=0.75,
-            max_retries=3, # Automatically handles exponential backoff
+            max_retries=3,
             google_api_key=api_key
         )
         
@@ -236,7 +265,6 @@ class HeistBrain:
         return z
 
     def _check_item_triggers(self, user_move: str) -> list[str]:
-        """Keyword-triggered grant — used for key items that need deliberate player action."""
         move_lower = user_move.lower()
         triggered = []
         for item_key, keywords in ITEM_TRIGGERS.items():
@@ -248,8 +276,6 @@ class HeistBrain:
         return triggered
 
     def _check_zone_search(self, user_move: str) -> list[str]:
-        """Auto-grant findable items when the player searches the current zone.
-        Key items (VAULT_PIN, BIOMETRIC_BYPASS) are excluded — they need hint-then-act."""
         SEARCH_VERBS = [
             "search", "scout", "look", "examine", "check", "inspect",
             "sweep", "scan", "explore", "investigate", "look around",
@@ -337,7 +363,6 @@ class HeistBrain:
                 else:
                     blocked_msg = f"[ACCESS_DENIED: {reason}]"
 
-        # ── Item discovery (two-tier) ─────────────────────────────────────────
         zone_search_keys = self._check_zone_search(user_move)
         keyword_keys     = self._check_item_triggers(user_move)
         all_new_keys     = list(dict.fromkeys(zone_search_keys + keyword_keys))
@@ -508,7 +533,9 @@ class HeistBrain:
     """
 
         response = self.llm.invoke(prompt)
-        raw = str(response.content)
+
+        # ── FIX: robustly extract plain text from any response format ──────────
+        raw = _extract_text(response)
 
         lines = raw.strip().split("\n")
         tags = {}
@@ -518,7 +545,7 @@ class HeistBrain:
             if stripped.startswith("HEAT:"):
                 try:
                     tags["heat"] = int(stripped.split(":", 1)[1].strip().split()[0])
-                except:
+                except Exception:
                     tags["heat"] = 5
             elif stripped.startswith("LOCATION:"):
                 tags["location"] = stripped.split(":", 1)[1].strip()
@@ -534,7 +561,6 @@ class HeistBrain:
         if gm_location in ZONES and not zone_changed:
             self.current_zone = gm_location
 
-        # ── Heat logic ────────────────────────────────────────────────────────
         IDLE_PHRASES = [
             "wait", "do nothing", "stay", "look around", "think",
             "what should", "where am i", "what do i", "how do i",
@@ -547,7 +573,6 @@ class HeistBrain:
         if is_idle:
             heat_delta = 0
 
-        # Clamp to valid range
         heat_delta = max(-10, min(30, heat_delta))
 
         event = None
@@ -565,9 +590,7 @@ class HeistBrain:
             heat_delta = min(heat_delta + 8, 25)
             event = {"type": "warning", "msg": "SECURITY ALERT — adapt your approach", "heatDelta": heat_delta}
 
-        # Never go below 0 or above 100
         self.heat = max(0, min(100, self.heat + heat_delta))
-        # Heat-based game over
         if self.heat >= 100 and not self.game_over:
             self.game_over = True
             event = {"type": "danger", "msg": "HEAT CRITICAL — operative burned, mission over", "heatDelta": 0}

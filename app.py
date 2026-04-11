@@ -30,27 +30,21 @@ st.markdown("""
 }
 
 /* ── HIDE STREAMLIT CHROME ── */
-/* Hide chrome - do NOT touch header element or sidebar breaks */
 #MainMenu, footer { visibility: hidden; }
 .stDeployButton { display: none; }
-/* Hide only the deploy/status parts of the header, not the sidebar toggle */
 [data-testid="stDecoration"] { display: none; }
 [data-testid="stStatusWidget"] { visibility: hidden; }
-/* Hide the top-right toolbar buttons but keep sidebar toggles */
 [data-testid="stToolbarActions"] { visibility: hidden; }
-/* Make header background transparent so it blends in */
 header[data-testid="stHeader"] {
   background: transparent !important;
   box-shadow: none !important;
 }
-/* Sidebar collapse button (visible when sidebar is OPEN) */
 [data-testid="stSidebarCollapseButton"] button {
   background: rgba(255,45,120,0.15) !important;
   border: 1px solid rgba(255,45,120,0.5) !important;
   border-radius: 6px !important;
   color: #ff2d78 !important;
 }
-/* Sidebar expand button (visible when sidebar is CLOSED) - force always visible */
 [data-testid="stSidebarCollapsedControl"] {
   visibility: visible !important;
   display: flex !important;
@@ -75,7 +69,6 @@ header[data-testid="stHeader"] {
   font-family: 'Rajdhani', sans-serif !important;
 }
 
-/* Animated neon grid lines on background */
 .stApp::before {
   content: '';
   position: fixed;
@@ -181,6 +174,12 @@ h1, h2, h3 {
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
 ::-webkit-scrollbar-thumb { background: rgba(139,43,226,0.5); border-radius: 3px; }
+
+/* ── FIX: remove iframe bottom gap ── */
+[data-testid="stChatMessage"] iframe {
+  display: block !important;
+  margin-bottom: 0 !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -229,7 +228,6 @@ def render_bg():
     }
 
     function drawSkyline(){
-      // horizon glow
       const grd = ctx.createLinearGradient(0, H*0.48, 0, H);
       grd.addColorStop(0,'rgba(139,43,226,0.22)');
       grd.addColorStop(0.4,'rgba(255,45,120,0.08)');
@@ -239,19 +237,16 @@ def render_bg():
 
       buildings.forEach(b=>{
         const top = H - b.h;
-        // building body
         const bg = ctx.createLinearGradient(b.x,top,b.x+b.w,top);
         bg.addColorStop(0,'rgba(20,5,40,0.92)');
         bg.addColorStop(1,'rgba(10,2,25,0.92)');
         ctx.fillStyle=bg;
         ctx.fillRect(b.x, top, b.w, b.h);
 
-        // building edge glow
         ctx.strokeStyle='rgba(139,43,226,0.25)';
         ctx.lineWidth=0.5;
         ctx.strokeRect(b.x,top,b.w,b.h);
 
-        // windows
         b.windows.forEach((win,i)=>{
           if(win.flicker && Math.random()<0.02) win.on=!win.on;
           if(!win.on) return;
@@ -502,10 +497,6 @@ FLOOR_GRIDS = {
 
 
 def render_floor_map(zone_key: str):
-    """Render the tactical map as a true popup modal.
-    Strategy: inject a blurred backdrop via st.markdown (real DOM → position:fixed works),
-    then render the map inside components.html and use JS to grab window.frameElement
-    and reposition that iframe to fixed/centered over the viewport."""
     active_label = ZONES.get(zone_key, {}).get("label", zone_key)
     floor = FLOOR_GRIDS.get(zone_key)
     if not floor:
@@ -553,7 +544,6 @@ def render_floor_map(zone_key: str):
                 f'</div>'
             )
 
-    # ── 1. Blurred backdrop in the real DOM (position:fixed works in st.markdown) ──
     st.markdown("""
     <div id="vbv-map-backdrop" style="
       position: fixed; inset: 0;
@@ -565,11 +555,9 @@ def render_floor_map(zone_key: str):
     "></div>
     """, unsafe_allow_html=True)
 
-    # ── 2. Map iframe — JS immediately repositions it to fixed/centered modal ──
     components.html(f"""
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <script>
-    // Reposition THIS iframe to be a fixed centered modal
     (function() {{
       var f = window.frameElement;
       if (!f) return;
@@ -585,7 +573,6 @@ def render_floor_map(zone_key: str):
       f.style.transition   = 'left 0.3s ease, width 0.3s ease, opacity 0.25s ease';
 
       function recentre() {{
-        // Use the main block-container as source of truth for available space
         var main = window.parent.document.querySelector('.main .block-container')
                 || window.parent.document.querySelector('[data-testid="stMain"]')
                 || window.parent.document.querySelector('.stMain');
@@ -597,7 +584,6 @@ def render_floor_map(zone_key: str):
           f.style.width     = w + 'px';
           f.style.transform = 'translate(-50%, -50%)';
         }} else {{
-          // fallback
           f.style.left      = '50%';
           f.style.width     = 'min(94vw, 960px)';
           f.style.transform = 'translate(-50%, -50%)';
@@ -605,8 +591,6 @@ def render_floor_map(zone_key: str):
       }}
 
       recentre();
-
-      // Re-run every 100ms for 2s to catch sidebar animation finishing
       var ticks = 0;
       var interval = setInterval(function() {{
         recentre();
@@ -614,12 +598,10 @@ def render_floor_map(zone_key: str):
         if (ticks > 20) clearInterval(interval);
       }}, 100);
 
-      // Also watch sidebar for toggle
       var sidebar = window.parent.document.querySelector('[data-testid="stSidebar"]');
       if (sidebar) {{
         new MutationObserver(function() {{
           recentre();
-          // re-poll after animation
           var t2 = 0;
           var iv2 = setInterval(function() {{ recentre(); t2++; if(t2>10) clearInterval(iv2); }}, 50);
         }}).observe(sidebar, {{ attributes: true, attributeFilter: ['style','class'] }});
@@ -627,7 +609,6 @@ def render_floor_map(zone_key: str):
 
       window.addEventListener('resize', recentre);
 
-      // Fade in
       requestAnimationFrame(function() {{
         requestAnimationFrame(function() {{ f.style.opacity = '1'; }});
       }});
@@ -656,7 +637,6 @@ def render_floor_map(zone_key: str):
       border-radius: 18px;
       overflow: hidden;
     }}
-    /* ── Header ── */
     .modal-header {{
       display: flex; align-items: center; justify-content: space-between;
       padding: 14px 20px; flex-shrink: 0;
@@ -683,7 +663,6 @@ def render_floor_map(zone_key: str):
       box-shadow: 0 0 20px rgba(255,45,120,0.45);
       color: #fff; border-color: #ff2d78;
     }}
-    /* ── Body / Grid ── */
     .modal-body {{ flex: 1; overflow-y: auto; padding: 18px 20px; }}
     .map-grid {{
       display: grid; gap: 7px;
@@ -720,7 +699,6 @@ def render_floor_map(zone_key: str):
       0%,100% {{ box-shadow: 0 0 16px rgba(255,215,0,0.3); }}
       50%      {{ box-shadow: 0 0 30px rgba(255,215,0,0.6); }}
     }}
-    /* ── Legend ── */
     .legend {{
       display: flex; gap: 16px; flex-wrap: wrap;
       margin-top: 14px; padding-top: 12px;
@@ -753,13 +731,19 @@ def render_floor_map(zone_key: str):
         </div>
       </div>
     </div>
-    """, height=1)   # height=1px — JS immediately repositions this iframe to fixed fullscreen
+    """, height=1)
+
+
+# ── HELPER: compute iframe height from text length ─────────────────────────────
+def _bubble_height(text: str, base: int = 90, chars_per_line: int = 80, line_h: int = 22) -> int:
+    """Estimate height needed for a chat bubble iframe — avoids excess whitespace."""
+    lines = max(1, len(text) // chars_per_line + text.count("\n"))
+    return base + lines * line_h
 
 
 # ── SIDEBAR HUD ─────────────────────────────────────────────────────────────────
 def render_sidebar():
     with st.sidebar:
-        # Logo / Title
         st.markdown("""
         <div style="text-align:center; padding: 0.5rem 0 1.2rem 0;">
           <div style="font-family:'Orbitron',monospace; font-size:1.05rem; font-weight:900;
@@ -777,7 +761,6 @@ def render_sidebar():
         </div>
         """, unsafe_allow_html=True)
 
-        # HEAT BAR
         heat = st.session_state.heat_level
         heat_pct = min(heat / 100.0, 1.0)
         if heat < 30:
@@ -808,7 +791,6 @@ def render_sidebar():
         </div>
         """, unsafe_allow_html=True)
 
-        # CURRENT ZONE
         zone_data = ZONES.get(st.session_state.zone, {})
         zone_icon = ZONE_ICONS.get(st.session_state.zone, "📍")
         st.markdown(f"""
@@ -829,7 +811,6 @@ def render_sidebar():
         </div>
         """, unsafe_allow_html=True)
 
-        # ZONE SCANNER
         exits_str   = " · ".join(zone_data.get("exits", [])) or "None"
         objects_str = " · ".join(zone_data.get("objects", [])) or "None"
         threats_str = " · ".join(zone_data.get("threats", [])) or "None"
@@ -846,14 +827,12 @@ def render_sidebar():
             </div>
             """, unsafe_allow_html=True)
 
-        # MAP BUTTON
         st.markdown("<div style='margin:6px 0 6px 0;'></div>", unsafe_allow_html=True)
         if st.button("◈ OPEN TACTICAL MAP", use_container_width=True):
             st.session_state.show_map = not st.session_state.get("show_map", False)
 
         st.markdown("<div style='height:1px; background:linear-gradient(90deg,transparent,rgba(139,43,226,0.4),transparent); margin:14px 0;'></div>", unsafe_allow_html=True)
 
-        # INVENTORY
         st.markdown("""
         <div style="font-family:'Orbitron',monospace; font-size:0.58rem; font-weight:700;
                     letter-spacing:0.18em; color:rgba(200,150,255,0.7); margin-bottom:10px;">
@@ -999,6 +978,8 @@ if st.session_state.show_map:
 for msg in st.session_state.chat_history:
     if msg["role"] == "assistant":
         with st.chat_message("assistant", avatar=ORACLE_AVATAR):
+            content = msg["content"]
+            h = _bubble_height(content)
             components.html(f"""
             <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
             <div style="background:linear-gradient(135deg,rgba(139,43,226,0.1),rgba(0,212,255,0.06));
@@ -1011,13 +992,15 @@ for msg in st.session_state.chat_history:
               </div>
               <div style="font-family:'Rajdhani',sans-serif; font-size:1rem; color:#dde8ff;
                           line-height:1.65; letter-spacing:0.02em;">
-                {escape(msg["content"])}
+                {escape(content)}
               </div>
               {f'<div style="margin-top:8px;"><span style="font-family:\'Orbitron\',monospace; font-size:0.6rem; color:#ff6b35; letter-spacing:0.1em; background:rgba(255,107,53,0.12); border:1px solid rgba(255,107,53,0.35); border-radius:4px; padding:2px 8px;">🔥 HEAT +{msg["heat_delta"]}</span></div>' if msg.get("heat_delta", 0) > 0 else ''}
             </div>
-            """, height=max(100, 80 + len(msg["content"]) // 3))
+            """, height=h)
     else:
         with st.chat_message("user", avatar=USER_AVATAR):
+            content = msg["content"]
+            h = _bubble_height(content, base=70)
             components.html(f"""
             <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
             <div style="background:rgba(255,45,120,0.07); border-left:3px solid rgba(255,45,120,0.6);
@@ -1026,18 +1009,18 @@ for msg in st.session_state.chat_history:
                         color:rgba(255,200,220,0.9); letter-spacing:0.03em; line-height:1.5;">
               <span style="color:rgba(255,45,120,0.6); font-size:0.6rem; letter-spacing:0.2em;
                            display:block; margin-bottom:5px;">MASTERMIND INPUT</span>
-              {escape(msg["content"])}
+              {escape(content)}
             </div>
-            """, height=80)
+            """, height=h)
 
 
 # ── CHAT INPUT ────────────────────────────────────────────────────────────────
 user_move = st.chat_input("⟶  Transmit your next move to Oracle...")
 
 if user_move and not st.session_state.game_over and not st.session_state.victory:
-    # User message
     st.session_state.chat_history.append({"role": "user", "content": user_move})
     with st.chat_message("user", avatar=USER_AVATAR):
+        h = _bubble_height(user_move, base=70)
         components.html(f"""
         <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
         <div style="background:rgba(255,45,120,0.07); border-left:3px solid rgba(255,45,120,0.6);
@@ -1048,9 +1031,8 @@ if user_move and not st.session_state.game_over and not st.session_state.victory
                        display:block; margin-bottom:5px;">MASTERMIND INPUT</span>
           {escape(user_move)}
         </div>
-        """, height=80)
+        """, height=h)
 
-    # Oracle response
     with st.chat_message("assistant", avatar=ORACLE_AVATAR):
         with st.spinner("◈ Patching into Oracle frequency..."):
             result = brain.play_move(user_move)
@@ -1059,6 +1041,7 @@ if user_move and not st.session_state.game_over and not st.session_state.victory
         if result.get("heat_delta", 0) > 0:
             heat_badge = f'<div style="margin-top:8px;"><span style="font-family:\'Orbitron\',monospace; font-size:0.6rem; color:#ff6b35; letter-spacing:0.1em; background:rgba(255,107,53,0.12); border:1px solid rgba(255,107,53,0.35); border-radius:4px; padding:2px 8px;">🔥 HEAT +{result["heat_delta"]}</span></div>'
 
+        story_h = _bubble_height(result['story'])
         components.html(f"""
         <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&family=Rajdhani:wght@400;600&display=swap" rel="stylesheet">
         <div style="background:linear-gradient(135deg,rgba(139,43,226,0.1),rgba(0,212,255,0.06));
@@ -1075,9 +1058,8 @@ if user_move and not st.session_state.game_over and not st.session_state.victory
           </div>
           {heat_badge}
         </div>
-        """, height=max(100, 80 + len(result['story']) // 3))
+        """, height=story_h)
 
-        # Event alert
         event = result.get("event")
         if event:
             etype = event.get("type", "")
@@ -1099,9 +1081,8 @@ if user_move and not st.session_state.game_over and not st.session_state.victory
                         text-shadow:0 0 12px {glow};">
               {icon} {escape(emsg)}
             </div>
-            """, height=60)
+            """, height=56)
 
-    # Save state
     st.session_state.chat_history.append({
         "role": "assistant",
         "content": result["story"],
