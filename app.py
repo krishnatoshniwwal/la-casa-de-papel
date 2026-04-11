@@ -3,21 +3,19 @@ from brain import HeistBrain, ZONES
 from html import escape
 import streamlit.components.v1 as components
 
-
 st.set_page_config(page_title="Vegas Black Vault", layout="wide")
 
 @st.cache_resource
 def get_brain() -> HeistBrain:
-    with st.spinner("🔐 Initializing Oracle intelligence systems..."):
-        brain = HeistBrain()
-        try:
-            from langchain_chroma import Chroma
-            brain.vectorstore = Chroma(
-                persist_directory=brain.db_path,
-                embedding_function=brain.embeddings
-            )
-        except Exception:
-            pass
+    brain = HeistBrain()
+    try:
+        from langchain_chroma import Chroma
+        brain.vectorstore = Chroma(
+            persist_directory=brain.db_path,
+            embedding_function=brain.embeddings
+        )
+    except Exception:
+        pass
     return brain
 
 brain = get_brain()
@@ -100,160 +98,173 @@ def render_floor_map(zone_key: str):
     active_label = ZONES.get(zone_key, {}).get("label", zone_key)
 
     FLOOR_GRIDS = {
-        "LOBBY": {
-            "title": "LEVEL 1 — LOBBY",
-            "grid": [
-                ["X", "X", "X", "X", "X"],
-                ["X", "LOBBY", "LOBBY", "LOBBY", "X"],
-                ["X", "LOBBY", "LOBBY", "LOBBY", "X"],
-                ["X", "LOBBY", "LOBBY", "LOBBY", "X"],
-                ["X", "X", "X", "X", "X"],
-            ],
-        },
-        "CASINO": {
-            "title": "GROUND FLOOR — CASINO",
-            "grid": [
-                ["X", "X", "X", "X", "X", "X", "X"],
-                ["X", "CASINO", "CASINO", "CASINO", "CASINO", "CASINO", "X"],
-                ["X", "CASINO", "CASINO", "CASINO", "CASINO", "CASINO", "X"],
-                ["X", "CASINO", "CASHIER_CAGE", "CASINO", "STAFF_ELEVATOR", "CASINO", "X"],
-                ["X", "CASINO", "CASINO", "CASINO", "CASINO", "CASINO", "X"],
-                ["X", "CASINO", "KITCHEN_L2", "CASINO", "CASINO", "CASINO", "X"],
-                ["X", "X", "X", "X", "X", "X", "X"],
-            ],
-        },
-        "KITCHEN_L2": {
-            "title": "LEVEL 2 — KITCHEN",
-            "grid": [
-                ["X", "X", "X", "X", "X", "X"],
-                ["X", "KITCHEN_L2", "KITCHEN_L2", "KITCHEN_L2", "KITCHEN_L2", "X"],
-                ["X", "KITCHEN_L2", "KITCHEN_L2", "HVAC_SHAFT", "KITCHEN_L2", "X"],
-                ["X", "KITCHEN_L2", "KITCHEN_L2", "KITCHEN_L2", "KITCHEN_L2", "X"],
-                ["X", "KITCHEN_L2", "KITCHEN_L2", "KITCHEN_L2", "KITCHEN_L2", "X"],
-                ["X", "X", "X", "X", "X", "X"],
-            ],
-        },
-        "HVAC_SHAFT": {
-            "title": "HVAC SYSTEM",
-            "grid": [
-                ["X", "HVAC_SHAFT", "X"],
-                ["HVAC_SHAFT", "HVAC_SHAFT", "HVAC_SHAFT"],
-                ["X", "HVAC_SHAFT", "X"],
-            ],
-        },
-        "PARKING_B2": {
-            "title": "B2 — PARKING",
-            "grid": [
-                ["X", "X", "X", "X", "X"],
-                ["X", "PARKING_B2", "PARKING_B2", "STAFF_ELEVATOR", "X"],
-                ["X", "PARKING_B2", "PARKING_B2", "PARKING_B2", "X"],
-                ["X", "PARKING_B2", "PARKING_B2", "PARKING_B2", "X"],
-                ["X", "X", "X", "X", "X"],
-            ],
-        },
-        "STAFF_ELEVATOR": {
-            "title": "TRANSIT — STAFF ELEVATOR",
-            "grid": [
-                ["X", "X", "X", "X", "X"],
-                ["X", "PARKING_B2", "PARKING_B2", "STAFF_ELEVATOR", "X"],
-                ["X", "CASINO", "CASINO", "STAFF_ELEVATOR", "X"],
-                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "STAFF_ELEVATOR", "X"],
-                ["X", "X", "X", "X", "X"],
-            ],
-        },
-        "B3_CORRIDOR": {
-            "title": "B3 — SECURITY CORE",
-            "grid": [
-                ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
-                ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
-                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
-                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
-                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_ELEVATOR", "X"],
-                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_MAINTENANCE_SHAFT", "X"],
-                ["X", "X", "X", "X", "X", "X", "X"],
-            ],
-        },
-        "SURVEILLANCE_HQ": {
-            "title": "B3 — SECURITY CORE",
-            "grid": [
-                ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
-                ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
-                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
-                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
-                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_ELEVATOR", "X"],
-                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_MAINTENANCE_SHAFT", "X"],
-                ["X", "X", "X", "X", "X", "X", "X"],
-            ],
-        },
-        "SECURITY_COMMAND": {
-            "title": "B3 — SECURITY CORE",
-            "grid": [
-                ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
-                ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
-                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
-                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
-                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_ELEVATOR", "X"],
-                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_MAINTENANCE_SHAFT", "X"],
-                ["X", "X", "X", "X", "X", "X", "X"],
-            ],
-        },
-        "COUNT_ROOM": {
-            "title": "B3 — SECURITY CORE",
-            "grid": [
-                ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
-                ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
-                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
-                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
-                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_ELEVATOR", "X"],
-                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_MAINTENANCE_SHAFT", "X"],
-                ["X", "X", "X", "X", "X", "X", "X"],
-            ],
-        },
-        "B3_ELEVATOR": {
-            "title": "B3 — SECURITY CORE",
-            "grid": [
-                ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
-                ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
-                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
-                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
-                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_ELEVATOR", "X"],
-                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_MAINTENANCE_SHAFT", "X"],
-                ["X", "X", "X", "X", "X", "X", "X"],
-            ],
-        },
-        "B3_MAINTENANCE_SHAFT": {
-            "title": "B3 — SECURITY CORE",
-            "grid": [
-                ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
-                ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
-                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
-                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
-                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_ELEVATOR", "X"],
-                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_MAINTENANCE_SHAFT", "X"],
-                ["X", "X", "X", "X", "X", "X", "X"],
-            ],
-        },
-        "B4_VAULT_ANTECHAMBER": {
-            "title": "B4 — VAULT LEVEL",
-            "grid": [
-                ["X", "X", "VAULT_CHAMBER", "X", "X"],
-                ["X", "B4_VAULT_ANTECHAMBER", "B4_VAULT_ANTECHAMBER", "B4_VAULT_ANTECHAMBER", "X"],
-                ["X", "B4_VAULT_ANTECHAMBER", "CORE", "B4_VAULT_ANTECHAMBER", "X"],
-                ["X", "B3_ELEVATOR", "B4_VAULT_ANTECHAMBER", "B3_MAINTENANCE_SHAFT", "X"],
-                ["X", "X", "X", "X", "X"],
-            ],
-        },
-        "VAULT_CHAMBER": {
-            "title": "B4 — VAULT LEVEL",
-            "grid": [
-                ["X", "X", "VAULT_CHAMBER", "X", "X"],
-                ["X", "B4_VAULT_ANTECHAMBER", "B4_VAULT_ANTECHAMBER", "B4_VAULT_ANTECHAMBER", "X"],
-                ["X", "B4_VAULT_ANTECHAMBER", "CORE", "B4_VAULT_ANTECHAMBER", "X"],
-                ["X", "B3_ELEVATOR", "B4_VAULT_ANTECHAMBER", "B3_MAINTENANCE_SHAFT", "X"],
-                ["X", "X", "X", "X", "X"],
-            ],
-        },
-    }
+    "LOBBY": {
+        "title": "LEVEL 1 — LOBBY",
+        "grid": [
+            ["X", "X", "X", "X", "X"],
+            ["X", "LOBBY", "LOBBY", "LOBBY", "X"],
+            ["X", "LOBBY", "ELEVATOR", "LOBBY", "X"],
+            ["X", "LOBBY", "LOBBY", "LOBBY", "X"],
+            ["X", "X", "CASINO", "X", "X"],
+        ],
+    },
+    "CASINO": {
+        "title": "GROUND FLOOR — CASINO",
+        "grid": [
+            ["X", "X", "X", "X", "X", "X", "X"],
+            ["X", "CASINO", "CASINO", "CASINO", "CASINO", "CASINO", "X"],
+            ["X", "CASINO", "CASINO", "ELEVATOR", "CASINO", "CASINO", "X"],
+            ["X", "CASINO", "CASHIER_CAGE", "CASINO", "STAFF_ELEVATOR", "CASINO", "X"],
+            ["X", "CASINO", "CASINO", "CASINO", "CASINO", "CASINO", "X"],
+            ["X", "CASINO", "KITCHEN_L2", "CASINO", "CASINO", "CASINO", "X"],
+            ["X", "X", "X", "X", "X", "X", "X"],
+        ],
+    },
+    "CASHIER_CAGE": {
+        "title": "GROUND FLOOR — CASINO",
+        "grid": [
+            ["X", "X", "X", "X", "X", "X", "X"],
+            ["X", "CASINO", "CASINO", "CASINO", "CASINO", "CASINO", "X"],
+            ["X", "CASINO", "CASINO", "ELEVATOR", "CASINO", "CASINO", "X"],
+            ["X", "CASINO", "CASHIER_CAGE", "CASINO", "STAFF_ELEVATOR", "CASINO", "X"],
+            ["X", "CASINO", "CASINO", "CASINO", "CASINO", "CASINO", "X"],
+            ["X", "CASINO", "KITCHEN_L2", "CASINO", "CASINO", "CASINO", "X"],
+            ["X", "X", "X", "X", "X", "X", "X"],
+        ],
+    },
+    "KITCHEN_L2": {
+        "title": "LEVEL 2 — KITCHEN",
+        "grid": [
+            ["X", "X", "X", "X", "X", "X"],
+            ["X", "KITCHEN_L2", "KITCHEN_L2", "KITCHEN_L2", "KITCHEN_L2", "X"],
+            ["X", "KITCHEN_L2", "ELEVATOR", "HVAC_SHAFT", "KITCHEN_L2", "X"],
+            ["X", "KITCHEN_L2", "KITCHEN_L2", "KITCHEN_L2", "KITCHEN_L2", "X"],
+            ["X", "KITCHEN_L2", "KITCHEN_L2", "KITCHEN_L2", "CASINO", "X"],
+            ["X", "X", "X", "X", "X", "X"],
+        ],
+    },
+    "HVAC_SHAFT": {
+        "title": "HVAC SYSTEM",
+        "grid": [
+            ["X", "HVAC_SHAFT", "X"],
+            ["HVAC_SHAFT", "HVAC_SHAFT", "HVAC_SHAFT"],
+            ["X", "HVAC_SHAFT", "X"],
+        ],
+    },
+    "PARKING_B2": {
+        "title": "B2 — PARKING",
+        "grid": [
+            ["X", "X", "X", "X", "X"],
+            ["X", "PARKING_B2", "PARKING_B2", "STAFF_ELEVATOR", "X"],
+            ["X", "PARKING_B2", "PARKING_B2", "PARKING_B2", "X"],
+            ["X", "PARKING_B2", "PARKING_B2", "PARKING_B2", "X"],
+            ["X", "X", "LOBBY", "X", "X"],
+        ],
+    },
+    "STAFF_ELEVATOR": {
+        "title": "RESTRICTED TRANSIT — STAFF ELEVATOR",
+        "grid": [
+            ["X", "X", "X", "X", "X"],
+            ["X", "PARKING_B2", "PARKING_B2", "STAFF_ELEVATOR", "X"],
+            ["X", "CASINO", "CASINO", "STAFF_ELEVATOR", "X"],
+            ["X", "B3_CORRIDOR", "B3_CORRIDOR", "STAFF_ELEVATOR", "X"],
+            ["X", "X", "X", "X", "X"],
+        ],
+    },
+    "B3_CORRIDOR": {
+        "title": "B3 — SECURITY CORE",
+        "grid": [
+            ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
+            ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
+            ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
+            ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
+            ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_ELEVATOR", "X"],
+            ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_MAINTENANCE_SHAFT", "X"],
+            ["X", "X", "X", "X", "X", "X", "X"],
+        ],
+    },
+    "SURVEILLANCE_HQ": {
+        "title": "B3 — SECURITY CORE",
+        "grid": [
+            ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
+            ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
+            ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
+            ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
+            ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_ELEVATOR", "X"],
+            ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_MAINTENANCE_SHAFT", "X"],
+            ["X", "X", "X", "X", "X", "X", "X"],
+        ],
+    },
+    "SECURITY_COMMAND": {
+        "title": "B3 — SECURITY CORE",
+        "grid": [
+            ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
+            ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
+            ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
+            ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
+            ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_ELEVATOR", "X"],
+            ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_MAINTENANCE_SHAFT", "X"],
+            ["X", "X", "X", "X", "X", "X", "X"],
+        ],
+    },
+    "COUNT_ROOM": {
+        "title": "B3 — SECURITY CORE",
+        "grid": [
+            ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
+            ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
+            ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
+            ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
+            ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_ELEVATOR", "X"],
+            ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_MAINTENANCE_SHAFT", "X"],
+            ["X", "X", "X", "X", "X", "X", "X"],
+        ],
+    },
+    "B3_ELEVATOR": {
+        "title": "B3 — SECURITY CORE",
+        "grid": [
+            ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
+            ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
+            ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
+            ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
+            ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_ELEVATOR", "X"],
+            ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_MAINTENANCE_SHAFT", "X"],
+            ["X", "X", "X", "X", "X", "X", "X"],
+        ],
+    },
+    "B3_MAINTENANCE_SHAFT": {
+        "title": "B3 — SECURITY CORE",
+        "grid": [
+            ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
+            ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
+            ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
+            ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
+            ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_ELEVATOR", "X"],
+            ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_MAINTENANCE_SHAFT", "X"],
+            ["X", "X", "X", "X", "X", "X", "X"],
+        ],
+    },
+    "B4_VAULT_ANTECHAMBER": {
+        "title": "B4 — VAULT LEVEL",
+        "grid": [
+            ["X", "X", "VAULT_CHAMBER", "X", "X"],
+            ["X", "B4_VAULT_ANTECHAMBER", "B4_VAULT_ANTECHAMBER", "B4_VAULT_ANTECHAMBER", "X"],
+            ["X", "B4_VAULT_ANTECHAMBER", "CORE", "B4_VAULT_ANTECHAMBER", "X"],
+            ["X", "B3_ELEVATOR", "B4_VAULT_ANTECHAMBER", "B3_MAINTENANCE_SHAFT", "X"],
+            ["X", "X", "X", "X", "X"],
+        ],
+    },
+    "VAULT_CHAMBER": {
+        "title": "B4 — VAULT LEVEL",
+        "grid": [
+            ["X", "X", "VAULT_CHAMBER", "X", "X"],
+            ["X", "B4_VAULT_ANTECHAMBER", "B4_VAULT_ANTECHAMBER", "B4_VAULT_ANTECHAMBER", "X"],
+            ["X", "B4_VAULT_ANTECHAMBER", "CORE", "B4_VAULT_ANTECHAMBER", "X"],
+            ["X", "B3_ELEVATOR", "B4_VAULT_ANTECHAMBER", "B3_MAINTENANCE_SHAFT", "X"],
+            ["X", "X", "X", "X", "X"],
+        ],
+    },
+}
+
 
     floor = FLOOR_GRIDS.get(zone_key)
     if not floor:
@@ -278,15 +289,18 @@ def render_floor_map(zone_key: str):
                 cls = "wall"
             elif cell_value.endswith(" (YOU)"):
                 cls = "you"
-            elif cell_value in {"CORE"}:
+            elif cell_value == "CORE":
                 cls = "core"
-            elif cell_value in {"STAFF_ELEVATOR", "B3_ELEVATOR"}:
+            elif cell_value == "ELEVATOR":
                 cls = "elevator"
+            elif cell_value in {"STAFF_ELEVATOR", "B3_ELEVATOR"}:
+                cls = "staff_elevator"
             elif cell_value in {"HVAC_SHAFT", "B3_MAINTENANCE_SHAFT"}:
                 cls = "shaft"
             else:
                 cls = "zone"
-            label = cell_value.replace("_", " ")
+
+            label = "" if cell_value == "X" else cell_value.replace("_", " ")
             cells.append(f'<div class="cell {cls}">{escape(label)}</div>')
 
     html = f"""
@@ -347,6 +361,12 @@ def render_floor_map(zone_key: str):
         color: #f3e8ff;
         border-color: rgba(168,85,247,0.42);
       }}
+      .cell.staff_elevator {{
+        background: rgba(168,85,247,0.22);
+        color: #f3e8ff;
+        border-color: rgba(168,85,247,0.48);
+      }}
+
       .cell.shaft {{
         background: rgba(20,184,166,0.18);
         color: #ccfbf1;
@@ -358,13 +378,18 @@ def render_floor_map(zone_key: str):
     components.html(html, height=max(460, 220 + rows * 100), scrolling=False)
 
 
+
+
+
+
+
 # --- STATE INIT ---
 if "show_map" not in st.session_state:
     st.session_state.show_map = False
 if "heat_level" not in st.session_state:
     st.session_state.heat_level = 0
 if "chat_history" not in st.session_state:
-    st.session_state.chat_history = [{"role": "assistant", "content": "You are in the Hotel Lobby. Give your orders, Mastermind.", "heat_delta": 0}]
+    st.session_state.chat_history = [{"role": "assistant", "content": "You are in the Hotel Lobby. Give your orders, Mastermind."}]
 if "inventory" not in st.session_state:
     st.session_state.inventory = []
 if "zone" not in st.session_state:
@@ -376,10 +401,10 @@ if "victory" not in st.session_state:
 
 # Sync backend brain with Streamlit state
 brain.current_zone = st.session_state.zone
-brain.inventory    = [item["key"] for item in st.session_state.inventory]
-brain.heat         = st.session_state.heat_level
-brain.game_over    = st.session_state.game_over
-brain.victory      = st.session_state.victory
+brain.inventory = [item["key"] for item in st.session_state.inventory]
+brain.heat = st.session_state.heat_level
+brain.game_over = st.session_state.game_over
+brain.victory = st.session_state.victory
 
 # --- SIDEBAR HUD ---
 with st.sidebar:
@@ -406,35 +431,36 @@ with st.sidebar:
 
     st.divider()
 
-    # FIX: Show item descriptions beneath each label
     st.subheader("🎒 INTEL & INVENTORY")
     if st.session_state.inventory:
         for item in st.session_state.inventory:
             st.write(f"• **{item['label']}**")
-            st.caption(item.get("desc", ""))
     else:
         st.write("Empty")
 
-# --- MAIN CHAT AREA ---
 st.title("Vegas Black Vault")
-
-# FIX: st.stop() so input disappears and game actually halts
-if st.session_state.game_over:
-    st.error("🚨 GAME OVER — Operative captured. Refresh to restart.")
-    st.stop()
-elif st.session_state.victory:
-    st.success("💎 VICTORY — The Velvet Ace is yours. The van is two blocks away.")
-    st.stop()
 
 if st.session_state.show_map:
     col1, col2 = st.columns([6, 1])
+
     with col1:
         st.subheader("Tactical Map")
+
     with col2:
         if st.button("Close Map", use_container_width=True):
             st.session_state.show_map = False
             st.rerun()
+
     render_floor_map(st.session_state.zone)
+
+
+# --- MAIN CHAT AREA ---
+st.title("Vegas Black Vault")
+
+if st.session_state.game_over:
+    st.error("🚨 GAME OVER. Operative captured. Refresh to restart.")
+elif st.session_state.victory:
+    st.success("💎 VICTORY. The Velvet Ace is yours.")
 
 # Render previous messages
 for msg in st.session_state.chat_history:
@@ -446,12 +472,12 @@ for msg in st.session_state.chat_history:
 # Input Field
 user_move = st.chat_input("What is your next move?")
 
-if user_move:
+if user_move and not st.session_state.game_over and not st.session_state.victory:
     # 1. Show user message
-    st.session_state.chat_history.append({"role": "user", "content": user_move, "heat_delta": 0})
+    st.session_state.chat_history.append({"role": "user", "content": user_move})
     with st.chat_message("user"):
         st.write(user_move)
-
+        
     # 2. Get AI GM response
     with st.chat_message("assistant"):
         with st.spinner("Oracle is processing..."):
@@ -459,36 +485,24 @@ if user_move:
             st.write(result["story"])
             if result.get("heat_delta", 0) > 0:
                 st.caption(f"🔥 Heat +{result['heat_delta']}")
-
+    
     # 3. Save to state
     st.session_state.chat_history.append({
-        "role": "assistant",
+        "role": "assistant", 
         "content": result["story"],
         "heat_delta": result["heat_delta"]
     })
     st.session_state.heat_level = result["total_heat"]
-    st.session_state.zone       = result["zone"]
-    st.session_state.game_over  = result["game_over"]
-    st.session_state.victory    = result["victory"]
-
+    st.session_state.zone = result["zone"]
+    st.session_state.game_over = result["game_over"]
+    st.session_state.victory = result["victory"]
+    
     # 4. Handle new inventory items
     existing_keys = {i["key"] for i in st.session_state.inventory}
     for item in result["new_items"]:
         if item["key"] not in existing_keys:
             st.session_state.inventory.append(item)
-            st.toast(f"📦 Acquired: {item['label']}!", icon="✅")
-
-    # 5. FIX: Show event banner (ALERTED / COMPROMISED / CAPTURED / VICTORY)
-    event = result.get("event")
-    if event:
-        etype    = event.get("type", "warning")
-        msg_text = event.get("msg", "")
-        if etype == "danger":
-            st.error(f"🚨 {msg_text}")
-        elif etype == "success":
-            st.success(f"✅ {msg_text}")
-        else:
-            st.warning(f"⚠️ {msg_text}")
-
-    # 6. Rerun to refresh sidebar HUD
+            st.toast(f"Acquired: {item['label']}!", icon="📦")
+            
+    # Force a rerun to update the sidebar HUD
     st.rerun()
