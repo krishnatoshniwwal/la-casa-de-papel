@@ -1,165 +1,201 @@
 import streamlit as st
 import streamlit.components.v1 as components
 import json
-from brain import HeistBrain
+import urllib.parse
+from brain import HeistBrain, ZONES
 
-st.set_page_config(page_title="Vegas Heist", layout="wide")
-
-st.markdown("""
-    <style>
-        .block-container {
-            padding-top: 0rem !important;
-            padding-bottom: 0rem !important;
-            padding-left: 0rem !important;
-            padding-right: 0rem !important;
-            max-width: 100% !important;
-        }
-        header {
-            visibility: hidden;
-        }
-        .element-container, .stIFrame, iframe {
-            opacity: 1 !important;
-            transition: none !important;
-        }
-        [data-testid="stVerticalBlock"] {
-            opacity: 1 !important;
-        }
-        [data-testid="stStatusWidget"] {
-            visibility: hidden !important;
-        }
-    </style>
-""", unsafe_allow_html=True)
+st.set_page_config(page_title="Vegas Black Vault", layout="wide")
 
 st.markdown("""
-    <style>
-        .stChatInputContainer > div {
-            background-color: #09090b !important;
-            border: 1px solid #a855f7 !important;
-            border-radius: 8px !important;
-        }
-        .stChatInputContainer textarea {
-            color: #22c55e !important;
-        }
-        .stChatInputContainer button {
-            color: #a855f7 !important; 
-        }
-    </style>
+<style>
+  .block-container { padding:0!important; max-width:100%!important; }
+  header, footer, [data-testid="stStatusWidget"] { visibility:hidden!important; }
+  .element-container, .stIFrame, iframe { opacity:1!important; transition:none!important; }
+  [data-testid="stVerticalBlock"] { opacity:1!important; }
+</style>
 """, unsafe_allow_html=True)
 
-# --- FIX 1: Use cache_resource so HeistBrain is built ONCE and shared
-# across all reruns and all users — not rebuilt every session.
+
 @st.cache_resource
-def get_brain():
+def get_brain() -> HeistBrain:
     brain = HeistBrain()
-    # FIX 2: Pre-warm the vectorstore at startup instead of lazy-loading
-    # on the first message (which caused the noticeable first-message delay).
-    brain.vectorstore = brain.vectorstore or __import__('langchain_chroma').Chroma(
-        persist_directory=brain.db_path,
-        embedding_function=brain.embeddings
-    )
+    try:
+        from langchain_chroma import Chroma
+        brain.vectorstore = Chroma(
+            persist_directory=brain.db_path,
+            embedding_function=brain.embeddings
+        )
+    except Exception:
+        pass
     return brain
 
-# FIX 3: Cache the raw HTML file read — file I/O on every rerun is wasteful.
+
 @st.cache_data
-def get_ui_code():
+def get_ui_code() -> str:
     try:
         with open("interface.html", "r", encoding="utf-8") as f:
             return f.read()
     except FileNotFoundError:
         return ""
 
-if "heat_level" not in st.session_state:
-    st.session_state.heat_level = 0
 
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
+defaults = {
+    "heat_level":       0,
+    "chat_history":     [],
+    "inventory":        [],
+    "zone":             "LOBBY",
+    "zone_data":        ZONES["LOBBY"],
+    "visited_zones":    ["LOBBY"],
+    "game_over":        False,
+    "victory":          False,
+    "mission_accepted": False,
+}
+for k, v in defaults.items():
+    if k not in st.session_state:
+        st.session_state[k] = v
 
 brain = get_brain()
+brain.current_zone = st.session_state.zone
+brain.inventory    = [item["key"] for item in st.session_state.inventory]
+brain.heat         = st.session_state.heat_level
+brain.game_over    = st.session_state.game_over
+brain.victory      = st.session_state.victory
 
-user_move = st.chat_input("Enter your command...")
+# ── Component Listener ───────────────────────────────────────────────────────
+# The iframe's sendToPython() navigates the parent window to ?msg=<encoded text>,
+# which Streamlit picks up via st.query_params on the next run.
+# We decode it, process the move, clear the param, and the re-render fires
+# the injected JS block that updates the iframe UI.
+raw_msg = st.query_params.get("msg", "")
+if raw_msg:
+    # URL-decode in case the iframe percent-encoded the text
+    try:
+        user_move = urllib.parse.unquote(raw_msg)
+    except Exception:
+        user_move = raw_msg
 
-if user_move:
-    st.session_state.chat_history.append({"role": "user", "content": user_move})
+    # Clear the query param immediately so a page refresh doesn't re-fire
+    st.query_params.clear()
 
-    loading_placeholder = st.empty()
-    loading_placeholder.markdown("""
-        <style>
-            .cyber-loader-container {
-                position: fixed;
-                bottom: 100px;
-                left: 50%;
-                transform: translateX(-50%);
-                z-index: 999999;
-            }
-            .cyber-loader {
-                border: 1px solid #b400ff;
-                padding: 12px 30px;
-                background: rgba(10, 8, 20, 0.9);
-                backdrop-filter: blur(5px);
-                color: #00d4ff;
-                font-family: 'Share Tech Mono', monospace;
-                letter-spacing: 3px;
-                font-size: 14px;
-                border-radius: 4px;
-                box-shadow: 0 0 15px rgba(180,0,255,0.4);
-                animation: neonPulse 1.2s infinite;
-            }
-            @keyframes neonPulse {
-                0% { opacity: 0.8; box-shadow: 0 0 10px rgba(180,0,255,0.3); }
-                50% { opacity: 1; box-shadow: 0 0 25px rgba(180,0,255,0.8), inset 0 0 10px rgba(180,0,255,0.4); }
-                100% { opacity: 0.8; box-shadow: 0 0 10px rgba(180,0,255,0.3); }
-            }
-        </style>
-        <div class="cyber-loader-container">
-            <div class="cyber-loader">
-                <span style="color: #ff2d78;">//</span> ORACLE DECRYPTING...
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
+    if user_move and not st.session_state.game_over and not st.session_state.victory:
+        st.session_state.chat_history.append({
+            "role": "user", "content": user_move, "heat_delta": 0
+        })
+        result = brain.play_move(user_move)
 
-    full_response = brain.play_move(user_move)
-    loading_placeholder.empty()
+        st.session_state.heat_level  = result["total_heat"]
+        st.session_state.zone        = result["zone"]
+        st.session_state.zone_data   = result["zone_data"]
+        st.session_state.game_over   = result["game_over"]
+        st.session_state.victory     = result["victory"]
 
-    if "HEAT:" in full_response:
-        parts = full_response.split("HEAT:")
-        story_text = parts[0].strip()
-        try:
-            parsed_heat = int(parts[1].strip().split()[0])
-            st.session_state.heat_level = min(100, st.session_state.heat_level + parsed_heat)
-        except:
-            st.session_state.heat_level = min(100, st.session_state.heat_level + 10)
-    else:
-        story_text = full_response
-        st.session_state.heat_level = min(100, st.session_state.heat_level + 10)
+        if result["zone"] not in st.session_state.visited_zones:
+            st.session_state.visited_zones.append(result["zone"])
 
-    st.session_state.chat_history.append({"role": "assistant", "content": story_text})
+        existing_keys = {i["key"] for i in st.session_state.inventory}
+        for item in result["new_items"]:
+            if item["key"] not in existing_keys:
+                st.session_state.inventory.append(item)
 
+        st.session_state.chat_history.append({
+            "role":       "assistant",
+            "content":    result["story"],
+            "heat_delta": result["heat_delta"],
+            "event":      result.get("event"),
+            "new_items":  result["new_items"],
+            "zone":       result["zone"],
+            "zone_data":  result["zone_data"],
+        })
+
+
+def build_js() -> str:
+    """Build the JS injection block that syncs Python state into the iframe UI."""
+    lines = []
+
+    # Mission accepted flag
+    accepted = "true" if st.session_state.mission_accepted else "false"
+    lines.append(f"window._missionAccepted = {accepted};")
+    lines.append("if(window._missionAccepted && typeof showGame==='function') showGame();")
+
+    # Heat
+    lines.append(
+        f"window.receiveFromPython({{type:'heat_set', value:{st.session_state.heat_level}}});"
+    )
+
+    # Zone (always send real zone data, even on first load)
+    zone_data = st.session_state.zone_data or ZONES.get(st.session_state.zone, {})
+    zone_js = json.dumps({
+        "zone":    st.session_state.zone,
+        "label":   zone_data.get("label", st.session_state.zone),
+        "exits":   zone_data.get("exits", []),
+        "objects": zone_data.get("objects", []),
+        "threats": zone_data.get("threats", []),
+        "flavor":  zone_data.get("flavor", ""),
+    })
+    lines.append(f"window.receiveFromPython({{type:'zone_update', data:{zone_js}}});")
+
+    # Visited zones for fog-of-war
+    visited_js = json.dumps(st.session_state.visited_zones)
+    lines.append(
+        f"window.receiveFromPython({{type:'visited_zones', zones:{visited_js}}});"
+    )
+
+    # Inventory
+    inv_js = json.dumps(st.session_state.inventory)
+    lines.append(
+        f"window.receiveFromPython({{type:'inventory_set', items:{inv_js}}});"
+    )
+
+    # Game over / victory
+    if st.session_state.game_over:
+        lines.append("window.receiveFromPython({type:'game_over'});")
+    if st.session_state.victory:
+        lines.append("window.receiveFromPython({type:'victory'});")
+
+    # Replay full chat history (stateless re-render on each Streamlit run)
+    if st.session_state.chat_history:
+        lines.append("if(typeof hideWelcome==='function') hideWelcome();")
+
+    for msg in st.session_state.chat_history:
+        content    = json.dumps(msg["content"])
+        role       = msg["role"]
+        heat_delta = msg.get("heat_delta", 0)
+        lines.append(
+            f"window.appendMessage('{role}', {content}, {heat_delta});"
+        )
+        ev = msg.get("event")
+        if ev:
+            lines.append(
+                f"window.receiveFromPython({{type:'event',"
+                f" event:'{ev.get('type','warning')}',"
+                f" msg:{json.dumps(ev.get('msg',''))},"
+                f" heatDelta:{ev.get('heatDelta',0)}}});"
+            )
+        for item in msg.get("new_items", []):
+            lines.append(
+                f"window.receiveFromPython({{type:'intel_unlock', item:{json.dumps(item)}}});"
+            )
+
+    # Re-enable input after AI reply so user can type the next move
+    if (st.session_state.chat_history
+            and st.session_state.chat_history[-1]["role"] == "assistant"):
+        lines.append("if(typeof setInputLock==='function') setInputLock(false);")
+
+    # Scroll to the latest message
+    lines.append(
+        "const anchor=document.getElementById('msg-anchor');"
+        " if(anchor) anchor.scrollIntoView();"
+    )
+    return "\n".join(lines)
+
+
+# ── Render ───────────────────────────────────────────────────────────────────
 ui_code = get_ui_code()
 if not ui_code:
-    st.error("Error: Could not find interface.html in this folder.")
+    st.error(
+        "interface.html not found — make sure it lives in the same directory as app.py."
+    )
     st.stop()
 
-current_heat = st.session_state.heat_level
-
-# FIX 4: Don't do string replacement on the HTML for heat —
-# drive the heat purely via JS injection, keeping the cached
-# HTML string untouched (so cache_data actually helps).
-history_js = f"window.receiveFromPython({{type: 'heat_set', value: {current_heat}}});\n"
-
-for msg in st.session_state.chat_history:
-    safe_content = json.dumps(msg["content"])
-    role_str = msg["role"]
-    history_js += f"window.appendMessage('{role_str}', {safe_content}, 0);\n"
-
-injection_script = f"""
-<script>
-    setTimeout(() => {{
-        if(typeof hideWelcome === 'function') hideWelcome();
-        {history_js}
-        const anchor = document.getElementById('msg-anchor');
-        if(anchor) anchor.scrollIntoView();
-    }}, 50);
-</script>
-"""
-
-components.html(ui_code + injection_script, height=750, scrolling=False)
+injection = f"<script>setTimeout(()=>{{ {build_js()} }}, 80);</script>"
+components.html(ui_code + injection, height=780, scrolling=False)
