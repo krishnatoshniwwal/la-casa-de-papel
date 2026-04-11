@@ -2,12 +2,12 @@ import os
 from dotenv import load_dotenv
 from langchain_community.document_loaders import DirectoryLoader, TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_openai import ChatOpenAI                         
+from langchain_groq import ChatGroq                        
 from langchain_huggingface import HuggingFaceEmbeddings         
 from langchain_chroma import Chroma
 
 load_dotenv()
-api_key = os.getenv("XAI_API_KEY")
+api_key = os.getenv("GROQ_API_KEY")
 
 ZONES = {
     "LOBBY": {
@@ -189,16 +189,15 @@ KEY_ITEM_HINTS = {
 class HeistBrain:
     def __init__(self):
         self.embeddings = HuggingFaceEmbeddings(
-            model_name="sentence-transformers/all-MiniLM-L6-v2",  # keep this
+            model_name="sentence-transformers/all-MiniLM-L6-v2",
             model_kwargs={"device": "cpu"},
             encode_kwargs={"batch_size": 32}
         )
-        self.llm = ChatOpenAI(
-            model="grok-3-mini",          # or "grok-3" for the full model
+        self.llm = ChatGroq(
+            model="llama-3.3-70b-versatile",
             temperature=0.75,
             max_retries=3,
             api_key=api_key,
-            base_url="https://api.x.ai/v1"   # xAI's OpenAI-compatible endpoint
         )
         self.db_path = "./chroma_db"
         self.vectorstore = None
