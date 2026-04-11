@@ -3,19 +3,21 @@ from brain import HeistBrain, ZONES
 from html import escape
 import streamlit.components.v1 as components
 
+
 st.set_page_config(page_title="Vegas Black Vault", layout="wide")
 
 @st.cache_resource
 def get_brain() -> HeistBrain:
-    brain = HeistBrain()
-    try:
-        from langchain_chroma import Chroma
-        brain.vectorstore = Chroma(
-            persist_directory=brain.db_path,
-            embedding_function=brain.embeddings
-        )
-    except Exception:
-        pass
+    with st.spinner("🔐 Initializing Oracle intelligence systems..."):
+        brain = HeistBrain()
+        try:
+            from langchain_chroma import Chroma
+            brain.vectorstore = Chroma(
+                persist_directory=brain.db_path,
+                embedding_function=brain.embeddings
+            )
+        except Exception:
+            pass
     return brain
 
 brain = get_brain()
@@ -356,18 +358,13 @@ def render_floor_map(zone_key: str):
     components.html(html, height=max(460, 220 + rows * 100), scrolling=False)
 
 
-
-
-
-
-
 # --- STATE INIT ---
 if "show_map" not in st.session_state:
     st.session_state.show_map = False
 if "heat_level" not in st.session_state:
     st.session_state.heat_level = 0
 if "chat_history" not in st.session_state:
-    st.session_state.chat_history = [{"role": "assistant", "content": "You are in the Hotel Lobby. Give your orders, Mastermind."}]
+    st.session_state.chat_history = [{"role": "assistant", "content": "You are in the Hotel Lobby. Give your orders, Mastermind.", "heat_delta": 0}]
 if "inventory" not in st.session_state:
     st.session_state.inventory = []
 if "zone" not in st.session_state:
@@ -379,10 +376,10 @@ if "victory" not in st.session_state:
 
 # Sync backend brain with Streamlit state
 brain.current_zone = st.session_state.zone
-brain.inventory = [item["key"] for item in st.session_state.inventory]
-brain.heat = st.session_state.heat_level
-brain.game_over = st.session_state.game_over
-brain.victory = st.session_state.victory
+brain.inventory    = [item["key"] for item in st.session_state.inventory]
+brain.heat         = st.session_state.heat_level
+brain.game_over    = st.session_state.game_over
+brain.victory      = st.session_state.victory
 
 # --- SIDEBAR HUD ---
 with st.sidebar:
@@ -409,36 +406,35 @@ with st.sidebar:
 
     st.divider()
 
+    # FIX: Show item descriptions beneath each label
     st.subheader("🎒 INTEL & INVENTORY")
     if st.session_state.inventory:
         for item in st.session_state.inventory:
             st.write(f"• **{item['label']}**")
+            st.caption(item.get("desc", ""))
     else:
         st.write("Empty")
-
-st.title("Vegas Black Vault")
-
-if st.session_state.show_map:
-    col1, col2 = st.columns([6, 1])
-
-    with col1:
-        st.subheader("Tactical Map")
-
-    with col2:
-        if st.button("Close Map", use_container_width=True):
-            st.session_state.show_map = False
-            st.rerun()
-
-    render_floor_map(st.session_state.zone)
-
 
 # --- MAIN CHAT AREA ---
 st.title("Vegas Black Vault")
 
+# FIX: st.stop() so input disappears and game actually halts
 if st.session_state.game_over:
-    st.error("🚨 GAME OVER. Operative captured. Refresh to restart.")
+    st.error("🚨 GAME OVER — Operative captured. Refresh to restart.")
+    st.stop()
 elif st.session_state.victory:
-    st.success("💎 VICTORY. The Velvet Ace is yours.")
+    st.success("💎 VICTORY — The Velvet Ace is yours. The van is two blocks away.")
+    st.stop()
+
+if st.session_state.show_map:
+    col1, col2 = st.columns([6, 1])
+    with col1:
+        st.subheader("Tactical Map")
+    with col2:
+        if st.button("Close Map", use_container_width=True):
+            st.session_state.show_map = False
+            st.rerun()
+    render_floor_map(st.session_state.zone)
 
 # Render previous messages
 for msg in st.session_state.chat_history:
@@ -450,12 +446,12 @@ for msg in st.session_state.chat_history:
 # Input Field
 user_move = st.chat_input("What is your next move?")
 
-if user_move and not st.session_state.game_over and not st.session_state.victory:
+if user_move:
     # 1. Show user message
-    st.session_state.chat_history.append({"role": "user", "content": user_move})
+    st.session_state.chat_history.append({"role": "user", "content": user_move, "heat_delta": 0})
     with st.chat_message("user"):
         st.write(user_move)
-        
+
     # 2. Get AI GM response
     with st.chat_message("assistant"):
         with st.spinner("Oracle is processing..."):
@@ -463,24 +459,36 @@ if user_move and not st.session_state.game_over and not st.session_state.victory
             st.write(result["story"])
             if result.get("heat_delta", 0) > 0:
                 st.caption(f"🔥 Heat +{result['heat_delta']}")
-    
+
     # 3. Save to state
     st.session_state.chat_history.append({
-        "role": "assistant", 
+        "role": "assistant",
         "content": result["story"],
         "heat_delta": result["heat_delta"]
     })
     st.session_state.heat_level = result["total_heat"]
-    st.session_state.zone = result["zone"]
-    st.session_state.game_over = result["game_over"]
-    st.session_state.victory = result["victory"]
-    
+    st.session_state.zone       = result["zone"]
+    st.session_state.game_over  = result["game_over"]
+    st.session_state.victory    = result["victory"]
+
     # 4. Handle new inventory items
     existing_keys = {i["key"] for i in st.session_state.inventory}
     for item in result["new_items"]:
         if item["key"] not in existing_keys:
             st.session_state.inventory.append(item)
-            st.toast(f"Acquired: {item['label']}!", icon="📦")
-            
-    # Force a rerun to update the sidebar HUD
+            st.toast(f"📦 Acquired: {item['label']}!", icon="✅")
+
+    # 5. FIX: Show event banner (ALERTED / COMPROMISED / CAPTURED / VICTORY)
+    event = result.get("event")
+    if event:
+        etype    = event.get("type", "warning")
+        msg_text = event.get("msg", "")
+        if etype == "danger":
+            st.error(f"🚨 {msg_text}")
+        elif etype == "success":
+            st.success(f"✅ {msg_text}")
+        else:
+            st.warning(f"⚠️ {msg_text}")
+
+    # 6. Rerun to refresh sidebar HUD
     st.rerun()

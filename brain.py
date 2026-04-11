@@ -2,11 +2,12 @@ import os
 from dotenv import load_dotenv
 from langchain_community.document_loaders import DirectoryLoader, TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
+from langchain_openai import ChatOpenAI                         
+from langchain_huggingface import HuggingFaceEmbeddings         
 from langchain_chroma import Chroma
 
 load_dotenv()
-api_key = os.getenv("GOOGLE_API_KEY")
+api_key = os.getenv("XAI_API_KEY")
 
 ZONES = {
     "LOBBY": {
@@ -154,18 +155,50 @@ ITEM_TRIGGERS = {
 }
 
 
+# Items auto-granted when the player searches/scouts the correct zone.
+ZONE_ITEMS = {
+    "CASHIER_CAGE":     ["B3_KEYCARD", "GUARD_SCHEDULE"],
+    "SECURITY_COMMAND": ["B3_KEYCARD"],
+    "SURVEILLANCE_HQ":  ["LASER_SPECS", "CAMERA_LOOP_DEVICE"],
+    "COUNT_ROOM":       ["KEY_ALPHA", "KEY_BETA"],
+}
+
+# Key items that require the AI to hint first — player must act on the hint.
+KEY_ITEM_HINTS = {
+    "VAULT_PIN": {
+        "zone": "SECURITY_COMMAND",
+        "hint": (
+            "HINT TO GM: The player is in Security Command. "
+            "There is a sticky note with the vault PIN taped under the desk — "
+            "drop a subtle clue that something is hidden under the desk without "
+            "naming it directly. Do NOT award the item yet."
+        ),
+    },
+    "BIOMETRIC_BYPASS": {
+        "zone": "SURVEILLANCE_HQ",
+        "hint": (
+            "HINT TO GM: The player is in Surveillance HQ. "
+            "The terminal here holds biometric records for all B4-authorised staff. "
+            "Hint that the system could be exploited to extract or clone credentials "
+            "without naming it directly. Do NOT award the item yet."
+        ),
+    },
+}
+
+
 class HeistBrain:
     def __init__(self):
-        self.embeddings = GoogleGenerativeAIEmbeddings(
-            model="models/gemini-embedding-001",
-            google_api_key=api_key,
-            task_type="retrieval_document"
+        self.embeddings = HuggingFaceEmbeddings(
+            model_name="sentence-transformers/all-MiniLM-L6-v2",  # keep this
+            model_kwargs={"device": "cpu"},
+            encode_kwargs={"batch_size": 32}
         )
-        self.llm = ChatGoogleGenerativeAI(
-            model="gemini-flash-latest", 
+        self.llm = ChatOpenAI(
+            model="grok-3-mini",          # or "grok-3" for the full model
             temperature=0.75,
-            max_retries=3, # Automatically handles exponential backoff
-            google_api_key=api_key
+            max_retries=3,
+            api_key=api_key,
+            base_url="https://api.x.ai/v1"   # xAI's OpenAI-compatible endpoint
         )
         self.db_path = "./chroma_db"
         self.vectorstore = None
@@ -200,6 +233,7 @@ class HeistBrain:
         return z
 
     def _check_item_triggers(self, user_move: str) -> list[str]:
+        """Keyword-triggered grant — used for key items that need deliberate player action."""
         move_lower = user_move.lower()
         triggered = []
         for item_key, keywords in ITEM_TRIGGERS.items():
@@ -209,6 +243,24 @@ class HeistBrain:
                         triggered.append(item_key)
                         break
         return triggered
+
+    def _check_zone_search(self, user_move: str) -> list[str]:
+        """Auto-grant findable items when the player searches the current zone.
+        Key items (VAULT_PIN, BIOMETRIC_BYPASS) are excluded — they need hint-then-act."""
+        SEARCH_VERBS = [
+            "search", "scout", "look", "examine", "check", "inspect",
+            "sweep", "scan", "explore", "investigate", "look around",
+            "case the", "survey", "recon"
+        ]
+        move_lower = user_move.lower()
+        if not any(v in move_lower for v in SEARCH_VERBS):
+            return []
+        key_items = set(KEY_ITEM_HINTS.keys())
+        granted = []
+        for item_key in ZONE_ITEMS.get(self.current_zone, []):
+            if item_key not in self.inventory and item_key not in key_items:
+                granted.append(item_key)
+        return granted
 
     def _try_move(self, user_move: str) -> str | None:
         move_lower = user_move.lower()
@@ -282,9 +334,15 @@ class HeistBrain:
                 else:
                     blocked_msg = f"[ACCESS_DENIED: {reason}]"
 
-        new_item_keys = self._check_item_triggers(user_move)
+        # ── Item discovery (two-tier) ─────────────────────────────────────────
+        # Tier 1: auto-grant on search actions in the current zone
+        zone_search_keys = self._check_zone_search(user_move)
+        # Tier 2: keyword-triggered grant (player acted on a hint)
+        keyword_keys     = self._check_item_triggers(user_move)
+        all_new_keys     = list(dict.fromkeys(zone_search_keys + keyword_keys))
+
         new_items = []
-        for key in new_item_keys:
+        for key in all_new_keys:
             defn = ITEM_DEFINITIONS.get(key, {})
             self.inventory.append(key)
             entry = {"key": key, "label": defn.get("label", key), "desc": defn.get("desc", "")}
@@ -310,6 +368,13 @@ class HeistBrain:
             labels = [i["label"] for i in new_items]
             new_items_note = f"\nPLAYER JUST ACQUIRED: {', '.join(labels)} — mention this discovery in the story.\n"
 
+        # Inject hint nudge for key items when player is in the right zone
+        key_item_note = ""
+        for item_key, hint_data in KEY_ITEM_HINTS.items():
+            if hint_data["zone"] == self.current_zone and item_key not in self.inventory:
+                key_item_note += f"\n{hint_data['hint']}\n"
+                break  # one hint at a time
+
         block_note = f"\nGM BLOCK: {blocked_msg}\n" if blocked_msg else ""
 
         prompt = f"""
@@ -322,6 +387,7 @@ Your job is to judge player actions FAIRLY using the SECURITY FACTS and ZONE DAT
 ═══ ZONE DATA ═══
 {zone_summary}
 {new_items_note}
+{key_item_note}
 {block_note}
 
 ═══ PLAYER MOVE ═══
