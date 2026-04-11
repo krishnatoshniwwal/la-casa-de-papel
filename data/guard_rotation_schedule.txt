@@ -2,54 +2,32 @@
 # ID : HL-01
 # SENSITIVITY : CONFIDENTIAL
 
-## SHIFT STRUCTURE ##
-Shift 1: 06:00–14:00
-Shift 2: 14:00–22:00
-Shift 3: 22:00–06:00
+## SHIFTS ##
+06:00–14:00  
+14:00–22:00  
+22:00–06:00  
 
-## SHIFT OVERLAP ##
---Duration: 10 minutes
---Reduced active patrol coverage
+## OVERLAP ##
+--10 min reduced coverage  
 
-## PATROL ROUTES ##
-Casino Floor:
---Loop duration: 12 minutes
---Continuous movement
+## PATROLS ##
+Casino: 12 min loop  
+Hotel: 25 min sweep  
+B3: fixed + 10 min rotation  
 
-Hotel Floors:
---Sweep duration: 25 minutes
---Floor-by-floor rotation
+## BREAKS ##
+--15 min every 2 hours  
+--Fixed schedule  
 
-B3 Zone:
---Fixed guards + rotating patrol every 10 minutes
-
-## BREAK SCHEDULE ##
---15 min break every 2 hours
---Break windows:
-----08:00, 10:00, 12:00
-----16:00, 18:00, 20:00
-----00:00, 02:00, 04:00
-
-## COVERAGE RULES ##
---Minimum 70% guard presence required
---Breaks staggered but pattern repeats daily
-
-## RESPONSE TIMES ##
---Casino: 5–8 sec
---Hotel: 10–15 sec
---B3: 3–5 sec
-
-## AI INTERPRETATION ##
-Normal State:
---Guards follow fixed routes
-
-Alert State:
---Guards converge to location
+## RESPONSE TIME ##
+Casino: 5–8 sec  
+Hotel: 10–15 sec  
+B3: 3–5 sec  
 
 ## LOOPHOLES ##
---Shift overlap creates 10 min reduced coverage window
---Break timings predictable across days
---Night shift reaction slower by ~1–2 sec
---Guards cluster near break rooms before shift end
---Patrol routes repeat every cycle without variation
---Radio delay between floors: ~3 sec
+--Shift overlap reduces coverage  
+--Break timings predictable  
+--Night shift slower (~1–2 sec)  
+--Guards cluster near break rooms  
+--Routes repeat without variation  
+--Radio delay ~3 sec  

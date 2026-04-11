@@ -3,211 +3,108 @@
 # SENSITIVITY : INTERNAL
 
 ## OVERVIEW ##
-Profiles of staff behavior patterns affecting security.
-Each profile includes role, behavior, routine, and exploitable traits.
+Staff behavior patterns affecting security.
+Profiles include role, routine, and weakness.
 
 --------------------------------------------------
 
-## GUARD - RICK GREEN ##
---Position: B3 patrol
+## GUARDS ##
+
+RICK GREEN:
+--Location: B3
 --Behavior: distracted
 --Pattern: checks phone every 3–5 min
---Location bias: stairwell zones
---Weakness: reduced awareness when stationary
+--Weakness: low awareness when stationary
 
-## GUARD - MARCUS REED ##
---Position: Casino floor
+MARCUS REED:
+--Location: casino
 --Behavior: disciplined
---Pattern: strict patrol loops every 12 min
---Weakness: predictable movement path
+--Pattern: fixed patrol loop (12 min)
+--Weakness: predictable path
 
-## GUARD - LUIS MARTINEZ ##
---Position: Parking B2
+LUIS MARTINEZ:
+--Location: B2 parking
 --Behavior: relaxed
---Pattern: long stationary periods near elevators
---Weakness: slow reaction time
+--Pattern: long stationary periods
+--Weakness: slow response
 
-## GUARD - DANIEL KIM ##
---Position: B3 access corridor
---Behavior: alert
---Pattern: frequent head turns every 5 sec
---Weakness: none easily exploitable
-
-## GUARD - TYLER BROOKS ##
---Position: Hotel floors
+TYLER BROOKS:
+--Location: hotel floors
 --Behavior: inconsistent
---Pattern: skips sections occasionally
---Weakness: incomplete patrol coverage
+--Pattern: skips patrol sections
+--Weakness: incomplete coverage
 
 --------------------------------------------------
 
-## JANITOR - MIGUEL DAS ##
---Position: Level 2–3
---Behavior: careless
---Pattern: leaves doors ajar during cleaning
---Weakness: creates unintended access points
+## JANITORS ##
 
-## JANITOR - CARLOS MENDEZ ##
---Position: Casino perimeter
---Behavior: routine-driven
---Pattern: repeats path every 45 min
+MIGUEL DAS:
+--Location: L2–L3
+--Behavior: careless
+--Pattern: leaves doors open
+--Weakness: creates access paths
+
+CARLOS MENDEZ:
+--Location: casino perimeter
+--Behavior: routine-based
+--Pattern: repeats every 45 min
 --Weakness: predictable timing
 
-## JANITOR - EDDIE NGUYEN ##
---Position: Service corridors
+EDDIE NGUYEN:
+--Location: service corridors
 --Behavior: efficient
---Pattern: fast cleaning cycles
---Weakness: ignores restricted signage
+--Pattern: ignores restrictions
+--Weakness: bypasses secure areas
 
 --------------------------------------------------
 
-## DEALER - MELISSA WARBURTON ##
---Position: Blackjack tables
+## DEALERS ##
+
+MELISSA WARBURTON:
 --Behavior: highly alert
---Pattern: scans players frequently
---Weakness: reports anomalies instantly
+--Weakness: reports quickly
 
-## DEALER - JASON MILLER ##
---Position: Roulette
---Behavior: casual
---Pattern: engages with players
---Weakness: distracted by conversations
-
-## DEALER - ANA LOPEZ ##
---Position: Baccarat
---Behavior: focused
---Pattern: minimal distraction
---Weakness: none significant
-
---------------------------------------------------
-
-## SECURITY SUPERVISOR - ROBERT HAYES ##
---Position: mobile (all floors)
---Behavior: disciplined
---Pattern: random patrol overrides
---Weakness: limited presence in one zone
-
-## SECURITY SUPERVISOR - TIFFANY CLARK ##
---Position: casino oversight
---Behavior: detail-oriented
---Pattern: monitors cameras frequently
---Weakness: relies heavily on surveillance feed
-
---------------------------------------------------
-
-## TECHNICIAN - ERIC CHEN ##
---Position: B2 engineering
---Behavior: methodical
---Pattern: checks systems every 60 min
---Weakness: focused on equipment, not surroundings
-
-## TECHNICIAN - JORGE RAMIREZ ##
---Position: HVAC systems
---Behavior: task-focused
---Pattern: responds only to alerts
---Weakness: ignores minor anomalies
-
---------------------------------------------------
-
-## RECEPTIONIST - EMILY PARK ##
---Position: Level 1 lobby
---Behavior: polite
---Pattern: fixed desk position
---Weakness: easily distracted by guest interaction
-
-## RECEPTIONIST - SARAH JOHNSON ##
---Position: lobby desk
---Behavior: efficient
---Pattern: fast processing
---Weakness: minimal verification during rush hours
-
---------------------------------------------------
-
-## BARTENDER - VINCE CARTER ##
---Position: casino bar
+JASON MILLER:
 --Behavior: social
---Pattern: constant interaction
---Weakness: low situational awareness
+--Weakness: distracted by players
 
-## BARTENDER - MARIA GONZALEZ ##
---Position: lounge
---Behavior: attentive
---Pattern: observes customers closely
---Weakness: limited movement
+ANA LOPEZ:
+--Behavior: focused
+--Weakness: minimal
 
 --------------------------------------------------
 
-## VAULT CUSTODIAN - ALBERT KING ##
---Position: B4
---Behavior: strict
---Pattern: follows protocol exactly
+## OTHER STAFF ##
+
+ERIC CHEN (Technician):
+--Pattern: checks systems hourly
+--Weakness: ignores surroundings
+
+JORGE RAMIREZ (HVAC):
+--Pattern: reacts only to alerts
+--Weakness: ignores minor issues
+
+EMILY PARK (Reception):
+--Pattern: fixed position
+--Weakness: distracted by guests
+
+VINCE CARTER (Bartender):
+--Pattern: constant interaction
+--Weakness: low awareness
+
+ALBERT KING (Vault):
+--Pattern: strict routine
 --Weakness: slow movement
 
-## VAULT CUSTODIAN - ANA COLBERT ##
---Position: B4
---Behavior: precise
---Pattern: double-checks all actions
---Weakness: predictable sequence timing
-
 --------------------------------------------------
 
-## ADDITIONAL STAFF (CONDENSED PROFILES) ##
+## GLOBAL PATTERNS ##
+--Behavior repeats every 24 hours
+--Night shift has lower alertness
+--Fatigue increases after 6 hours
 
-GUARD - SEAN WALKER
---Behavior: slow patrol
---Weakness: delayed reaction
-
-GUARD - DEVIN SCOTT
---Behavior: alert
---Weakness: none
-
-GUARD - OMAR HASSAN
---Behavior: relaxed
---Weakness: inattentive
-
-JANITOR - LEO RIVERA
---Behavior: repetitive routes
---Weakness: predictable timing
-
-JANITOR - HENRY LEE
---Behavior: quiet
---Weakness: avoids confrontation
-
-DEALER - MARK EVANS
---Behavior: casual
---Weakness: distracted easily
-
-DEALER - SOPHIA NG
---Behavior: focused
---Weakness: none
-
-TECHNICIAN - ADAM ROSS
---Behavior: reactive
---Weakness: ignores small issues
-
-TECHNICIAN - AMANDA SMITH
---Behavior: efficient
---Weakness: fixed routes
-
-SECURITY - JAKE TURNER
---Behavior: strict
---Weakness: predictable
-
-SECURITY - ALEX GARCIA
---Behavior: social
---Weakness: distracted
-
---------------------------------------------------
-
-## SYSTEM NOTES ##
---Behavior patterns repeat every 24 hours
---Night shift shows reduced alertness
---Human error probability increases after 6 hours
---Staff rarely communicate across departments
-
-## GLOBAL LOOPHOLES ##
---Repeated routines enable timing-based planning
---Human distraction reduces detection probability
---Door mismanagement creates unintended access paths
---Fatigue reduces reaction speed across all roles
---Staff rely heavily on systems rather than manual checks
+## LOOPHOLES ##
+--Predictable routines allow timing-based actions
+--Distractions reduce detection probability
+--Open doors create alternate paths
+--Staff rely on systems instead of observation

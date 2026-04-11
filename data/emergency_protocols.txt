@@ -2,50 +2,27 @@
 # ID : EL-02
 # SENSITIVITY : CONFIDENTIAL
 
-## OVERVIEW ##
-Defines system behavior during emergencies.
-
 ## FIRE ALARM ##
-Trigger:
---Smoke detection or manual activation
-
-Effects:
---Elevators return to Level 1
---Elevators lock
---Stairwells open
---Casino partially evacuated
+--Elevators go to Level 1 and lock  
+--Stairwells open  
+--Casino partially evacuated  
 
 ## POWER OUTAGE ##
-Trigger:
---Main grid failure
-
-Effects:
---Backup power activates instantly
---Surveillance switches to 15 fps
---Vault systems remain active
+--Backup activates instantly  
+--Cameras drop to 15 fps  
+--Vault remains secure  
 
 ## SECURITY BREACH ##
-Trigger:
---Unauthorized access
-
-Effects:
---Restricted zones lock
---Guards converge
+--Restricted zones lock  
+--Guards respond  
 
 ## EVACUATION ##
---Guests directed out
---Security focuses on containment
-
-## AI INTERPRETATION ##
-Fire:
---Prioritize evacuation
-
-Breach:
---Prioritize containment
+--Guests exit  
+--Security focuses on containment  
 
 ## LOOPHOLES ##
---Fire alarm disables elevator usage (forces stair access)
---Low-power mode reduces camera accuracy
---Guard focus shifts away from non-critical zones
---Multiple alerts reduce response efficiency
---Evacuation routes bypass normal security checkpoints
+--Fire alarm forces stair access  
+--Low power reduces camera accuracy  
+--Guard focus shifts  
+--Multiple alerts reduce efficiency  
+--Evacuation bypasses checkpoints  

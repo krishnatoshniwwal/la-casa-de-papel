@@ -3,60 +3,27 @@
 # SENSITIVITY : HIGHLY CONFIDENTIAL
 
 ## OVERVIEW ##
-Vault door is secured using mechanical + biometric + time-lock systems.
-
-## COMPONENTS ##
-Physical Keys:
---2 keys required
---Inserted into separate slots
-
-Biometric System:
---Fingerprint + retina
-
-Time-Lock:
---Predefined access windows
+Vault secured by keys + biometrics + time-lock.
 
 ## UNLOCK SEQUENCE ##
-Step 1: Insert both keys
-Step 2: Rotate keys within 5 seconds
-Step 3: Perform biometric authentication
-Step 4: Validate time-lock window
-Step 5: Door unlock begins
+1. Insert 2 keys  
+2. Turn both within 5 sec  
+3. Biometric scan  
+4. Time-lock check  
+5. Door opens  
 
-## DOOR SPECIFICATIONS ##
---Weight: 20–50 tons
---Unlock delay: 3 seconds
---Opening duration: 20 seconds
+## DOOR SPECS ##
+--Weight: 20–50 tons  
+--Unlock delay: 3 sec  
+--Open time: 20 sec  
 
-## FAILURE CONDITIONS ##
---Key rotation outside 5 sec window → reset
---Biometric failure → reset
---Time-lock mismatch → deny access
-
-## LOCKOUT RULES ##
---3 failed attempts → system lock (60 sec)
---Manual override disabled during lockout
-
-## AI INTERPRETATION ##
-Valid Sequence:
---All steps completed in correct order
-
-Invalid Sequence:
---Any step out of order resets process
-
-## SECURITY STATES ##
-Idle:
---Waiting for input
-
-Active:
---Sequence in progress
-
-Locked:
---Failure condition triggered
+## FAILURE RULES ##
+--Wrong timing → reset  
+--3 failures → 60 sec lock  
 
 ## LOOPHOLES ##
---Key rotation tolerance extends to ~6 sec if first key partially rotated
---Biometric scan can be pre-triggered before key rotation completes
---Door opening cannot be interrupted once initiated
---Time-lock validation checks only at final step (can pre-complete earlier steps)
---Mechanical tension can hold first key in active state
+--Key timing extends to ~6 sec with partial turn  
+--Biometric can be triggered early  
+--Door cannot be stopped once opening  
+--Time-lock checked only at final step  
+--First key can be held in position  

@@ -3,86 +3,40 @@
 # SENSITIVITY : HIGHLY CONFIDENTIAL
 
 ## OVERVIEW ##
-Centralized AI-assisted surveillance system monitors all areas including casino, hotel, B3, and B4.
+Central surveillance monitors casino, hotel, B3, and B4.
 
-## SYSTEM STRUCTURE ##
-Primary Control:
---B3 Surveillance HQ
---Sealed room with no external windows
---24/7 staffed
+## CONTROL ##
+Primary: B3 surveillance HQ  
+Secondary: Level 1 security office  
+Backup: B2 recording system  
 
-Secondary Control:
---Level 1 security office
---Limited override capability
+## CAMERA DISTRIBUTION ##
+Total: ~1240
 
-Backup Node:
---B2 server rack
---Failsafe recording only
-
-## CAMERA NETWORK ##
-Total Cameras: ~1240
-
-Casino Floor:
---620 cameras
---High-density overlapping coverage
-
-Hotel Floors:
---320 cameras
---Corridor + elevator focus
-
-Restricted Zones:
---300 cameras
---High precision tracking
-
-## CAMERA TYPES ##
---Fixed dome cameras
---PTZ (pan-tilt-zoom)
---Thermal cameras (B3/B4)
+--Casino: 620  
+--Hotel: 320  
+--Restricted zones: 300  
 
 ## PERFORMANCE ##
-Frame Rate:
---Normal: 30 fps
---Low power: 15 fps
+--Normal: 30 fps  
+--Low power: 15 fps  
 
-Tracking:
---Auto-tracking enabled in high-risk zones
---Facial recognition in lobby + casino
-
-## AI PROCESSING ##
-Detection Types:
---Motion tracking
---Facial recognition
---Behavioral anomaly detection
-
-Priority Levels:
---High (restricted zones)
---Medium (casino)
---Low (hotel floors)
+Features:
+--Auto-tracking in restricted zones  
+--Facial recognition in lobby/casino  
 
 ## BLIND SPOTS ##
---Level 2 kitchen corridor (steam interference)
---Stairwell L3–L4 (2 sec overlap gap)
---B3 maintenance shaft junction
+--Level 2 kitchen (steam interference)  
+--Stairwell L3–L4 (~2 sec gap)  
+--B3 maintenance shaft  
 
-## POWER SYSTEM ##
-Primary:
---Main grid
-
-Backup:
---90 min full system
-
-Emergency:
---4 hours reduced mode
-
-## FAILURE RESPONSE ##
---Signal loss triggers alert
---Nearby cameras increase scan frequency
+## RESPONSE ##
+--Camera loss triggers alert  
+--Nearby cameras increase tracking  
 
 ## LOOPHOLES ##
---Camera rotation cycle creates 1–2 sec blind sweep
---Frame drop in low power mode enables motion blur
---AI prioritizes highest threat → distractions reduce tracking
---Level 1 node has weaker security than B3
---Thermal cameras have slower refresh (~0.5 sec lag)
---Overlapping camera zones create brief confusion in tracking IDs
---Multiple simultaneous anomalies reduce detection accuracy
+--1–2 sec blind sweep during camera rotation  
+--Low power mode reduces accuracy  
+--Multiple events reduce AI focus  
+--Level 1 control is less secure than B3  
+--Thermal cameras lag ~0.5 sec  

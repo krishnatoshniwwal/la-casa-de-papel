@@ -1,57 +1,59 @@
-#SECURITY LOG : THE B4
-#ID : BP-12
-#SENSITIVITY : HIGHLY CONFIDENTIAL
+# SECURITY LOG : B4 VAULT LEVEL
+# ID : BP-12
+# SENSITIVITY : HIGHLY CONFIDENTIAL
 
-B4 (Deep Subterranean Vault Level) — Ultra-Secure Valuables Storage
-Access Level: Extreme restriction (higher than B3)
-Depth: ~20–30 meters below ground
+## OVERVIEW ##
+B4 is a deep underground vault level.
+Depth: ~20–30 meters below ground  
+Access level: highest restriction  
 
-## Primary Function ## 
-Storage of ultra-high-value physical assets:
-Diamonds & gemstones
-High-value jewelry
-Bullion (gold/silver bars)
-High-stakes collateral from VIP clients
-Rare collectibles (art, watches, etc.)
+## FUNCTION ##
+Stores high-value assets:
+--Diamonds  
+--Jewelry  
+--Bullion  
+--VIP collateral  
+--Rare collectibles  
 
-## STRUCTURAL DESIGN ## 
-Reinforced concrete walls (~1–2 meters thick)
-Steel alloy inner lining
-Blast-resistant design
-Seismic isolation supports
-Vault Chambers:
---Main central vault hall
---Multiple private vault rooms / safety deposit boxes
-Layout:
---1 central corridor
---10–20 vault chambers branching out
---Individual client vault compartments
-Vault Doors
---Multi-ton (20–50 ton) vault doors
---Time-lock mechanisms
---Dual-control unlocking (2 authorized personnel required)
+## STRUCTURE ##
+--Reinforced concrete walls (1–2 m thick)  
+--Steel inner lining  
+--Blast-resistant design  
 
-## SECURITY LAYERS ##
-Physical Isolation
---No direct connection to public areas
---Access only via:
-----Dedicated secure elevator (from B3)
-----Reinforced stairwell
+Vault Layout:
+--1 central corridor  
+--10–20 vault chambers  
+--Private storage compartments  
 
-Multi-Factor Authentication:
-To even reach vault zone
---Level 1: Keycard (restricted clearance)
---Level 2: Biometric (iris + fingerprint)
---Level 3: Dual authorization (two-person rule)
---Level 4: Time-based lock windows
+## ACCESS ##
+--No public access  
+--Entry via secure elevator from B3  
+--Reinforced stairwell backup  
 
-Active Monitoring
---24/7 surveillance (controlled from B3)
---Motion sensors + thermal sensors
---Alarm systems
+## SECURITY ##
+--24/7 surveillance (controlled from B3)  
+--Motion + thermal sensors  
+--Alarm system active  
 
-Staffing (Very Limited)
---Vault security officers: 10–15 (rotational)
---Vault custodians: 5–8
---Audit/compliance officers: 3–5
---No unnecessary personnel allowed
+Authentication Layers:
+--Keycard  
+--Biometric (fingerprint + retina)  
+--Dual authorization  
+--Time-based access  
+
+## VAULT DOORS ##
+--Weight: 20–50 tons  
+--Dual-key system  
+--Time-lock enabled  
+
+## STAFF ##
+--Security: 10–15  
+--Custodians: 5–8  
+--Audit staff: 3–5  
+
+## LOOPHOLES ##
+--Access depends fully on B3 systems  
+--Dual authorization requires coordination  
+--Time-lock windows create predictable access periods  
+--Vault chambers separated (partial access possible)  
+--Surveillance controlled from single location (B3)  

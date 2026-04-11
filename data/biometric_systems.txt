@@ -4,69 +4,30 @@
 
 ## OVERVIEW ##
 Biometric systems control access to B3 and B4.
-System requires multi-factor authentication.
 
-## SYSTEM COMPONENTS ##
-Fingerprint Scanner:
---Resolution: 500 DPI
---Scan time: 1.5 seconds
+## COMPONENTS ##
+--Keycard (entry trigger)  
+--Fingerprint scanner (1.5 sec)  
+--Retina scanner (2.0 sec, B4 only)  
 
-Retina Scanner:
---Scan time: 2.0 seconds
---Accuracy: 99.9%
+## AUTH FLOW ##
+1. Keycard  
+2. Fingerprint  
+3. Retina (B4)  
+4. Door unlock  
 
-Control Unit:
---Located adjacent to secured doors
---Connected to B3 central system
+## FAILURE RULES ##
+--3 failed attempts → 15 sec lock  
+--All attempts logged  
 
-## AUTHENTICATION FLOW ##
-Step 1: Keycard verification
-Step 2: Fingerprint scan
-Step 3: Retina scan (B4 only)
-Step 4: Access granted
-
-## RESPONSE TIMES ##
---Fingerprint validation: 1.5 sec
---Retina validation: 2.0 sec
---Door unlock delay: 1.0 sec
-
-## FAILURE CONDITIONS ##
---1 failed attempt: retry allowed
---2 failed attempts: warning state
---3 failed attempts: system lock (15 sec)
-
-## REBOOT CONDITIONS ##
-Trigger:
---Signal disruption
---Manual glitch attempt
-
-Reboot Time:
---Minimum: 30 sec
---Maximum: 45 sec
-
-During reboot:
---Scanner offline
---Door state unchanged
-
-## SECURITY RULES ##
---Dual authentication required for B4
---All attempts logged in B3
---Override requires 2 authorized personnel
-
-## AI INTERPRETATION ##
-Valid Input:
---Matches stored biometric data
-
-Invalid Input:
---Mismatch → failure count increment
-
-Glitch Detection:
---Rapid repeated scans → flagged
+## REBOOT ##
+--Triggered by glitch or signal issue  
+--Duration: 30–45 sec  
+--Door remains in last state  
 
 ## LOOPHOLES ##
---Scanner cache retains last valid scan for 2 sec
---Door remains in last state during reboot
---Glitching forces predictable 30–45 sec downtime
---Retina scanner fails under intense directed light (>50,000 lux)
---Fingerprint scanner accepts partial print if >70% match
---System does not cross-check identity between fingerprint and retina
+--2 sec cache of last valid scan  
+--Door stays open/closed during reboot  
+--Retina fails under strong light  
+--Fingerprint accepts ~70% match  
+--No cross-check between fingerprint & retina  

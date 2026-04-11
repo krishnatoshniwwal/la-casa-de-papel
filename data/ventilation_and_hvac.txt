@@ -3,44 +3,27 @@
 # SENSITIVITY : CONFIDENTIAL
 
 ## OVERVIEW ##
-Central HVAC connects all floors including restricted zones.
+HVAC connects all floors including restricted zones.
 
-## SYSTEM STRUCTURE ##
-Main ducts:
---Size: 80x80 cm
-
-Secondary ducts:
---Size: 40x40 cm
-
-Vertical shafts:
---Connect Level 2 to B3
+## STRUCTURE ##
+--Main ducts: 80x80 cm  
+--Secondary ducts: 40x40 cm  
+--Vertical shafts connect L2 → B3  
 
 ## AIRFLOW ##
---Constant circulation
---Temperature regulated at 22–24°C
+--Constant circulation  
+--Temperature: 22–24°C  
 
 ## CONTROL ##
-Main control panel located in B2 engineering room
+--Main panel in B2  
 
-## CONNECTIONS ##
---Level 2 kitchen → vertical shaft
---B3 → maintenance ducts
---B4 → isolated but partially connected
-
-## LIMITATIONS ##
---Noise increases with movement
---Filters block some paths
-
-## AI INTERPRETATION ##
-Normal:
---Stable airflow
-
-Disruption:
---Fan shutdown triggers alert
+## LIMITS ##
+--Movement creates noise  
+--Filters block some paths  
 
 ## LOOPHOLES ##
---Fan shutdown reduces noise detection
---Airflow delay allows temporary heat masking
---Maintenance ducts not fully monitored
---Kitchen vents bypass camera coverage
---Filters removable with tools (time: ~20 sec)
+--Fan shutdown reduces noise detection  
+--Airflow delay helps thermal masking  
+--Maintenance ducts not fully monitored  
+--Kitchen vents bypass cameras  
+--Filters removable (~20 sec)  
