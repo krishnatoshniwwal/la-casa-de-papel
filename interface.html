@@ -432,32 +432,17 @@
         <div class="section-label">// OPERATIONS</div>
         <div class="ops-grid">
 
-          <button class="ops-btn scout"
-                  onclick="sendToPython('scout')"
-                  title="Scout the perimeter">
-            <i class="fas fa-binoculars"></i>
-            SCOUT
+          <button class="ops-btn scout" onclick="triggerScout()" title="Scout the perimeter">
+            <i class="fas fa-binoculars"></i> SCOUT
           </button>
-
-          <button class="ops-btn hack"
-                  onclick="sendToPython('hack')"
-                  title="Hack security systems">
-            <i class="fas fa-terminal"></i>
-            HACK
+          <button class="ops-btn hack" onclick="triggerHack()" title="Hack security systems">
+            <i class="fas fa-terminal"></i> HACK
           </button>
-
-          <button class="ops-btn plan"
-                  onclick="sendToPython('plan')"
-                  title="Refine the plan">
-            <i class="fas fa-map"></i>
-            PLAN
+          <button class="ops-btn plan" onclick="document.getElementById('blueprint-modal').style.display='flex'" title="View Vault Schematics">
+            <i class="fas fa-map"></i> BLUEPRINT
           </button>
-
-          <button class="ops-btn escape"
-                  onclick="sendToPython('escape')"
-                  title="Trigger escape protocol">
-            <i class="fas fa-person-running"></i>
-            ESCAPE
+          <button class="ops-btn escape" onclick="triggerEscape()" title="Trigger escape protocol">
+            <i class="fas fa-person-running"></i> ESCAPE
           </button>
 
         </div>
@@ -498,7 +483,50 @@
     </div><!-- /chat-area -->
   </div><!-- /main-layout -->
 </div><!-- /app -->
+<div id="blueprint-modal" style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(4,3,10,0.95); align-items:center; justify-content:center; backdrop-filter:blur(10px);">
+    <div style="border:1px solid var(--neon-blue); padding:24px; background:#0a0814; width:90%; max-width:1000px; box-shadow: 0 0 30px rgba(0,212,255,0.1);">
+      
+      <div style="display:flex; justify-content:space-between; font-family:'Share Tech Mono',monospace; margin-bottom:20px;">
+         <span style="color:var(--neon-blue); letter-spacing: 2px;">// THE VELVET ACE: B3 & B4 TACTICAL SCHEMATICS</span>
+         <button onclick="document.getElementById('blueprint-modal').style.display='none'" style="color:var(--neon-pink); background:none; border:none; cursor:pointer; font-family:inherit; letter-spacing:1px;">[X] CLOSE</button>
+      </div>
 
+      <div style="height:500px; display:grid; grid-template-columns: 1fr 1.5fr 1fr; grid-template-rows: 1fr 1.5fr 1fr; gap:16px; padding:20px; background: repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(0,212,255,0.03) 40px, rgba(0,212,255,0.03) 41px), repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(0,212,255,0.03) 40px, rgba(0,212,255,0.03) 41px); border: 1px dashed rgba(0,212,255,0.3);">
+         
+         <div style="border:1px solid var(--text-dim); display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--text-secondary); font-family:'Share Tech Mono'; font-size:12px; text-align:center;">
+            SECURE ELEVATOR<br><span style="color:var(--neon-orange); font-size:10px; margin-top:4px;">[Biometric + Keycard]</span>
+         </div>
+         <div style="border:1px solid rgba(255,255,255,0.1); border-bottom: none; display:flex; align-items:center; justify-content:center; color:var(--neon-blue); font-family:'Share Tech Mono'; font-size:14px; letter-spacing: 2px;">
+            B3 CENTRAL CORRIDOR<br>(Laser Grid Active)
+         </div>
+         <div style="border:1px solid var(--neon-purple); display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--neon-purple); font-family:'Share Tech Mono'; font-size:12px; text-align:center; background:rgba(180,0,255,0.05);">
+            HVAC MAINTENANCE<br><span style="color:var(--text-dim); font-size:10px; margin-top:4px;">[Connects L2 to B3]</span>
+         </div>
+
+         <div style="border:1px solid var(--neon-pink); display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--neon-pink); font-family:'Share Tech Mono'; font-size:12px; text-align:center; background:rgba(255,45,120,0.05);">
+            SURVEILLANCE HQ<br><span style="font-size:10px; margin-top:4px;">Primary Control Node</span><br><span style="color:var(--text-dim); font-size:10px;">[No Windows]</span>
+         </div>
+         <div style="border:2px solid var(--neon-gold); display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--neon-gold); box-shadow: inset 0 0 20px rgba(255,215,0,0.1); font-family:'Bebas Neue'; font-size:32px; letter-spacing:6px; text-shadow: 0 0 10px rgba(255,215,0,0.5);">
+            B4 DEEP VAULT<br>
+            <span style="font-size:12px; font-family:'Share Tech Mono'; color:var(--text-primary); letter-spacing: 1px; margin-top:10px; text-shadow:none;">TIME-LOCK DUAL CONTROL</span>
+         </div>
+         <div style="border:1px solid var(--neon-pink); display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--neon-pink); font-family:'Share Tech Mono'; font-size:12px; text-align:center;">
+            SECURITY COMMAND<br><span style="font-size:10px; margin-top:4px;">Guards: Daniel Kim, Rick Green</span>
+         </div>
+
+         <div style="border:1px solid var(--text-dim); display:flex; align-items:center; justify-content:center; color:var(--text-secondary); font-family:'Share Tech Mono'; font-size:12px; text-align:center;">
+            B2 ENGINEERING<br><span style="font-size:10px;">(Backup Servers)</span>
+         </div>
+         <div style="border:1px solid rgba(255,255,255,0.1); border-top: none; display:flex; align-items:center; justify-content:center; color:var(--neon-blue); font-family:'Share Tech Mono'; font-size:14px; letter-spacing: 2px;">
+            STAIRWELL L3-L4
+         </div>
+         <div style="border:1px solid var(--neon-green); display:flex; flex-direction:column; align-items:center; justify-content:center; color:var(--neon-green); font-family:'Share Tech Mono'; font-size:12px; text-align:center; background:rgba(0,255,159,0.05);">
+            COUNT ROOM<br><span style="font-size:10px; margin-top:4px;">High-Value Transition</span>
+         </div>
+
+      </div>
+    </div>
+  </div>
 
 <script>
 /* ════════════════════════════════════════════════════════════
@@ -967,7 +995,61 @@ sendBtn.addEventListener("click", () => {
   }
 });
 
+/* ════════════════════════════════════════════════════════════
+   14. FRONT-END ILLUSIONS (HUD EFFECTS)
+════════════════════════════════════════════════════════════ */
 
+function triggerScout() {
+  const overlay = document.createElement("div");
+  overlay.style.cssText = "position:fixed; inset:0; z-index:9999; background:repeating-linear-gradient(0deg, rgba(0,0,0,0.8), rgba(0,0,0,0.8) 2px, transparent 2px, transparent 4px), url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E'); opacity:0.1; mix-blend-mode: overlay; pointer-events:none;";
+  
+  const text = document.createElement("div");
+  text.style.cssText = "position:fixed; top:20px; right:20px; z-index:10000; color:var(--neon-green); font-family:'Share Tech Mono'; font-size:18px; letter-spacing:2px; animation: blink 1s infinite;";
+  text.innerHTML = "<i class='fas fa-video'></i> CAM-04 OVERRIDE ACTIVE";
+  
+  document.body.appendChild(overlay);
+  document.body.appendChild(text);
+  
+  setTimeout(() => { overlay.remove(); text.remove(); }, 3000);
+}
+
+function triggerHack() {
+  const overlay = document.createElement("div");
+  overlay.style.cssText = "position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.9); display:flex; flex-direction:column; padding:40px; pointer-events:none;";
+  document.body.appendChild(overlay);
+  
+  let lines = 0;
+  const interval = setInterval(() => {
+    const line = document.createElement("div");
+    line.style.cssText = "color:var(--neon-green); font-family:'Share Tech Mono'; font-size:14px; margin-bottom:4px; opacity:0.8;";
+    line.innerText = `> BYPASSING MAINFRAME... [${Math.random().toString(36).substring(2, 10).toUpperCase()}] DECRYPTING B3 BIOMETRICS...`;
+    overlay.appendChild(line);
+    lines++;
+    if(lines > 15) {
+      clearInterval(interval);
+      line.innerText = "> ACCESS GRANTED. CONNECTION CLOSED.";
+      setTimeout(() => overlay.remove(), 1000);
+    }
+  }, 100);
+}
+
+function triggerEscape() {
+  const overlay = document.createElement("div");
+  overlay.style.cssText = "position:fixed; inset:0; z-index:9999; border: 15px solid var(--neon-pink); background:rgba(255,45,120,0.1); pointer-events:none; display:flex; align-items:center; justify-content:center; animation: flash 0.5s infinite alternate;";
+  
+  const text = document.createElement("div");
+  text.style.cssText = "color:var(--neon-pink); font-family:'Bebas Neue'; font-size:80px; letter-spacing:10px; text-shadow: 0 0 20px var(--neon-pink);";
+  text.innerText = "ABORT PROTOCOL INITIATED";
+  
+  overlay.appendChild(text);
+  document.body.appendChild(overlay);
+  
+  const style = document.createElement('style');
+  style.innerHTML = `@keyframes flash { from { opacity: 0.5; } to { opacity: 1; } } @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }`;
+  document.head.appendChild(style);
+
+  setTimeout(() => { overlay.remove(); style.remove(); }, 2500);
+}
 /* ════════════════════════════════════════════════════════════
    13. INIT
 ════════════════════════════════════════════════════════════ */

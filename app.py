@@ -55,32 +55,96 @@ if "heat_level" not in st.session_state:
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
+# user_move = st.chat_input("Enter your command...")
+
+# if user_move:
+#     st.session_state.chat_history.append({"role": "user", "content": user_move})
+
+#     # --- THE NEON LOADING WIDGET ---
+#     loading_placeholder = st.empty()
+#     loading_placeholder.markdown("""
+#         <div style="display: flex; justify-content: center; align-items: center; padding: 15px;">
+#             <div style="border: 1px solid #b400ff; padding: 8px 24px; color: #00d4ff; font-family: 'Share Tech Mono', monospace; letter-spacing: 3px; font-size: 14px; background: rgba(180,0,255,0.1); border-radius: 2px; animation: pulse 1.2s infinite;">
+#                 <span style="color: #ff2d78;">//</span> ORACLE DECRYPTING...
+#             </div>
+#         </div>
+#         <style>
+#             @keyframes pulse {
+#                 0% { opacity: 0.6; box-shadow: 0 0 5px rgba(180,0,255,0.2); }
+#                 50% { opacity: 1; box-shadow: 0 0 15px rgba(180,0,255,0.6), inset 0 0 10px rgba(180,0,255,0.3); }
+#                 100% { opacity: 0.6; box-shadow: 0 0 5px rgba(180,0,255,0.2); }
+#             }
+#         </style>
+#     """, unsafe_allow_html=True)
+
+#     # 1. Call the AI
+#     full_response = st.session_state.brain.play_move(user_move)
+    
+#     # 2. Destroy the loading widget the exact millisecond the AI finishes
+#     loading_placeholder.empty()
+    
+#     # --- END WIDGET ---
+
+#     if "HEAT:" in full_response:
+#         parts = full_response.split("HEAT:")
+#         story_text = parts[0].strip()
+#         try:
+#             parsed_heat = int(parts[1].strip().split()[0])
+#             st.session_state.heat_level = min(100, st.session_state.heat_level + parsed_heat)
+#         except:
+#             st.session_state.heat_level = min(100, st.session_state.heat_level + 10)
+#     else:
+#         story_text = full_response
+#         st.session_state.heat_level = min(100, st.session_state.heat_level + 10)
+
+#     st.session_state.chat_history.append({"role": "assistant", "content": story_text})
+
 user_move = st.chat_input("Enter your command...")
 
 if user_move:
     st.session_state.chat_history.append({"role": "user", "content": user_move})
 
-    # --- THE NEON LOADING WIDGET ---
+    # --- THE FLOATING NEON HUD LOADER ---
     loading_placeholder = st.empty()
     loading_placeholder.markdown("""
-        <div style="display: flex; justify-content: center; align-items: center; padding: 15px;">
-            <div style="border: 1px solid #b400ff; padding: 8px 24px; color: #00d4ff; font-family: 'Share Tech Mono', monospace; letter-spacing: 3px; font-size: 14px; background: rgba(180,0,255,0.1); border-radius: 2px; animation: pulse 1.2s infinite;">
+        <style>
+            .cyber-loader-container {
+                position: fixed;
+                bottom: 100px; /* Hovers perfectly above the chat input */
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 999999; /* Forces it to the absolute top layer */
+            }
+            .cyber-loader {
+                border: 1px solid #b400ff;
+                padding: 12px 30px;
+                background: rgba(10, 8, 20, 0.9);
+                backdrop-filter: blur(5px);
+                color: #00d4ff;
+                font-family: 'Share Tech Mono', monospace;
+                letter-spacing: 3px;
+                font-size: 14px;
+                border-radius: 4px;
+                box-shadow: 0 0 15px rgba(180,0,255,0.4);
+                animation: neonPulse 1.2s infinite;
+            }
+            @keyframes neonPulse {
+                0% { opacity: 0.8; box-shadow: 0 0 10px rgba(180,0,255,0.3); }
+                50% { opacity: 1; box-shadow: 0 0 25px rgba(180,0,255,0.8), inset 0 0 10px rgba(180,0,255,0.4); }
+                100% { opacity: 0.8; box-shadow: 0 0 10px rgba(180,0,255,0.3); }
+            }
+        </style>
+        <div class="cyber-loader-container">
+            <div class="cyber-loader">
                 <span style="color: #ff2d78;">//</span> ORACLE DECRYPTING...
             </div>
         </div>
-        <style>
-            @keyframes pulse {
-                0% { opacity: 0.6; box-shadow: 0 0 5px rgba(180,0,255,0.2); }
-                50% { opacity: 1; box-shadow: 0 0 15px rgba(180,0,255,0.6), inset 0 0 10px rgba(180,0,255,0.3); }
-                100% { opacity: 0.6; box-shadow: 0 0 5px rgba(180,0,255,0.2); }
-            }
-        </style>
     """, unsafe_allow_html=True)
 
     # 1. Call the AI
     full_response = st.session_state.brain.play_move(user_move)
     
-    # 2. Destroy the loading widget the exact millisecond the AI finishes
+    # 2. Destroy the floating widget the exact millisecond the AI finishes
     loading_placeholder.empty()
     
     # --- END WIDGET ---
