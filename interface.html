@@ -8,6 +8,14 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
   <style>
+    .player-node { transition: opacity 0.25s ease, transform 0.25s ease; }
+    .player-node.is-active { opacity: 1 !important; }
+    .player-pulse { animation: playerPulse 1.8s ease-in-out infinite; }
+    @keyframes playerPulse {
+      0%, 100% { r: 10; opacity: 0.9; }
+      50% { r: 16; opacity: 0.25; }
+    }
+
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
     :root{
       --neon-pink:#ff2d78; --neon-blue:#00d4ff; --neon-purple:#b400ff;
@@ -426,7 +434,8 @@
         <div class="zone-row"><span class="zone-tag obj">OBJ</span><div id="zone-objects">Reception desk · Staff elevator panel · Security camera cluster</div></div>
         <div class="zone-row"><span class="zone-tag thr">THR</span><div id="zone-threats">Emily Park (receptionist) · 2 plainclothes guards</div></div>
         <div id="zone-flavor">The marble atrium hums with tourists, all oblivious.</div>
-        <button id="map-btn" onclick="document.getElementById('map-modal').style.display='flex'">
+        <button id="map-btn" onclick="showCurrentFloorMap(ZONE_TO_FLOOR[currentZoneKey] || 'casino')">
+
           <i class="fas fa-map" style="color:var(--neon-blue);font-size:12px;"></i>
           TACTICAL LAYOUT MAP
         </button>
@@ -636,7 +645,7 @@
       <div id="tab-content-b3" style="display:none;">
         <div style="font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:3px; color:#b400ff; margin-bottom:16px;">// B3 — OPERATIONS LEVEL · DEPTH ~10–15m · ACCESS: KEYCARD + BIOMETRIC</div>
 
-        <svg viewBox="0 0 900 480" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-height:480px; background:rgba(10,8,20,0.8); border:1px solid rgba(180,0,255,0.2); border-radius:2px;">
+        <svg id="map-b3" viewBox="0 0 900 480" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-height:480px; background:rgba(10,8,20,0.8); border:1px solid rgba(180,0,255,0.2); border-radius:2px;">
           <!-- Grid background -->
           <defs>
             <pattern id="grid-b3" width="40" height="40" patternUnits="userSpaceOnUse">
@@ -731,7 +740,7 @@
       <div id="tab-content-b4" style="display:none;">
         <div style="font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:3px; color:#ffd700; margin-bottom:16px;">// B4 — DEEP VAULT · DEPTH ~20–30m · WALLS: 1–2m REINFORCED CONCRETE · STEEL ALLOY LINING</div>
 
-        <svg viewBox="0 0 900 460" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-height:460px; background:rgba(10,8,20,0.8); border:1px solid rgba(255,215,0,0.25); border-radius:2px;">
+        <svg id="map-b4" viewBox="0 0 900 460" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-height:460px; background:rgba(10,8,20,0.8); border:1px solid rgba(255,215,0,0.25); border-radius:2px;">
           <defs>
             <pattern id="grid-b4" width="40" height="40" patternUnits="userSpaceOnUse">
               <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
@@ -854,7 +863,7 @@
       <div id="tab-content-casino" style="display:none;">
         <div style="font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:3px; color:#00d4ff; margin-bottom:16px;">// L0 — CASINO FLOOR · 150,000 SQ FT · 620 CAMERAS · 1,800 SLOT MACHINES · 120 TABLES</div>
 
-        <svg viewBox="0 0 900 440" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-height:440px; background:rgba(10,8,20,0.8); border:1px solid rgba(0,212,255,0.2); border-radius:2px;">
+        <svg id="map-casino" viewBox="0 0 900 440" xmlns="http://www.w3.org/2000/svg" style="width:100%; max-height:440px; background:rgba(10,8,20,0.8); border:1px solid rgba(0,212,255,0.2); border-radius:2px;">
           <defs>
             <pattern id="grid-casino" width="30" height="30" patternUnits="userSpaceOnUse">
               <path d="M 30 0 L 0 0 0 30" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
@@ -1081,6 +1090,47 @@ const ZONE_TAB_MAP = {
   "casino":   ["CASINO","CASHIER_CAGE"]
 };
 
+const ZONE_TO_FLOOR = {
+  "LOBBY": "casino",
+  "CASINO": "casino",
+  "KITCHEN_L2": "casino",
+  "HVAC_SHAFT": "b3",
+  "PARKING_B2": "casino",
+  "STAFF_ELEVATOR": "casino",
+  "CASHIER_CAGE": "casino",
+  "B3_CORRIDOR": "b3",
+  "SURVEILLANCE_HQ": "b3",
+  "SECURITY_COMMAND": "b3",
+  "COUNT_ROOM": "b3",
+  "B3_MAINTENANCE_SHAFT": "b3",
+  "B3_ELEVATOR": "b3",
+  "B4_VAULT_ANTECHAMBER": "b4",
+  "VAULT_CHAMBER": "b4"
+};
+
+
+const PLAYER_MARKERS = {
+  "LOBBY": { svg: "map-casino", x: 420, y: 32, color: "#00d4ff", label: "LOBBY" },
+  "CASINO": { svg: "map-casino", x: 250, y: 180, color: "#00d4ff", label: "CASINO" },
+  "KITCHEN_L2": { svg: "map-casino", x: 820, y: 375, color: "#00ff9f", label: "KITCHEN" },
+  "HVAC_SHAFT": { svg: "map-b3", x: 640, y: 120, color: "#00ff9f", label: "HVAC" },
+  "PARKING_B2": { svg: "map-casino", x: 870, y: 230, color: "#ff6b00", label: "B2" },
+  "STAFF_ELEVATOR": { svg: "map-casino", x: 820, y: 375, color: "#b400ff", label: "ELEV" },
+  "CASHIER_CAGE": { svg: "map-casino", x: 570, y: 295, color: "#ff6b00", label: "CAGE" },
+  "B3_CORRIDOR": { svg: "map-b3", x: 450, y: 240, color: "#b400ff", label: "B3" },
+  "SURVEILLANCE_HQ": { svg: "map-b3", x: 150, y: 115, color: "#ff2d78", label: "SURV" },
+  "SECURITY_COMMAND": { svg: "map-b3", x: 400, y: 115, color: "#ff6b00", label: "CMD" },
+  "COUNT_ROOM": { svg: "map-b3", x: 650, y: 110, color: "#ffd700", label: "COUNT" },
+  "B3_MAINTENANCE_SHAFT": { svg: "map-b3", x: 820, y: 240, color: "#00ff9f", label: "SHAFT" },
+  "B3_ELEVATOR": { svg: "map-b3", x: 825, y: 115, color: "#00d4ff", label: "ELEV" },
+  "B4_VAULT_ANTECHAMBER": { svg: "map-b4", x: 405, y: 230, color: "#ff6b00", label: "ANTE" },
+  "VAULT_CHAMBER": { svg: "map-b4", x: 565, y: 350, color: "#ffd700", label: "VAULT" }
+};
+
+
+let currentZoneKey = "LOBBY";
+
+
 
 /* ═══════════════════════════════════════════════
    STATE
@@ -1133,6 +1183,8 @@ function renderHeat() {
    ZONE SCANNER
 ═══════════════════════════════════════════════ */
 function updateZoneScanner(data) {
+  currentZoneKey = data.zone || currentZoneKey;
+  renderPlayerPosition(currentZoneKey);
   const lbl = document.getElementById("zone-label-text"); if (!lbl) return;
   lbl.textContent = data.label || data.zone || "—";
   document.getElementById("zone-exits").textContent   = (data.exits   || []).join(" · ") || "none";
@@ -1385,12 +1437,110 @@ function showTab(name) {
   });
 }
 
+function ensurePlayerMarkers() {
+  Object.entries(PLAYER_MARKERS).forEach(([zone, cfg]) => {
+    const svg = document.getElementById(cfg.svg);
+    if (!svg || svg.querySelector(`[data-zone="${zone}"]`)) return;
+
+    const ns = "http://www.w3.org/2000/svg";
+    const g = document.createElementNS(ns, "g");
+    g.setAttribute("data-zone", zone);
+    g.setAttribute("class", "player-node");
+    g.style.opacity = "0";
+
+    const pulse = document.createElementNS(ns, "circle");
+    pulse.setAttribute("cx", cfg.x);
+    pulse.setAttribute("cy", cfg.y);
+    pulse.setAttribute("r", 10);
+    pulse.setAttribute("fill", cfg.color);
+    pulse.setAttribute("class", "player-pulse");
+
+    const dot = document.createElementNS(ns, "circle");
+    dot.setAttribute("cx", cfg.x);
+    dot.setAttribute("cy", cfg.y);
+    dot.setAttribute("r", 6);
+    dot.setAttribute("fill", cfg.color);
+    dot.setAttribute("stroke", "#ffffff");
+    dot.setAttribute("stroke-width", "1.5");
+
+    const text = document.createElementNS(ns, "text");
+    text.setAttribute("x", cfg.x);
+    text.setAttribute("y", cfg.y - 16);
+    text.setAttribute("text-anchor", "middle");
+    text.setAttribute("font-family", "Share Tech Mono, monospace");
+    text.setAttribute("font-size", "9");
+    text.setAttribute("fill", cfg.color);
+    text.textContent = cfg.label;
+
+    g.appendChild(pulse);
+    g.appendChild(dot);
+    g.appendChild(text);
+    svg.appendChild(g);
+  });
+}
+
+function renderPlayerPosition(zoneKey) {
+  currentZoneKey = zoneKey || currentZoneKey;
+  ensurePlayerMarkers();
+
+  document.querySelectorAll(".player-node").forEach(node => {
+    node.style.opacity = "0";
+    node.classList.remove("is-active");
+  });
+
+  const marker = document.querySelector(`.player-node[data-zone="${currentZoneKey}"]`);
+  if (marker) {
+    marker.style.opacity = "1";
+    marker.classList.add("is-active");
+  }
+
+  const currentFloor = ZONE_TO_FLOOR[currentZoneKey] || "overview";
+  showCurrentFloorMap(currentFloor);
+}
+
+function showCurrentFloorMap(name) {
+  const overview = document.getElementById("tab-content-overview");
+  const casino = document.getElementById("tab-content-casino");
+  const b3 = document.getElementById("tab-content-b3");
+  const b4 = document.getElementById("tab-content-b4");
+  const modal = document.getElementById("map-modal");
+
+  if (overview) overview.style.display = "none";
+  if (casino) casino.style.display = "none";
+  if (b3) b3.style.display = "none";
+  if (b4) b4.style.display = "none";
+
+  if (name === "b3" && b3) {
+    b3.style.display = "block";
+  } else if (name === "b4" && b4) {
+    b4.style.display = "block";
+  } else if (casino) {
+    casino.style.display = "block";
+  }
+
+  if (modal) modal.style.display = "flex";
+}
+
+
 /* ═══════════════════════════════════════════════
    INIT
 ═══════════════════════════════════════════════ */
 // Apply initial fog-of-war (overview only unlocked by default)
 updateMapFog(["LOBBY"]);
 sendToPython({ action: "ui_ready" });
+ensurePlayerMarkers();
+currentZoneKey = "LOBBY";
+ensurePlayerMarkers();
+
+
+console.log("map script loaded");
+
+
+window.testMap = function() {
+  showCurrentFloorMap("casino");
+};
+
+
 </script>
 </body>
 </html>
