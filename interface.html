@@ -5,28 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Vegas Black Vault — Sin City Heist Engine</title>
 
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
+  
 
   <!-- Font Awesome 6 CDN -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 
-  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin />
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
 
-  <script>
-    tailwind.config = {
-      theme:{
-        extend: {
-          fontFamily: {
-            display: ["'Bebas Neue'", "cursive"],
-            body:    ["'Rajdhani'", "sans-serif"],
-            mono:    ["'Share Tech Mono'", "monospace"]
-          }
-        }
-      }
-    }
-  </script>
+
 
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -95,7 +87,7 @@
 
     /* ── Film grain ───────────────────────────────────── */
     #noise {
-      position: fixed; inset: 0; z-index: 2; pointer-events: none; opacity: 0.025;
+      position: fixed; inset: 0; z-index: 2; pointer-events: none; display: none;;
       background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
       background-size: 256px 256px;
     }

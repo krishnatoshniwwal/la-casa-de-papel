@@ -55,49 +55,6 @@ if "heat_level" not in st.session_state:
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-# user_move = st.chat_input("Enter your command...")
-
-# if user_move:
-#     st.session_state.chat_history.append({"role": "user", "content": user_move})
-
-#     # --- THE NEON LOADING WIDGET ---
-#     loading_placeholder = st.empty()
-#     loading_placeholder.markdown("""
-#         <div style="display: flex; justify-content: center; align-items: center; padding: 15px;">
-#             <div style="border: 1px solid #b400ff; padding: 8px 24px; color: #00d4ff; font-family: 'Share Tech Mono', monospace; letter-spacing: 3px; font-size: 14px; background: rgba(180,0,255,0.1); border-radius: 2px; animation: pulse 1.2s infinite;">
-#                 <span style="color: #ff2d78;">//</span> ORACLE DECRYPTING...
-#             </div>
-#         </div>
-#         <style>
-#             @keyframes pulse {
-#                 0% { opacity: 0.6; box-shadow: 0 0 5px rgba(180,0,255,0.2); }
-#                 50% { opacity: 1; box-shadow: 0 0 15px rgba(180,0,255,0.6), inset 0 0 10px rgba(180,0,255,0.3); }
-#                 100% { opacity: 0.6; box-shadow: 0 0 5px rgba(180,0,255,0.2); }
-#             }
-#         </style>
-#     """, unsafe_allow_html=True)
-
-#     # 1. Call the AI
-#     full_response = st.session_state.brain.play_move(user_move)
-    
-#     # 2. Destroy the loading widget the exact millisecond the AI finishes
-#     loading_placeholder.empty()
-    
-#     # --- END WIDGET ---
-
-#     if "HEAT:" in full_response:
-#         parts = full_response.split("HEAT:")
-#         story_text = parts[0].strip()
-#         try:
-#             parsed_heat = int(parts[1].strip().split()[0])
-#             st.session_state.heat_level = min(100, st.session_state.heat_level + parsed_heat)
-#         except:
-#             st.session_state.heat_level = min(100, st.session_state.heat_level + 10)
-#     else:
-#         story_text = full_response
-#         st.session_state.heat_level = min(100, st.session_state.heat_level + 10)
-
-#     st.session_state.chat_history.append({"role": "assistant", "content": story_text})
 
 user_move = st.chat_input("Enter your command...")
 
@@ -163,10 +120,17 @@ if user_move:
 
     st.session_state.chat_history.append({"role": "assistant", "content": story_text})
 
-try:
-    with open("interface.html", "r", encoding="utf-8") as f:
-        ui_code = f.read()
-except FileNotFoundError:
+# --- 3. LOAD THE HTML (CACHED FOR SPEED) ---
+@st.cache_data
+def get_ui_code():
+    try:
+        with open("interface.html", "r", encoding="utf-8") as f:
+            return f.read()
+    except FileNotFoundError:
+        return ""
+
+ui_code = get_ui_code()
+if not ui_code:
     st.error("Error: Could not find interface.html in this folder.")
     st.stop()
 
