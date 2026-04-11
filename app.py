@@ -3,7 +3,6 @@ from brain import HeistBrain, ZONES
 from html import escape
 import streamlit.components.v1 as components
 
-
 st.set_page_config(page_title="Vegas Black Vault", layout="wide")
 
 @st.cache_resource
@@ -96,158 +95,275 @@ def floor_for_zone(zone_key: str) -> str:
 
 
 def render_floor_map(zone_key: str):
-    floor_key = floor_for_zone(zone_key)
     active_label = ZONES.get(zone_key, {}).get("label", zone_key)
 
-    FLOOR_LAYOUTS = {
-        "L1": {
-            "title": "Level 1 — Hotel Lobby",
-            "width": 420,
-            "height": 220,
-            "rooms": {
-                "LOBBY": {"x": 110, "y": 60, "w": 200, "h": 90},
-            },
-            "links": [],
-        },
-        "L0": {
-            "title": "Level 0 — Casino Floor",
-            "width": 520,
-            "height": 260,
-            "rooms": {
-                "CASINO": {"x": 40, "y": 70, "w": 240, "h": 120},
-                "CASHIER_CAGE": {"x": 340, "y": 90, "w": 130, "h": 80},
-            },
-            "links": [("CASINO", "CASHIER_CAGE")],
-        },
-        "L2": {
-            "title": "Level 2 — Kitchen",
-            "width": 420,
-            "height": 220,
-            "rooms": {
-                "KITCHEN_L2": {"x": 105, "y": 60, "w": 210, "h": 90},
-            },
-            "links": [],
-        },
-        "B2": {
-            "title": "B2 — Parking / Engineering",
-            "width": 460,
-            "height": 240,
-            "rooms": {
-                "PARKING_B2": {"x": 90, "y": 65, "w": 260, "h": 100},
-            },
-            "links": [],
-        },
-        "TRANSIT": {
-            "title": "Transit Routes",
-            "width": 500,
-            "height": 240,
-            "rooms": {
-                "STAFF_ELEVATOR": {"x": 60, "y": 70, "w": 150, "h": 90},
-                "HVAC_SHAFT": {"x": 290, "y": 70, "w": 150, "h": 90},
-            },
-            "links": [("STAFF_ELEVATOR", "HVAC_SHAFT")],
-        },
-        "B3": {
-            "title": "B3 — Operations",
-            "width": 620,
-            "height": 340,
-            "rooms": {
-                "SURVEILLANCE_HQ": {"x": 40, "y": 40, "w": 150, "h": 80},
-                "SECURITY_COMMAND": {"x": 235, "y": 40, "w": 150, "h": 80},
-                "COUNT_ROOM": {"x": 430, "y": 40, "w": 150, "h": 80},
-                "B3_CORRIDOR": {"x": 170, "y": 145, "w": 280, "h": 60},
-                "B3_MAINTENANCE_SHAFT": {"x": 50, "y": 240, "w": 180, "h": 70},
-                "B3_ELEVATOR": {"x": 390, "y": 240, "w": 180, "h": 70},
-            },
-            "links": [
-                ("SURVEILLANCE_HQ", "B3_CORRIDOR"),
-                ("SECURITY_COMMAND", "B3_CORRIDOR"),
-                ("COUNT_ROOM", "B3_CORRIDOR"),
-                ("B3_MAINTENANCE_SHAFT", "B3_CORRIDOR"),
-                ("B3_ELEVATOR", "B3_CORRIDOR"),
+    FLOOR_GRIDS = {
+        "LOBBY": {
+            "title": "LEVEL 1 — LOBBY",
+            "grid": [
+                ["X", "X", "X", "X", "X"],
+                ["X", "LOBBY", "LOBBY", "LOBBY", "X"],
+                ["X", "LOBBY", "LOBBY", "LOBBY", "X"],
+                ["X", "LOBBY", "LOBBY", "LOBBY", "X"],
+                ["X", "X", "X", "X", "X"],
             ],
         },
-        "B4": {
-            "title": "B4 — Deep Vault",
-            "width": 520,
-            "height": 260,
-            "rooms": {
-                "B4_VAULT_ANTECHAMBER": {"x": 70, "y": 85, "w": 170, "h": 90},
-                "VAULT_CHAMBER": {"x": 295, "y": 70, "w": 160, "h": 120},
-            },
-            "links": [("B4_VAULT_ANTECHAMBER", "VAULT_CHAMBER")],
+        "CASINO": {
+            "title": "GROUND FLOOR — CASINO",
+            "grid": [
+                ["X", "X", "X", "X", "X", "X", "X"],
+                ["X", "CASINO", "CASINO", "CASINO", "CASINO", "CASINO", "X"],
+                ["X", "CASINO", "CASINO", "CASINO", "CASINO", "CASINO", "X"],
+                ["X", "CASINO", "CASHIER_CAGE", "CASINO", "STAFF_ELEVATOR", "CASINO", "X"],
+                ["X", "CASINO", "CASINO", "CASINO", "CASINO", "CASINO", "X"],
+                ["X", "CASINO", "KITCHEN_L2", "CASINO", "CASINO", "CASINO", "X"],
+                ["X", "X", "X", "X", "X", "X", "X"],
+            ],
+        },
+        "KITCHEN_L2": {
+            "title": "LEVEL 2 — KITCHEN",
+            "grid": [
+                ["X", "X", "X", "X", "X", "X"],
+                ["X", "KITCHEN_L2", "KITCHEN_L2", "KITCHEN_L2", "KITCHEN_L2", "X"],
+                ["X", "KITCHEN_L2", "KITCHEN_L2", "HVAC_SHAFT", "KITCHEN_L2", "X"],
+                ["X", "KITCHEN_L2", "KITCHEN_L2", "KITCHEN_L2", "KITCHEN_L2", "X"],
+                ["X", "KITCHEN_L2", "KITCHEN_L2", "KITCHEN_L2", "KITCHEN_L2", "X"],
+                ["X", "X", "X", "X", "X", "X"],
+            ],
+        },
+        "HVAC_SHAFT": {
+            "title": "HVAC SYSTEM",
+            "grid": [
+                ["X", "HVAC_SHAFT", "X"],
+                ["HVAC_SHAFT", "HVAC_SHAFT", "HVAC_SHAFT"],
+                ["X", "HVAC_SHAFT", "X"],
+            ],
+        },
+        "PARKING_B2": {
+            "title": "B2 — PARKING",
+            "grid": [
+                ["X", "X", "X", "X", "X"],
+                ["X", "PARKING_B2", "PARKING_B2", "STAFF_ELEVATOR", "X"],
+                ["X", "PARKING_B2", "PARKING_B2", "PARKING_B2", "X"],
+                ["X", "PARKING_B2", "PARKING_B2", "PARKING_B2", "X"],
+                ["X", "X", "X", "X", "X"],
+            ],
+        },
+        "STAFF_ELEVATOR": {
+            "title": "TRANSIT — STAFF ELEVATOR",
+            "grid": [
+                ["X", "X", "X", "X", "X"],
+                ["X", "PARKING_B2", "PARKING_B2", "STAFF_ELEVATOR", "X"],
+                ["X", "CASINO", "CASINO", "STAFF_ELEVATOR", "X"],
+                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "STAFF_ELEVATOR", "X"],
+                ["X", "X", "X", "X", "X"],
+            ],
+        },
+        "B3_CORRIDOR": {
+            "title": "B3 — SECURITY CORE",
+            "grid": [
+                ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
+                ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
+                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
+                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
+                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_ELEVATOR", "X"],
+                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_MAINTENANCE_SHAFT", "X"],
+                ["X", "X", "X", "X", "X", "X", "X"],
+            ],
+        },
+        "SURVEILLANCE_HQ": {
+            "title": "B3 — SECURITY CORE",
+            "grid": [
+                ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
+                ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
+                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
+                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
+                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_ELEVATOR", "X"],
+                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_MAINTENANCE_SHAFT", "X"],
+                ["X", "X", "X", "X", "X", "X", "X"],
+            ],
+        },
+        "SECURITY_COMMAND": {
+            "title": "B3 — SECURITY CORE",
+            "grid": [
+                ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
+                ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
+                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
+                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
+                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_ELEVATOR", "X"],
+                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_MAINTENANCE_SHAFT", "X"],
+                ["X", "X", "X", "X", "X", "X", "X"],
+            ],
+        },
+        "COUNT_ROOM": {
+            "title": "B3 — SECURITY CORE",
+            "grid": [
+                ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
+                ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
+                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
+                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
+                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_ELEVATOR", "X"],
+                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_MAINTENANCE_SHAFT", "X"],
+                ["X", "X", "X", "X", "X", "X", "X"],
+            ],
+        },
+        "B3_ELEVATOR": {
+            "title": "B3 — SECURITY CORE",
+            "grid": [
+                ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
+                ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
+                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
+                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
+                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_ELEVATOR", "X"],
+                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_MAINTENANCE_SHAFT", "X"],
+                ["X", "X", "X", "X", "X", "X", "X"],
+            ],
+        },
+        "B3_MAINTENANCE_SHAFT": {
+            "title": "B3 — SECURITY CORE",
+            "grid": [
+                ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
+                ["X", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "SURVEILLANCE_HQ", "X", "SECURITY_COMMAND", "X"],
+                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
+                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "COUNT_ROOM", "X"],
+                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_ELEVATOR", "X"],
+                ["X", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_CORRIDOR", "B3_MAINTENANCE_SHAFT", "X"],
+                ["X", "X", "X", "X", "X", "X", "X"],
+            ],
+        },
+        "B4_VAULT_ANTECHAMBER": {
+            "title": "B4 — VAULT LEVEL",
+            "grid": [
+                ["X", "X", "VAULT_CHAMBER", "X", "X"],
+                ["X", "B4_VAULT_ANTECHAMBER", "B4_VAULT_ANTECHAMBER", "B4_VAULT_ANTECHAMBER", "X"],
+                ["X", "B4_VAULT_ANTECHAMBER", "CORE", "B4_VAULT_ANTECHAMBER", "X"],
+                ["X", "B3_ELEVATOR", "B4_VAULT_ANTECHAMBER", "B3_MAINTENANCE_SHAFT", "X"],
+                ["X", "X", "X", "X", "X"],
+            ],
+        },
+        "VAULT_CHAMBER": {
+            "title": "B4 — VAULT LEVEL",
+            "grid": [
+                ["X", "X", "VAULT_CHAMBER", "X", "X"],
+                ["X", "B4_VAULT_ANTECHAMBER", "B4_VAULT_ANTECHAMBER", "B4_VAULT_ANTECHAMBER", "X"],
+                ["X", "B4_VAULT_ANTECHAMBER", "CORE", "B4_VAULT_ANTECHAMBER", "X"],
+                ["X", "B3_ELEVATOR", "B4_VAULT_ANTECHAMBER", "B3_MAINTENANCE_SHAFT", "X"],
+                ["X", "X", "X", "X", "X"],
+            ],
         },
     }
 
-    floor = FLOOR_LAYOUTS[floor_key]
+    floor = FLOOR_GRIDS.get(zone_key)
+    if not floor:
+        st.info(f"No map available for {zone_key}")
+        return
 
-    def center(room):
-        return room["x"] + room["w"] / 2, room["y"] + room["h"] / 2
+    grid = floor["grid"]
+    rows = len(grid)
+    cols = len(grid[0]) if rows else 0
 
-    svg_parts = [
-        f'<rect x="0" y="0" width="{floor["width"]}" height="{floor["height"]}" rx="16" fill="#0a0f1a" stroke="rgba(255,255,255,0.10)" stroke-width="1"/>'
-    ]
+    cells = []
+    player_marked = False
 
-    for x in range(0, floor["width"], 28):
-        svg_parts.append(
-            f'<line x1="{x}" y1="0" x2="{x}" y2="{floor["height"]}" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>'
-        )
-    for y in range(0, floor["height"], 28):
-        svg_parts.append(
-            f'<line x1="0" y1="{y}" x2="{floor["width"]}" y2="{y}" stroke="rgba(255,255,255,0.04)" stroke-width="1"/>'
-        )
-
-    for a, b in floor["links"]:
-        ax, ay = center(floor["rooms"][a])
-        bx, by = center(floor["rooms"][b])
-        svg_parts.append(
-            f'<line x1="{ax}" y1="{ay}" x2="{bx}" y2="{by}" stroke="rgba(125,211,252,0.45)" stroke-width="3" stroke-dasharray="8 6"/>'
-        )
-
-    for room_key, room in floor["rooms"].items():
-        label = escape(ZONES.get(room_key, {}).get("label", room_key))
-        is_active = room_key == zone_key
-        fill = "rgba(34,197,94,0.18)" if is_active else "rgba(255,255,255,0.05)"
-        stroke = "rgba(34,197,94,0.90)" if is_active else "rgba(255,255,255,0.14)"
-        tag = "PLAYER POSITION" if is_active else "ZONE"
-
-        svg_parts.append(
-            f'''
-            <rect x="{room["x"]}" y="{room["y"]}" width="{room["w"]}" height="{room["h"]}" rx="14"
-                  fill="{fill}" stroke="{stroke}" stroke-width="2"/>
-            <text x="{room["x"] + 12}" y="{room["y"] + 28}" fill="#e5eefc"
-                  font-size="16" font-weight="700" font-family="Arial, sans-serif">{label}</text>
-            <text x="{room["x"] + 12}" y="{room["y"] + 52}" fill="#93c5fd"
-                  font-size="11" font-weight="600" font-family="Arial, sans-serif">{tag}</text>
-            '''
-        )
-
-        if is_active:
-            cx, cy = center(room)
-            svg_parts.append(
-                f'''
-                <circle cx="{cx}" cy="{cy}" r="10" fill="rgba(34,197,94,0.28)" stroke="rgba(34,197,94,0.9)" stroke-width="2"/>
-                <circle cx="{cx}" cy="{cy}" r="4" fill="rgba(34,197,94,1)"/>
-                '''
-            )
+    for row in grid:
+        for cell in row:
+            if cell == zone_key and not player_marked:
+                cell_value = f"{cell} (YOU)"
+                player_marked = True
+            else:
+                cell_value = cell
+            if cell_value == "X":
+                cls = "wall"
+            elif cell_value.endswith(" (YOU)"):
+                cls = "you"
+            elif cell_value in {"CORE"}:
+                cls = "core"
+            elif cell_value in {"STAFF_ELEVATOR", "B3_ELEVATOR"}:
+                cls = "elevator"
+            elif cell_value in {"HVAC_SHAFT", "B3_MAINTENANCE_SHAFT"}:
+                cls = "shaft"
+            else:
+                cls = "zone"
+            label = cell_value.replace("_", " ")
+            cells.append(f'<div class="cell {cls}">{escape(label)}</div>')
 
     html = f"""
-    <div style="border:1px solid rgba(0,212,255,0.18);background:linear-gradient(180deg, rgba(9,12,24,0.98), rgba(18,12,28,0.98));border-radius:16px;padding:16px;margin:8px 0 18px 0;">
-      <div style="color:#7dd3fc;font-weight:800;letter-spacing:.04em;margin-bottom:6px;font-size:1rem;">Tactical Map</div>
+    <div style="background:linear-gradient(180deg,#0b1020,#140f22);border:1px solid rgba(0,212,255,0.18);border-radius:16px;padding:16px;margin:8px 0 18px 0;">
+      <div style="color:#7dd3fc;font-weight:800;font-size:1rem;margin-bottom:6px;">Tactical Map</div>
       <div style="color:#a78bfa;font-size:.88rem;margin-bottom:14px;">{escape(floor["title"])} | Current position: {escape(active_label)}</div>
-      <svg width="100%" viewBox="0 0 {floor["width"]} {floor["height"]}" xmlns="http://www.w3.org/2000/svg">
-        {''.join(svg_parts)}
-      </svg>
+      <div class="map-grid" style="grid-template-columns: repeat({cols}, minmax(82px, 1fr));">
+        {''.join(cells)}
+      </div>
     </div>
+
+    <style>
+      body {{
+        margin: 0;
+        background: transparent;
+        font-family: Arial, sans-serif;
+      }}
+      .map-grid {{
+        display: grid;
+        gap: 8px;
+      }}
+      .cell {{
+        min-height: 58px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 8px;
+        font-size: 11px;
+        font-weight: 700;
+        line-height: 1.15;
+        letter-spacing: .02em;
+        border: 1px solid rgba(255,255,255,0.08);
+      }}
+      .cell.wall {{
+        background: rgba(255,255,255,0.04);
+        color: #55607a;
+      }}
+      .cell.zone {{
+        background: rgba(59,130,246,0.14);
+        color: #dbeafe;
+        border-color: rgba(59,130,246,0.35);
+      }}
+      .cell.you {{
+        background: rgba(34,197,94,0.22);
+        color: #ecfdf5;
+        border: 2px solid rgba(34,197,94,0.9);
+        box-shadow: 0 0 18px rgba(34,197,94,0.2);
+      }}
+      .cell.core {{
+        background: rgba(251,191,36,0.18);
+        color: #fef3c7;
+        border-color: rgba(251,191,36,0.45);
+      }}
+      .cell.elevator {{
+        background: rgba(168,85,247,0.18);
+        color: #f3e8ff;
+        border-color: rgba(168,85,247,0.42);
+      }}
+      .cell.shaft {{
+        background: rgba(20,184,166,0.18);
+        color: #ccfbf1;
+        border-color: rgba(20,184,166,0.45);
+      }}
+    </style>
     """
 
-    components.html(html, height=floor["height"] + 95, scrolling=False)
+    components.html(html, height=max(460, 220 + rows * 100), scrolling=False)
+
+
 
 
 
 
 
 # --- STATE INIT ---
+if "show_map" not in st.session_state:
+    st.session_state.show_map = False
 if "heat_level" not in st.session_state:
     st.session_state.heat_level = 0
 if "chat_history" not in st.session_state:
@@ -271,33 +387,50 @@ brain.victory = st.session_state.victory
 # --- SIDEBAR HUD ---
 with st.sidebar:
     st.title("📟 HEIST HUD")
-    
+
     st.subheader("🔥 HEAT LEVEL")
     st.progress(min(st.session_state.heat_level / 100.0, 1.0))
     st.write(f"**Heat:** {st.session_state.heat_level}%")
-    
+
     st.divider()
-    
+
     st.subheader("📍 CURRENT ZONE")
     zone_data = ZONES.get(st.session_state.zone, {})
     st.write(f"**{zone_data.get('label', st.session_state.zone)}**")
     st.caption(zone_data.get("flavor", ""))
-    
+
     with st.expander("Zone Scanner", expanded=True):
         st.write("**Exits:**", " · ".join(zone_data.get("exits", [])) or "None")
         st.write("**Objects:**", " · ".join(zone_data.get("objects", [])) or "None")
         st.write("**Threats:**", " · ".join(zone_data.get("threats", [])) or "None")
 
-    render_floor_map(st.session_state.zone)
-        
+    if st.button("Open Tactical Map", use_container_width=True):
+        st.session_state.show_map = True
+
     st.divider()
-        
+
     st.subheader("🎒 INTEL & INVENTORY")
     if st.session_state.inventory:
         for item in st.session_state.inventory:
             st.write(f"• **{item['label']}**")
     else:
         st.write("Empty")
+
+st.title("Vegas Black Vault")
+
+if st.session_state.show_map:
+    col1, col2 = st.columns([6, 1])
+
+    with col1:
+        st.subheader("Tactical Map")
+
+    with col2:
+        if st.button("Close Map", use_container_width=True):
+            st.session_state.show_map = False
+            st.rerun()
+
+    render_floor_map(st.session_state.zone)
+
 
 # --- MAIN CHAT AREA ---
 st.title("Vegas Black Vault")
