@@ -1,118 +1,30 @@
-# SECURITY LOG : STAFF PROFILES
-# ID : HL-02
-# SENSITIVITY : INTERNAL
+# SECURITY STAFF PROFILES
 
-## OVERVIEW ##
-Staff behaviour patterns affecting security.
-Profiles include role, location, routine, and exploitable weakness.
+## GUARDS
+RICK GREEN — B3 Corridor
+Checks phone every 3-5 minutes. Low awareness when stationary. Predictable distraction window.
 
---------------------------------------------------
+MARCUS REED — Casino Floor
+Fixed 12-minute patrol loop. Predictable path — timing-based bypass is possible.
 
-## GUARDS ##
+## OTHER STAFF
+EMILY PARK (Reception) — L1 Lobby. Fixed at reception desk. Easily distracted by guests.
 
-RICK GREEN:
---Location: B3 corridor
---Behaviour: distracted
---Pattern: checks phone every 3–5 minutes
---Weakness: low awareness when stationary; predictable distraction window
+ERIC CHEN (Surveillance Technician) — B3 Surveillance HQ. Checks all systems on fixed hourly cycle. Focused entirely on monitors.
 
-MARCUS REED:
---Location: casino floor
---Behaviour: disciplined
---Pattern: fixed patrol loop (12 minutes)
---Weakness: predictable path — timing-based bypass is possible
+ALBERT KING (Vault Staff) — B3 Count Room. Strict predictable routine. Slow movement.
+NOTE: Albert King does NOT carry vault keys — keys are in the Count Room lockbox.
 
-LUIS MARTINEZ:
---Location: B2 parking
---Behaviour: relaxed
---Pattern: long stationary periods
---Weakness: slow response time; rarely checks surroundings
+MIGUEL DAS (Janitor) — L2 Kitchen. Careless, frequently inattentive.
 
-TYLER BROOKS:
---Location: hotel floors
---Behaviour: inconsistent
---Pattern: skips sections of patrol
---Weakness: incomplete coverage leaves gaps
+## GUARD ROTATION
+Shifts: 06:00-14:00, 14:00-22:00, 22:00-06:00
+Break times every 2 hours (fixed and predictable): 08:00, 10:00, 12:00, 14:00, 16:00, 18:00, 20:00, 22:00, 00:00, 02:00, 04:00, 06:00
+Night shift (22:00-06:00) guards have measurably lower alertness.
+10-minute reduced coverage during shift changeovers.
 
---------------------------------------------------
+## B3 SECURITY COMMAND
+2 guards on rotation. Radio check every 10 minutes. Focused on monitors.
 
-## JANITORS ##
-
-MIGUEL DAS:
---Location: L2–L3
---Behaviour: careless
---Pattern: frequently leaves doors open
---Weakness: creates unintended access paths; low awareness
-
-CARLOS MENDEZ:
---Location: casino perimeter
---Behaviour: routine-based
---Pattern: repeats every 45 minutes
---Weakness: highly predictable timing
-
-EDDIE NGUYEN:
---Location: service corridors
---Behaviour: efficient
---Pattern: ignores zone restrictions
---Weakness: bypasses secure areas without realising, creating openings
-
---------------------------------------------------
-
-## DEALERS ##
-
-MELISSA WARBURTON:
---Behaviour: highly alert
---Weakness: quick to report unusual behaviour — avoid her sightline
-
-JASON MILLER:
---Behaviour: social, easily distracted
---Weakness: can be distracted by player interaction
-
-ANA LOPEZ:
---Behaviour: focused, professional
---Weakness: minimal
-
---------------------------------------------------
-
-## OTHER STAFF ##
-
-ERIC CHEN (Surveillance Technician):
---Location: B3 Surveillance HQ
---Pattern: checks all systems on a fixed hourly cycle
---Weakness: focused entirely on monitors; ignores physical surroundings
-
-JORGE RAMIREZ (HVAC Maintenance):
---Location: HVAC system / B2 engineering
---Pattern: only reacts to system-level alerts — ignores minor anomalies
---Weakness: does not investigate small temperature fluctuations
---His maintenance log is stored in the HVAC shaft near the B3 junction
-
-EMILY PARK (Reception):
---Location: L1 lobby
---Pattern: fixed position at reception desk
---Weakness: easily distracted by guest queries
-
-VINCE CARTER (Bartender):
---Location: casino bar
---Pattern: constant customer interaction
---Weakness: very low environmental awareness
-
-ALBERT KING (Vault Staff):
---Location: B3 Count Room
---Pattern: strict, predictable routine
---Weakness: slow movement; does not deviate from routine
---Responsibility: Count Room operations and key lockbox oversight
---NOTE: Albert King does NOT carry vault keys on his person — keys are in the Count Room lockbox
-
---------------------------------------------------
-
-## GLOBAL PATTERNS ##
---All behaviour patterns repeat on a 24-hour cycle
---Night shift staff (22:00–06:00) have measurably lower alertness
---Fatigue increases noticeably after 6 hours on shift
-
-## LOOPHOLES ##
---Predictable routines allow precise timing-based exploitation
---Distractions reliably reduce detection probability
---Open doors from careless staff create alternate movement paths
---Most staff rely on automated systems rather than direct observation
+## CASHIER CAGE
+2 armed cashier guards. B3 Keycard is in the key lockbox on the wall (NOT carried by any guard).

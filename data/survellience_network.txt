@@ -1,62 +1,34 @@
 # SECURITY LOG : SURVEILLANCE NETWORK
-# ID : TL-02
-# SENSITIVITY : HIGHLY CONFIDENTIAL
 
-## OVERVIEW ##
+## OVERVIEW
 Central surveillance monitors casino, hotel, B3, and B4.
-All feeds are controlled from B3 Surveillance HQ.
+All feeds controlled from B3 Surveillance HQ.
 
-## CONTROL ##
+## CONTROL
 Primary:   B3 Surveillance HQ (full control — loop, disable, track)
 Secondary: Level 1 security office (limited view only)
 Backup:    B2 recording system (passive archive, 30-minute buffer)
 
-## CAMERA DISTRIBUTION ##
-Total: ~1,240
+## CAMERA COUNT
+Casino floor:     620 cameras
+Hotel floors:     320 cameras
+Restricted zones: 300 cameras (B3, B4)
 
---Casino floor:    620 cameras
---Hotel floors:    320 cameras
---Restricted zones: 300 cameras (B3, B4, staff corridors)
+## BLIND SPOTS
+L2 Kitchen: steam interference creates a persistent visual gap
+HVAC shaft interior: no cameras installed (confirmed blind spot)
 
-## PERFORMANCE ##
---Normal operation: 30 fps
---Low-power mode:   15 fps (reduced clarity, slower tracking)
+## LOOPING THE FEED
+Camera loop device is located in Surveillance HQ.
+Looping must be performed at the Surveillance HQ control console.
+Effect: B3 and B4 camera feeds replay a clean loop for up to 3 minutes.
+No automated detection of looped feed in the current system.
+After 3 minutes, feed resumes live.
 
-Features:
---Auto-tracking in restricted zones (B3, B4)
---Facial recognition active in lobby and casino
+## RESPONSE
+Camera loss triggers an alert. Looping avoids the camera-loss alert entirely.
+Cameras remain active during power outage (30-min battery backup).
 
-## CONFIRMED BLIND SPOTS ##
---L2 Kitchen: steam interference creates a persistent visual gap
---B3 Maintenance Shaft: no cameras installed (confirmed blind spot)
---Stairwell L3–L4: ~2-second sweep gap during camera rotation
---HVAC shaft interior: no cameras installed
-
-## LOOPING THE FEED ##
---Camera loop device can be found in Surveillance HQ
---Looping must be performed at the Surveillance HQ control console
---Effect: B3 and B4 camera feeds replay a clean loop for up to 3 minutes
---No automated detection of looped feed in the current system (memo confirms this)
---After 3 minutes, feed resumes live — player must have cleared the area
-
-## B4 SURVEILLANCE ##
---B4 vault antechamber and corridor are covered by cameras
---Feeds controlled from Surveillance HQ — looping affects B4 cameras too
---Vault chamber interior has limited coverage (wide-angle only)
-
-## RESPONSE ##
---Camera loss (not loop) triggers an alert
---Nearby cameras increase tracking resolution on an alert
---Looping avoids the camera-loss alert entirely
-
-## BACKUP POWER ##
---30-minute battery backup
---Cameras remain fully active during power outage
---No reduction in fps during backup power
-
-## LOOPHOLES ##
---1–2 second blind sweep during camera rotation (casino floor only)
---Multiple simultaneous events reduce AI tracking focus
---Level 1 control office is significantly less secure than B3 HQ
---Thermal cameras lag ~0.5 seconds
---Feed loop leaves no trace in the system log (current firmware gap)
+## LOOPHOLES
+Feed loop leaves no trace in the system log (current firmware gap).
+Multiple simultaneous events reduce AI tracking focus.

@@ -1,56 +1,32 @@
 # SECURITY LOG : HVAC SYSTEM
-# ID : EL-01
-# SENSITIVITY : CONFIDENTIAL
 
-## OVERVIEW ##
-HVAC connects all floors including restricted zones.
-The vertical shaft from L2 Kitchen to B3 Maintenance Shaft is the primary covert infiltration route.
+## OVERVIEW
+HVAC connects L2 Kitchen to B3 Corridor.
+The vertical shaft is the primary covert infiltration route — no authentication required.
 
-## STRUCTURE ##
---Main ducts: 80x80 cm (traversable by a person)
---Secondary ducts: 40x40 cm (not traversable)
---Vertical shafts connect L2 → B3 Maintenance Shaft
+## STRUCTURE
+Main ducts: 80x80 cm (traversable by a person)
+Secondary ducts: 40x40 cm (not traversable)
+Vertical shaft connects L2 Kitchen directly to B3 Corridor
 
-## AIRFLOW AND TEMPERATURE ##
---Duct air temperature: 22–24°C (constant circulation)
---Human body temperature: ~37°C
---The temperature differential (13–15°C) means body heat IS detectable by thermal sensors
---There is no "safe temperature range" for a human in the duct — detection is unavoidable without mitigation
---Mitigation: move extremely slowly to minimise convective heat spread; thermal sensors have a ~1-second lag
+## ENTRY POINT
+Access panel in L2 Kitchen (HVAC maintenance hatch).
+Panel cover is loose and can be removed manually in ~20 seconds, no tools required.
 
-## THERMAL SENSOR BEHAVIOUR IN HVAC ##
---Sensors detect sustained heat signatures, not instantaneous spikes
---Moving slowly (below 0.08 m/s) reduces detectable heat spread
---Stopping briefly between movements allows residual heat to dissipate in airflow
---Rapid movement creates a clear thermal trail — triggers alert immediately
+## PATH
+L2 Kitchen → HVAC vertical shaft → B3 Corridor
+No authentication required for shaft traversal.
 
-## CONTROL ##
---Main panel in B2 (controls fan speed and airflow)
---Sensor control panel in B3 Security Command (can disable B3/B4 sensors — does NOT affect HVAC shaft sensors)
+## MOVEMENT RULES
+Move slowly — noise travels through metal ducts and is audible from B3.
+Filters in shaft are removable (~20 seconds each, no tools).
+No cameras inside the shaft (confirmed blind spot).
 
-## ENTRY POINT ##
---Access panel in L2 Kitchen (HVAC maintenance hatch)
---Panel cover is loose and can be removed manually (~20 seconds, no tools required)
+## NOISE RISK
+Rapid movement creates audible noise that can alert Rick Green in B3 Corridor.
+Slow, controlled movement keeps the traversal silent.
 
-## PATH ##
---L2 Kitchen → HVAC vertical shaft → B3 Maintenance Shaft
---B3 Maintenance Shaft exits into B3 Corridor (no authentication required for shaft traversal)
---B3 Maintenance Shaft also connects downward to B4 Vault Antechamber
-
-## MOVEMENT RULES ##
---Slow movement required throughout — noise travels through metal ducts to B3
---Filters in shaft are removable (~20 seconds each)
---No cameras inside the shaft itself (confirmed blind spot)
-
-## JORGE RAMIREZ (HVAC MAINTENANCE) ##
---Reacts only to system alerts, not minor anomalies
---His maintenance log is stored inside the shaft near the B3 junction
---Log contains thermal sensor timing data and movement detection thresholds
-
-## LOOPHOLES ##
---No cameras inside shaft — confirmed blind spot
---Thermal sensors have ~1-second lag after a heat source passes
---Fan shutdown (from B2 panel) reduces noise detection risk
---Moving in short bursts with pauses reduces thermal signature accumulation
---Filters removable without tools (~20 sec each)
---Maintenance log reveals precise sensor timing for further planning
+## LOOPHOLES
+No cameras inside shaft — confirmed blind spot.
+Loose access panel requires no tools and no authentication.
+Fan shutdown (from B2 engineering panel) reduces noise detection risk.

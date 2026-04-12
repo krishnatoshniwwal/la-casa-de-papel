@@ -1,48 +1,35 @@
 # INTERNAL MEMOS
 
-## MEMO 1
-Subject: Kitchen Vent Issue
-From: Facilities
-- HVAC access panel cover in L2 Kitchen is loose
-- Maintenance has been repeatedly delayed
-- Panel can be removed manually without tools
-- This has not been flagged as a security concern
+## MEMO 1 — Kitchen Vent Issue (Facilities)
+HVAC access panel cover in L2 Kitchen is loose.
+Maintenance has been repeatedly delayed.
+Panel can be removed manually without tools.
+This has not been flagged as a security concern.
 
-## MEMO 2
-Subject: Sensor Control Access
-From: Security Operations
-- Motion and thermal sensor control panel for B4 is located in B3 Security Command
-- Access should be restricted to senior staff only
-- Currently, access restrictions are not being strictly enforced
-- Any guard with B3 clearance can operate the panel
+## MEMO 2 — Sensor Control Access (Security Operations)
+Motion sensor control panel for B4 is located in B3 Security Command.
+Access should be restricted to senior staff only.
+Currently, access restrictions are not being strictly enforced.
+Any guard with B3 clearance can operate the panel.
 
-## MEMO 3
-Subject: CCTV Looping Vulnerability
-From: IT Systems
-- Camera feed looping is possible from the Surveillance HQ console
-- A loop device port is available at the console
-- There is currently NO automated detection system for looped feeds
-- This is a known gap — remediation budget has not been approved
+## MEMO 3 — CCTV Looping Vulnerability (IT Systems)
+Camera feed looping is possible from the Surveillance HQ console.
+A loop device port is available at the console.
+There is currently NO automated detection system for looped feeds.
+This is a known gap — remediation budget has not been approved.
 
-## MEMO 4
-Subject: Count Room Key Storage
-From: Vault Operations
-- Vault Key ALPHA and Vault Key BETA are both stored in the Count Room lockbox
-- The lockbox is unattended between 03:00 and 03:15 during shift handover
-- Albert King is responsible for both keys — he does not carry them on his person
-- Both keys must be present for vault unlock — neither works alone
+## MEMO 4 — Count Room Key Storage (Vault Operations)
+Vault Key ALPHA and Vault Key BETA are both stored in the Count Room lockbox.
+The lockbox is unattended between 03:00 and 03:15 during shift handover.
+Albert King is responsible for both keys — he does not carry them on his person.
+Both keys must be present for vault unlock — neither works alone.
 
-## MEMO 5
-Subject: Security Command Desk
-From: Internal Audit
-- A 4-digit vault PIN was found written on a sticky note in the top drawer of the Security Command desk
-- This is a serious security violation
-- Staff have been verbally reminded — no formal action taken yet
-- The note has not been removed as of last audit
+## MEMO 5 — Security Command Desk (Internal Audit)
+A 4-digit vault PIN was found written on a sticky note in the top drawer of the Security Command desk.
+This is a serious security violation.
+Staff have been verbally reminded — no formal action taken yet.
+The note has not been removed as of last audit.
 
-## MEMO 6
-Subject: B3 Keycard Storage
-From: Access Control
-- The B3 Keycard is stored in the key lockbox in the Cashier Cage
-- Rick Green's rotation sheet is also kept in the Cashier Cage
-- Guards do not carry spare keycards during patrol
+## MEMO 6 — B3 Keycard Storage (Access Control)
+The B3 Keycard is stored in the key lockbox in the Cashier Cage.
+Guards do not carry spare keycards during patrol.

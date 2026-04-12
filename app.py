@@ -244,180 +244,79 @@ brain = get_brain()
 
 ZONE_ICONS = {
     "LOBBY": "🏨", "CASINO": "🎰", "CASHIER_CAGE": "💰",
-    "KITCHEN_L2": "🍳", "HVAC_SHAFT": "🌀", "PARKING_B2": "🅿️",
-    "STAFF_ELEVATOR": "🛗", "B3_CORRIDOR": "🔐", "SURVEILLANCE_HQ": "📹",
-    "SECURITY_COMMAND": "📡", "COUNT_ROOM": "💵", "B3_MAINTENANCE_SHAFT": "🔧",
+    "KITCHEN_L2": "🍳", "HVAC_SHAFT": "🌀",
+    "B3_CORRIDOR": "🔐", "SURVEILLANCE_HQ": "📹",
+    "SECURITY_COMMAND": "📡", "COUNT_ROOM": "💵",
     "B3_ELEVATOR": "🛗", "B4_VAULT_ANTECHAMBER": "🚪", "VAULT_CHAMBER": "💎",
 }
 
 ITEM_ICONS = {
-    "B3_KEYCARD": "💳", "VAULT_PIN": "🔢", "KEY_ALPHA": "🗝️",
-    "KEY_BETA": "🗝️", "BIOMETRIC_BYPASS": "👁️", "CAMERA_LOOP_DEVICE": "📷",
-    "GUARD_SCHEDULE": "📋", "LASER_SPECS": "🔴", "MAINTENANCE_LOG": "📓",
+    "B3_KEYCARD": "💳", "VAULT_PIN": "🔢",
+    "VAULT_KEYS": "🗝️", "CAMERA_LOOP_DEVICE": "📷",
 }
 
 ZONE_TO_FLOOR = {
     "LOBBY": "L1", "CASINO": "L0", "CASHIER_CAGE": "L0",
-    "KITCHEN_L2": "L2", "HVAC_SHAFT": "TRANSIT", "PARKING_B2": "B2",
-    "STAFF_ELEVATOR": "TRANSIT", "B3_CORRIDOR": "B3", "SURVEILLANCE_HQ": "B3",
-    "SECURITY_COMMAND": "B3", "COUNT_ROOM": "B3", "B3_MAINTENANCE_SHAFT": "B3",
+    "KITCHEN_L2": "L2", "HVAC_SHAFT": "TRANSIT",
+    "B3_CORRIDOR": "B3", "SURVEILLANCE_HQ": "B3",
+    "SECURITY_COMMAND": "B3", "COUNT_ROOM": "B3",
     "B3_ELEVATOR": "B3", "B4_VAULT_ANTECHAMBER": "B4", "VAULT_CHAMBER": "B4",
 }
 
 # ── FLOOR MAP DATA ─────────────────────────────────────────────────────────────
+_B3_GRID = [
+    ["X","SURVEILLANCE_HQ","SURVEILLANCE_HQ","X","SECURITY_COMMAND","X"],
+    ["X","SURVEILLANCE_HQ","SURVEILLANCE_HQ","X","SECURITY_COMMAND","X"],
+    ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","COUNT_ROOM","X"],
+    ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","COUNT_ROOM","X"],
+    ["X","B3_CORRIDOR","HVAC_SHAFT","B3_CORRIDOR","B3_ELEVATOR","X"],
+    ["X","X","X","X","X","X"],
+]
+
+_CASINO_GRID = [
+    ["X","X","X","X","X","X"],
+    ["X","CASINO","CASINO","CASINO","CASINO","X"],
+    ["X","CASINO","CASHIER_CAGE","CASINO","CASINO","X"],
+    ["X","CASINO","CASINO","CASINO","CASINO","X"],
+    ["X","CASINO","KITCHEN_L2","CASINO","CASINO","X"],
+    ["X","X","X","X","X","X"],
+]
+
 FLOOR_GRIDS = {
     "LOBBY": {
         "title": "LEVEL 1 — LOBBY",
         "grid": [
             ["X","X","X","X","X"],
             ["X","LOBBY","LOBBY","LOBBY","X"],
-            ["X","LOBBY","ELEVATOR","LOBBY","X"],
+            ["X","LOBBY","LOBBY","LOBBY","X"],
             ["X","LOBBY","LOBBY","LOBBY","X"],
             ["X","X","CASINO","X","X"],
         ],
     },
-    "CASINO": {
-        "title": "GROUND FLOOR — CASINO",
-        "grid": [
-            ["X","X","X","X","X","X","X"],
-            ["X","CASINO","CASINO","CASINO","CASINO","CASINO","X"],
-            ["X","CASINO","CASINO","ELEVATOR","CASINO","CASINO","X"],
-            ["X","CASINO","CASHIER_CAGE","CASINO","STAFF_ELEVATOR","CASINO","X"],
-            ["X","CASINO","CASINO","CASINO","CASINO","CASINO","X"],
-            ["X","CASINO","KITCHEN_L2","CASINO","CASINO","CASINO","X"],
-            ["X","X","X","X","X","X","X"],
-        ],
-    },
-    "CASHIER_CAGE": {
-        "title": "GROUND FLOOR — CASINO",
-        "grid": [
-            ["X","X","X","X","X","X","X"],
-            ["X","CASINO","CASINO","CASINO","CASINO","CASINO","X"],
-            ["X","CASINO","CASINO","ELEVATOR","CASINO","CASINO","X"],
-            ["X","CASINO","CASHIER_CAGE","CASINO","STAFF_ELEVATOR","CASINO","X"],
-            ["X","CASINO","CASINO","CASINO","CASINO","CASINO","X"],
-            ["X","CASINO","KITCHEN_L2","CASINO","CASINO","CASINO","X"],
-            ["X","X","X","X","X","X","X"],
-        ],
-    },
-    "KITCHEN_L2": {
-        "title": "LEVEL 2 — KITCHEN",
-        "grid": [
-            ["X","X","X","X","X","X"],
-            ["X","KITCHEN_L2","KITCHEN_L2","KITCHEN_L2","KITCHEN_L2","X"],
-            ["X","KITCHEN_L2","ELEVATOR","HVAC_SHAFT","KITCHEN_L2","X"],
-            ["X","KITCHEN_L2","KITCHEN_L2","KITCHEN_L2","KITCHEN_L2","X"],
-            ["X","KITCHEN_L2","KITCHEN_L2","KITCHEN_L2","CASINO","X"],
-            ["X","X","X","X","X","X"],
-        ],
-    },
+    "CASINO":        {"title": "GROUND FLOOR — CASINO",   "grid": _CASINO_GRID},
+    "CASHIER_CAGE":  {"title": "GROUND FLOOR — CASINO",   "grid": _CASINO_GRID},
+    "KITCHEN_L2":    {"title": "GROUND FLOOR — CASINO",   "grid": _CASINO_GRID},
     "HVAC_SHAFT": {
         "title": "HVAC VERTICAL SHAFT",
         "grid": [
+            ["X","KITCHEN_L2","X"],
             ["X","HVAC_SHAFT","X"],
-            ["HVAC_SHAFT","HVAC_SHAFT","HVAC_SHAFT"],
             ["X","HVAC_SHAFT","X"],
+            ["X","B3_CORRIDOR","X"],
         ],
     },
-    "PARKING_B2": {
-        "title": "B2 — PARKING",
-        "grid": [
-            ["X","X","X","X","X"],
-            ["X","PARKING_B2","PARKING_B2","STAFF_ELEVATOR","X"],
-            ["X","PARKING_B2","PARKING_B2","PARKING_B2","X"],
-            ["X","PARKING_B2","PARKING_B2","PARKING_B2","X"],
-            ["X","X","LOBBY","X","X"],
-        ],
-    },
-    "STAFF_ELEVATOR": {
-        "title": "RESTRICTED TRANSIT — STAFF ELEVATOR",
-        "grid": [
-            ["X","X","X","X","X"],
-            ["X","PARKING_B2","PARKING_B2","STAFF_ELEVATOR","X"],
-            ["X","CASINO","CASINO","STAFF_ELEVATOR","X"],
-            ["X","B3_CORRIDOR","B3_CORRIDOR","STAFF_ELEVATOR","X"],
-            ["X","X","X","X","X"],
-        ],
-    },
-    "B3_CORRIDOR": {
-        "title": "B3 — SECURITY CORE",
-        "grid": [
-            ["X","SURVEILLANCE_HQ","SURVEILLANCE_HQ","SURVEILLANCE_HQ","X","SECURITY_COMMAND","X"],
-            ["X","SURVEILLANCE_HQ","SURVEILLANCE_HQ","SURVEILLANCE_HQ","X","SECURITY_COMMAND","X"],
-            ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","COUNT_ROOM","X"],
-            ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","COUNT_ROOM","X"],
-            ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_ELEVATOR","X"],
-            ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_MAINTENANCE_SHAFT","X"],
-            ["X","X","X","X","X","X","X"],
-        ],
-    },
-    "SURVEILLANCE_HQ": {
-        "title": "B3 — SECURITY CORE",
-        "grid": [
-            ["X","SURVEILLANCE_HQ","SURVEILLANCE_HQ","SURVEILLANCE_HQ","X","SECURITY_COMMAND","X"],
-            ["X","SURVEILLANCE_HQ","SURVEILLANCE_HQ","SURVEILLANCE_HQ","X","SECURITY_COMMAND","X"],
-            ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","COUNT_ROOM","X"],
-            ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","COUNT_ROOM","X"],
-            ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_ELEVATOR","X"],
-            ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_MAINTENANCE_SHAFT","X"],
-            ["X","X","X","X","X","X","X"],
-        ],
-    },
-    "SECURITY_COMMAND": {
-        "title": "B3 — SECURITY CORE",
-        "grid": [
-            ["X","SURVEILLANCE_HQ","SURVEILLANCE_HQ","SURVEILLANCE_HQ","X","SECURITY_COMMAND","X"],
-            ["X","SURVEILLANCE_HQ","SURVEILLANCE_HQ","SURVEILLANCE_HQ","X","SECURITY_COMMAND","X"],
-            ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","COUNT_ROOM","X"],
-            ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","COUNT_ROOM","X"],
-            ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_ELEVATOR","X"],
-            ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_MAINTENANCE_SHAFT","X"],
-            ["X","X","X","X","X","X","X"],
-        ],
-    },
-    "COUNT_ROOM": {
-        "title": "B3 — SECURITY CORE",
-        "grid": [
-            ["X","SURVEILLANCE_HQ","SURVEILLANCE_HQ","SURVEILLANCE_HQ","X","SECURITY_COMMAND","X"],
-            ["X","SURVEILLANCE_HQ","SURVEILLANCE_HQ","SURVEILLANCE_HQ","X","SECURITY_COMMAND","X"],
-            ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","COUNT_ROOM","X"],
-            ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","COUNT_ROOM","X"],
-            ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_ELEVATOR","X"],
-            ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_MAINTENANCE_SHAFT","X"],
-            ["X","X","X","X","X","X","X"],
-        ],
-    },
-    "B3_ELEVATOR": {
-        "title": "B3 — SECURITY CORE",
-        "grid": [
-            ["X","SURVEILLANCE_HQ","SURVEILLANCE_HQ","SURVEILLANCE_HQ","X","SECURITY_COMMAND","X"],
-            ["X","SURVEILLANCE_HQ","SURVEILLANCE_HQ","SURVEILLANCE_HQ","X","SECURITY_COMMAND","X"],
-            ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","COUNT_ROOM","X"],
-            ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","COUNT_ROOM","X"],
-            ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_ELEVATOR","X"],
-            ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_MAINTENANCE_SHAFT","X"],
-            ["X","X","X","X","X","X","X"],
-        ],
-    },
-    "B3_MAINTENANCE_SHAFT": {
-        "title": "B3 — SECURITY CORE",
-        "grid": [
-            ["X","SURVEILLANCE_HQ","SURVEILLANCE_HQ","SURVEILLANCE_HQ","X","SECURITY_COMMAND","X"],
-            ["X","SURVEILLANCE_HQ","SURVEILLANCE_HQ","SURVEILLANCE_HQ","X","SECURITY_COMMAND","X"],
-            ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","COUNT_ROOM","X"],
-            ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","COUNT_ROOM","X"],
-            ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_ELEVATOR","X"],
-            ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","B3_MAINTENANCE_SHAFT","X"],
-            ["X","X","X","X","X","X","X"],
-        ],
-    },
+    "B3_CORRIDOR":      {"title": "B3 — SECURITY CORE", "grid": _B3_GRID},
+    "SURVEILLANCE_HQ":  {"title": "B3 — SECURITY CORE", "grid": _B3_GRID},
+    "SECURITY_COMMAND": {"title": "B3 — SECURITY CORE", "grid": _B3_GRID},
+    "COUNT_ROOM":       {"title": "B3 — SECURITY CORE", "grid": _B3_GRID},
+    "B3_ELEVATOR":      {"title": "B3 — SECURITY CORE", "grid": _B3_GRID},
     "B4_VAULT_ANTECHAMBER": {
         "title": "B4 — VAULT LEVEL",
         "grid": [
             ["X","X","VAULT_CHAMBER","X","X"],
             ["X","B4_VAULT_ANTECHAMBER","B4_VAULT_ANTECHAMBER","B4_VAULT_ANTECHAMBER","X"],
             ["X","B4_VAULT_ANTECHAMBER","CORE","B4_VAULT_ANTECHAMBER","X"],
-            ["X","B3_ELEVATOR","B4_VAULT_ANTECHAMBER","B3_MAINTENANCE_SHAFT","X"],
+            ["X","B3_ELEVATOR","B4_VAULT_ANTECHAMBER","X","X"],
             ["X","X","X","X","X"],
         ],
     },
@@ -427,7 +326,7 @@ FLOOR_GRIDS = {
             ["X","X","VAULT_CHAMBER","X","X"],
             ["X","B4_VAULT_ANTECHAMBER","B4_VAULT_ANTECHAMBER","B4_VAULT_ANTECHAMBER","X"],
             ["X","B4_VAULT_ANTECHAMBER","CORE","B4_VAULT_ANTECHAMBER","X"],
-            ["X","B3_ELEVATOR","B4_VAULT_ANTECHAMBER","B3_MAINTENANCE_SHAFT","X"],
+            ["X","B3_ELEVATOR","B4_VAULT_ANTECHAMBER","X","X"],
             ["X","X","X","X","X"],
         ],
     },
