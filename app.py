@@ -534,6 +534,7 @@ def render_floor_map(zone_key: str):
       -webkit-backdrop-filter: blur(7px);
       z-index: 998;
       transition: opacity 0.3s ease;
+      display: none; opacity: 0;
     "></div>
     """, unsafe_allow_html=True)
 
@@ -543,10 +544,12 @@ def render_floor_map(zone_key: str):
     (function() {{
       var f = window.frameElement;
       if (!f) return;
+      f.id = 'vbv-map-iframe';
       f.style.position='fixed'; f.style.top='50%'; f.style.height='88vh';
       f.style.border='none'; f.style.borderRadius='18px'; f.style.zIndex='999';
       f.style.boxShadow='0 0 80px rgba(255,45,120,0.4), 0 0 160px rgba(139,43,226,0.2)';
-      f.style.opacity='0'; f.style.transition='left 0.3s ease, width 0.3s ease, opacity 0.25s ease';
+      f.style.opacity='0'; f.style.display='none';
+      f.style.transition='left 0.3s ease, width 0.3s ease, opacity 0.25s ease';
       function recentre() {{
         var main = window.parent.document.querySelector('.main .block-container')
                 || window.parent.document.querySelector('[data-testid="stMain"]')
@@ -559,17 +562,16 @@ def render_floor_map(zone_key: str):
         }}
       }}
       recentre();
-      var ticks=0, interval=setInterval(function(){{ recentre(); if(++ticks>20) clearInterval(interval); }},100);
       var sidebar=window.parent.document.querySelector('[data-testid="stSidebar"]');
       if(sidebar) new MutationObserver(function(){{
         recentre();
         var t2=0, iv2=setInterval(function(){{ recentre(); if(++t2>10) clearInterval(iv2); }},50);
       }}).observe(sidebar,{{attributes:true,attributeFilter:['style','class']}});
       window.addEventListener('resize',recentre);
-      requestAnimationFrame(function(){{ requestAnimationFrame(function(){{ f.style.opacity='1'; }}); }});
     }})();
     function closeMap() {{
-      var f=window.frameElement, bd=window.parent.document.getElementById('vbv-map-backdrop');
+      var f=window.parent.document.getElementById('vbv-map-iframe');
+      var bd=window.parent.document.getElementById('vbv-map-backdrop');
       if(f)  {{ f.style.opacity='0';  setTimeout(function(){{ f.style.display='none'; }},260); }}
       if(bd) {{ bd.style.opacity='0'; setTimeout(function(){{ bd.style.display='none'; }},260); }}
     }}
@@ -724,8 +726,33 @@ def render_sidebar():
             """, unsafe_allow_html=True)
 
         st.markdown("<div style='margin:6px 0;'></div>", unsafe_allow_html=True)
-        if st.button("◈ OPEN TACTICAL MAP", use_container_width=True):
-            st.session_state.show_map = not st.session_state.get("show_map", False)
+        components.html("""
+        <script>
+        function vbvToggleMap() {
+            var iframe = window.parent.document.getElementById('vbv-map-iframe');
+            var backdrop = window.parent.document.getElementById('vbv-map-backdrop');
+            if (!iframe || !backdrop) return;
+            var isHidden = iframe.style.display === 'none' || iframe.style.display === '';
+            if (isHidden) {
+                iframe.style.display = 'block';
+                backdrop.style.display = 'block';
+                setTimeout(function(){ iframe.style.opacity='1'; backdrop.style.opacity='1'; }, 10);
+            } else {
+                iframe.style.opacity='0'; backdrop.style.opacity='0';
+                setTimeout(function(){ iframe.style.display='none'; backdrop.style.display='none'; }, 260);
+            }
+        }
+        </script>
+        <button onclick="vbvToggleMap()" style="
+            width:100%; padding:10px 16px; cursor:pointer;
+            background:linear-gradient(135deg,rgba(255,45,120,0.15),rgba(139,43,226,0.2));
+            border:1px solid rgba(255,45,120,0.6); border-radius:6px;
+            color:#ff2d78; font-family:'Orbitron',monospace; font-size:0.7rem;
+            font-weight:700; letter-spacing:0.1em; text-transform:uppercase;
+            transition:all 0.25s ease;">
+            ◈ OPEN TACTICAL MAP
+        </button>
+        """, height=52)
 
         st.markdown("<div style='height:1px; background:linear-gradient(90deg,transparent,rgba(139,43,226,0.4),transparent); margin:14px 0;'></div>", unsafe_allow_html=True)
 
@@ -882,9 +909,8 @@ elif st.session_state.victory:
     """, height=120)
 
 
-# ── TACTICAL MAP MODAL ─────────────────────────────────────────────────────────
-if st.session_state.show_map:
-    render_floor_map(st.session_state.zone)
+# ── TACTICAL MAP MODAL (always rendered, shown/hidden via JS only) ─────────────
+render_floor_map(st.session_state.zone)
 
 
 # ── CHAT HISTORY ───────────────────────────────────────────────────────────────
