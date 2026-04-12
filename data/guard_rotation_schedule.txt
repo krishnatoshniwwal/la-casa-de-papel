@@ -24,6 +24,30 @@ Casino: 5–8 sec
 Hotel: 10–15 sec  
 B3: 3–5 sec  
 
+# GUARD ROTATION SCHEDULE
+
+## GENERAL ROTATION
+- Guards rotate every 12 minutes
+- Short overlap at shift change (~22:00)
+
+## B3 GUARDS
+- One guard patrols corridor
+- Often distracted (phone usage possible)
+
+## SECURITY COMMAND STAFF
+- Usually stationary
+- Focused on monitors
+
+## KEY PATTERN
+- Guard in B3 corridor carries access privileges
+- Master keycard found in corridor (dropped / stored)
+
+## SHIFT LOGS
+- Located in Security Command
+- Can be used to:
+  - Predict guard absence
+  - Time movements
+
 ## LOOPHOLES ##
 --Shift overlap reduces coverage  
 --Break timings predictable  

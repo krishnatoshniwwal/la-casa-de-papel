@@ -32,7 +32,30 @@ Features:
 
 ## RESPONSE ##
 --Camera loss triggers alert  
---Nearby cameras increase tracking  
+--Nearby cameras increase tracking 
+
+# SURVEILLANCE NETWORK
+
+## CCTV SYSTEM
+- Controlled from B3 Surveillance HQ
+- Covers:
+  - B3 corridors
+  - Elevator areas
+  - Vault antechamber
+
+## CCTV LOOPING
+- Must be done at Surveillance HQ
+- Player action required:
+  - Access console
+  - Loop feed manually
+
+## BLIND SPOTS
+- Kitchen (steam interference)
+- Maintenance shaft exit (partial)
+
+## BACKUP POWER
+- 30 minutes
+- Cameras remain active during outage
 
 ## LOOPHOLES ##
 --1–2 sec blind sweep during camera rotation  

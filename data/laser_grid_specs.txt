@@ -35,6 +35,34 @@ Level 3: Lockdown (doors close in 3 sec)
 --Beam break >0.2 sec → alert
 --Repeated small disturbances escalate level
 
+
+# SENSOR SYSTEM (UPDATED)
+
+## B4 CURRENT SECURITY
+- Motion sensors
+- Thermal sensors
+- Alarm system
+
+## SENSOR CONTROL
+- Located in B3 Security Command
+
+## DISABLE SYSTEM
+- Player can:
+  - Access control panel in Security Command
+  - Turn OFF motion sensors
+  - Turn OFF thermal sensors
+
+## RESULT AFTER DISABLE
+- Only alarm system remains active
+- Player can move freely inside vault area
+- Alarm triggers only if:
+  - Wrong interaction with vault
+  - Forced entry attempt
+
+## NOTES
+- Sensors affect only B4
+- B3 remains unaffected
+
 ## LOOPHOLES ##
 --0.8 sec gap during 12-min recalibration
 --~2 cm gap directly under emitters

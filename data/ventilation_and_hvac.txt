@@ -27,3 +27,26 @@ HVAC connects all floors including restricted zones.
 --Maintenance ducts not fully monitored  
 --Kitchen vents bypass cameras  
 --Filters removable (~20 sec)  
+
+# HVAC SYSTEM
+
+## ACCESS POINT
+- Kitchen (Level 2)
+
+## ENTRY
+- Remove vent cover (~20 seconds)
+- Requires no tools
+
+## PATH
+- Kitchen → HVAC shaft → B3 maintenance shaft
+
+## MOVEMENT
+- Slow movement required
+- Noise sensitive
+
+## EXIT
+- B3 maintenance shaft
+
+## NOTES
+- No authentication required
+- Used as primary infiltration path

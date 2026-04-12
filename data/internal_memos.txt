@@ -1,0 +1,22 @@
+# INTERNAL MEMOS
+
+## MEMO 1
+Subject: Kitchen Vent Issue
+- Vent cover loose
+- Maintenance delayed
+- Easy to remove manually
+
+## MEMO 2
+Subject: Sensor Control Access
+- Motion/thermal control located in B3 command
+- Should be restricted (currently not strictly enforced)
+
+## MEMO 3
+Subject: CCTV System
+- Looping possible from console
+- No automated detection of loop
+
+## MEMO 4
+Subject: Corridor Security
+- Keycard sometimes left unsecured
+- Needs stricter handling

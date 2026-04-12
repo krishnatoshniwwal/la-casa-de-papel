@@ -32,6 +32,19 @@ Biometric systems control access to B3 and B4.
 --Door remains in last state  
 
 
+## MASTER KEYCARD SYSTEM
+- Located in B3 corridor
+- Contains embedded fingerprint data of guard
+- Used for:
+  - Elevator access (B3 → B4)
+  - Vault authentication
+
+## FINGERPRINT AUTHENTICATION
+- Vault requires fingerprint match
+- Master keycard provides valid fingerprint
+- No need for separate biometric spoofing
+
+
 ## LOOPHOLES ##
 --2 sec cache of last valid scan  
 --Door stays open/closed during reboot  

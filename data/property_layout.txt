@@ -77,3 +77,45 @@ B3 Access:
 --Staff elevators connect full building  
 --Casino acts as central transit layer  
 --Service routes connect multiple floors  
+
+# PROPERTY LAYOUT
+
+## CASINO FLOOR (GROUND LEVEL)
+- Main gaming area
+- Bar and lounge
+- Cashier cage
+- Security desk
+- Elevator access to Level 1 (Lobby)
+- Access to Kitchen (staff door)
+
+## KITCHEN (CONNECTED TO CASINO)
+- High activity area
+- Steam reduces visibility
+- Contains item: TAPE
+- Vent entry point to HVAC system
+
+## B3 CORRIDOR
+- Central corridor in B3
+- Contains item: MASTER_KEYCARD
+- Keycard includes fingerprint data of authorized guard
+
+## B3 MAINTENANCE SHAFT
+- Connected to HVAC shaft
+- Entry point from L2 kitchen vents
+- No authentication required for entry
+
+## B3 SECURITY COMMAND / SURVEILLANCE HQ
+- Contains:
+  - Dual Keys (ALPHA + BETA)
+  - Security shift logs
+  - CCTV monitoring system
+  - Sensor control panel
+
+## B3 ELEVATOR
+- Connects B3 → B4
+- Requires MASTER_KEYCARD to unlock
+
+## B4 VAULT LEVEL
+- Vault antechamber
+- Vault door
+- Alarm system only (no motion/thermal sensors if disabled)

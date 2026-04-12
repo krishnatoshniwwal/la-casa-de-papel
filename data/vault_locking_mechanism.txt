@@ -27,3 +27,20 @@ Vault secured by keys + biometrics + time-lock.
 --Door cannot be stopped once opening  
 --Time-lock checked only at final step  
 --First key can be held in position  
+
+# VAULT LOCKING MECHANISM
+
+## REQUIREMENTS
+1. Master Keycard
+2. Fingerprint authentication (from keycard)
+
+## PROCESS
+1. Insert master keycard
+2. System reads embedded fingerprint
+3. Authentication succeeds
+4. Vault unlocks
+
+## NOTES
+- No dual-key requirement at vault
+- Dual keys used elsewhere (security command)
+- Alarm triggers if forced entry attempted
