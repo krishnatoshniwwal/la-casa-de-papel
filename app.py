@@ -10,6 +10,62 @@ _USER_SVG   = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><rect
 ORACLE_AVATAR = "data:image/svg+xml," + urllib.parse.quote(_ORACLE_SVG)
 USER_AVATAR   = "data:image/svg+xml," + urllib.parse.quote(_USER_SVG)
 
+def render_start_screen():
+    st.markdown("""
+    <div style="text-align:center; padding:3rem 0 1rem 0;">
+      <div style="font-family:'Orbitron',monospace; font-size:3rem; font-weight:900;
+                  letter-spacing:0.25em;
+                  background:linear-gradient(135deg,#ff2d78,#ffd700,#00d4ff);
+                  -webkit-background-clip:text; -webkit-text-fill-color:transparent;
+                  filter:drop-shadow(0 0 40px rgba(255,45,120,0.7));">
+        VEGAS
+      </div>
+
+      <div style="font-family:'Orbitron',monospace; font-size:1.2rem; font-weight:700;
+                  letter-spacing:0.5em; color:#ffd700;
+                  margin-top:6px; text-shadow:0 0 20px rgba(255,215,0,0.7);">
+        BLACK VAULT
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("""
+    <div style="max-width:700px; margin:auto; padding:20px;
+                background:rgba(255,255,255,0.03);
+                border:1px solid rgba(255,45,120,0.3);
+                border-radius:14px;
+                box-shadow:0 0 40px rgba(255,45,120,0.15);">
+
+      <div style="font-family:'Orbitron',monospace; font-size:0.8rem;
+                  letter-spacing:0.2em; color:#00d4ff; margin-bottom:12px;">
+        ◈ MISSION BRIEF
+      </div>
+
+      <div style="font-family:'Rajdhani',sans-serif; font-size:0.95rem;
+                  color:rgba(220,220,255,0.8); line-height:1.6;">
+        You are a professional heist planner tasked with infiltrating the
+        <span style="color:#ffd700;">Velvet Ace Casino</span>.
+        <br><br>
+        Your objective:
+        <br>• Acquire access credentials
+        <br>• Breach underground security (B3)
+        <br>• Reach the vault (B4)
+        <br>• Extract high-value assets
+        <br><br>
+        Avoid detection. Minimize heat. Execute flawlessly.
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    st.markdown("<div style='height:30px'></div>", unsafe_allow_html=True)
+
+    col1, col2, col3 = st.columns([1,2,1])
+
+    with col2:
+        if st.button("◈ START HEIST", use_container_width=True):
+            st.session_state.game_started = True
+            st.rerun()
+
 st.set_page_config(page_title="Vegas Black Vault", layout="wide", initial_sidebar_state="expanded")
 
 # ── GLOBAL CSS ─────────────────────────────────────────────────────────────────
@@ -87,8 +143,7 @@ header[data-testid="stHeader"] {
 [data-testid="stSidebar"] > div { padding-top: 1rem !important; }
 
 .main .block-container {
-  padding: 1rem 2rem 2rem 2rem !important;
-  max-width: 100% !important;
+  padding: 0.5rem 2rem 1rem 2rem !important;
 }
 
 h1, h2, h3 { font-family: 'Orbitron', monospace !important; color: #fff !important; }
@@ -619,12 +674,33 @@ if "inventory"   not in st.session_state: st.session_state.inventory   = []
 if "zone"        not in st.session_state: st.session_state.zone        = "LOBBY"
 if "game_over"   not in st.session_state: st.session_state.game_over   = False
 if "victory"     not in st.session_state: st.session_state.victory     = False
+if "game_started" not in st.session_state:
+    st.session_state.game_started = False
 
 brain.current_zone = st.session_state.zone
 brain.inventory    = [item["key"] for item in st.session_state.inventory]
 brain.heat         = st.session_state.heat_level
 brain.game_over    = st.session_state.game_over
 brain.victory      = st.session_state.victory
+
+if not st.session_state.game_started:
+    st.markdown("""
+<style>
+/* Remove default markdown block styling */
+.block-container {
+    padding-top: 2rem !important;
+}
+
+/* Remove grey box effect */
+div[data-testid="stMarkdownContainer"] > div {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+</style>
+""", unsafe_allow_html=True)
+    render_start_screen()
+    st.stop()
 
 render_sidebar()
 
