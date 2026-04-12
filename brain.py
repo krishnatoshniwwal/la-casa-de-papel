@@ -316,21 +316,64 @@ class HeistBrain:
         move_lower = user_move.lower()
         triggered = []
 
-        for item_key, keywords in ITEM_TRIGGERS.items():
-            if item_key == "B3_KEYCARD" and self.current_zone != "CASHIER_CAGE":
-                continue
-            if item_key == "VAULT_KEYS" and self.current_zone != "COUNT_ROOM":
-                continue
-            if item_key == "VAULT_PIN" and self.current_zone != "SECURITY_COMMAND":
-                continue
+        # Independent verb + noun matching — far more robust than exact phrases.
+        # Both a verb AND a relevant noun must appear anywhere in the input.
+        TAKE_VERBS = {
+            "take", "grab", "pocket", "steal", "snatch", "slip", "swipe",
+            "lift", "collect", "pick up", "retrieve", "secure", "get",
+        }
+        KEYCARD_NOUNS = {
+            "keycard", "key card", "key-card", "badge", "access card",
+            "card", "b3 card", "b3 keycard", "b3 key",
+        }
+        KEY_NOUNS = {
+            "vault key", "vault keys", "key alpha", "key beta",
+            "alpha key", "beta key", "keys", "both key",
+        }
+        PIN_VERBS = {
+            "open", "check", "look", "search", "rifle", "read",
+            "grab", "take", "find", "inspect",
+        }
+        PIN_NOUNS = {
+            "drawer", "desk", "top drawer", "sticky note", "note",
+            "sticky", "pin", "vault pin",
+        }
+        LOOP_NOUNS = {
+            "loop device", "device", "camera loop", "loop", "terminal",
+        }
 
-            if item_key not in self.inventory:
-                for kw in keywords:
-                    if kw in move_lower:
-                        triggered.append(item_key)
-                        break
+        def has_verb(verbs):
+            return any(v in move_lower for v in verbs)
+
+        def has_noun(nouns):
+            return any(n in move_lower for n in nouns)
+
+        # B3_KEYCARD — must be in CASHIER_CAGE
+        if self.current_zone == "CASHIER_CAGE":
+            if "B3_KEYCARD" not in self.inventory:
+                if has_verb(TAKE_VERBS) and has_noun(KEYCARD_NOUNS):
+                    triggered.append("B3_KEYCARD")
+
+        # VAULT_KEYS — must be in COUNT_ROOM
+        if self.current_zone == "COUNT_ROOM":
+            if "VAULT_KEYS" not in self.inventory:
+                if has_verb(TAKE_VERBS) and has_noun(KEY_NOUNS):
+                    triggered.append("VAULT_KEYS")
+
+        # VAULT_PIN — must be in SECURITY_COMMAND
+        if self.current_zone == "SECURITY_COMMAND":
+            if "VAULT_PIN" not in self.inventory:
+                if has_verb(PIN_VERBS) and has_noun(PIN_NOUNS):
+                    triggered.append("VAULT_PIN")
+
+        # CAMERA_LOOP_DEVICE — must be in SURVEILLANCE_HQ
+        if self.current_zone == "SURVEILLANCE_HQ":
+            if "CAMERA_LOOP_DEVICE" not in self.inventory:
+                if has_verb(TAKE_VERBS) and has_noun(LOOP_NOUNS):
+                    triggered.append("CAMERA_LOOP_DEVICE")
 
         return triggered
+
 
     def _try_move(self, user_move: str) -> str | None:
         move_lower = user_move.lower()
@@ -362,6 +405,14 @@ class HeistBrain:
             "move to", "go to", "enter", "head to", "proceed to", "sneak into",
             "climb into", "crawl into", "take the elevator", "walk to",
             "run to", "get to", "slip into", "drop into", "descend to",
+            # natural alternatives players commonly type:
+            "got into", "got to", "get into", "go into", "went to", "went into",
+            "move into", "moved into", "moved to", "head into", "sneak to",
+            "sneak in", "slip to", "slip in", "make my way", "make it to",
+            "navigate to", "navigate into", "step into", "step to",
+            "duck into", "duck to", "creep into", "creep to",
+            "slide into", "slide to", "push into", "push to",
+            "go through", "pass through",
         ]
         if not any(v in move_lower for v in movement_verbs):
             return None
@@ -512,8 +563,23 @@ Output ONLY the story + 3 tags. Nothing else.
         status = tags.get("status", "CLEAR")
         gm_location = tags.get("location", self.current_zone)
 
+        llm_zone_changed = False
         if gm_location in ZONES and not zone_changed:
+            prev_zone = self.current_zone
             self.current_zone = gm_location
+            llm_zone_changed = (self.current_zone != prev_zone)
+
+        # If the LLM moved the player to a new zone that _try_move missed,
+        # re-run item triggers with the updated zone so pickups aren't lost.
+        if llm_zone_changed:
+            late_keys = self._check_item_triggers(user_move)
+            for key in late_keys:
+                if key not in self.inventory:
+                    defn = ITEM_DEFINITIONS.get(key, {})
+                    self.inventory.append(key)
+                    entry = {"key": key, "label": defn.get("label", key), "desc": defn.get("desc", "")}
+                    self.intel_log.append(entry)
+                    new_items.append(entry)
 
         IDLE_PHRASES = [
             "wait", "do nothing", "stay", "look around", "think",
