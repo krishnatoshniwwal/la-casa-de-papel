@@ -332,8 +332,20 @@ Your job is to judge player actions FAIRLY using the SECURITY FACTS and ZONE DAT
 2. Judge the move REALISTICALLY based on the security facts. Smart moves succeed. Stupid moves fail.
 3. If GM BLOCK is set, narrate the failure naturally.
 4. If player acquired new items, weave their discovery into the story.
-5. After the narrative, output EXACTLY these tags on separate lines:
-   HEAT: [integer 0-30 — 0 for brilliant stealth, 30 for reckless exposure]
+5. Heat logic:
+    Heat scale (-10 to 30):
+    -10 to -1: Brilliant, reduces suspicion
+    0: Idle / no risk
+    1–5: Minor risk
+    6–15: Noticeable/sloppy
+    16–30: Reckless / near alarm
+    50+: Extremely stupid move
+    100: Deliberately reveals himself while in a sticky situation
+    Rules:
+    Don’t give 0 for risky moves
+    Don’t over-penalize smart execution
+6. After the narrative, output EXACTLY these tags on separate lines:
+   HEAT
    LOCATION: [current zone key from the ZONES list, e.g. B3_CORRIDOR]
    STATUS: [one of: CLEAR | ALERTED | COMPROMISED | CAPTURED | VICTORY]
 
