@@ -3,55 +3,56 @@
 # SENSITIVITY : CONFIDENTIAL
 
 ## SHIFTS ##
-06:00–14:00  
-14:00–22:00  
-22:00–06:00  
+06:00–14:00
+14:00–22:00
+22:00–06:00
 
 ## OVERLAP ##
---10 min reduced coverage  
+--10-minute reduced coverage during shift changeover
 
 ## PATROLS ##
-Casino: 12 min loop  
-Hotel: 25 min sweep  
-B3: fixed + 10 min rotation  
+Casino: 12-minute loop
+Hotel: 25-minute floor sweep
+B3: fixed post + 10-minute rotation
 
 ## BREAKS ##
---15 min every 2 hours  
---Fixed schedule  
+--15 minutes every 2 hours
+--Fixed, predictable schedule
+--Break times: 08:00, 10:00, 12:00, 14:00, 16:00, 18:00, 20:00, 22:00, 00:00, 02:00, 04:00, 06:00
 
-## RESPONSE TIME ##
-Casino: 5–8 sec  
-Hotel: 10–15 sec  
-B3: 3–5 sec  
+## RESPONSE TIMES ##
+Casino floor: 5–8 seconds
+Hotel floors: 10–15 seconds
+B3: 3–5 seconds
 
-# GUARD ROTATION SCHEDULE
+## B3 GUARDS ##
+Rick Green:
+--Location: B3 corridor
+--Behaviour: distracted, checks phone every 3–5 minutes
+--Low awareness when stationary
 
-## GENERAL ROTATION
-- Guards rotate every 12 minutes
-- Short overlap at shift change (~22:00)
+## SECURITY COMMAND STAFF ##
+--Usually stationary, focused on monitors
+--Radio check every 10 minutes
+--2 guards on rotation in Security Command
 
-## B3 GUARDS
-- One guard patrols corridor
-- Often distracted (phone usage possible)
+## SHIFT LOGS ##
+--Located in Security Command (guard rotation board)
+--Also: Rick Green's rotation sheet is kept in the Cashier Cage
+--Shift logs reveal:
+  - Exact guard absence windows
+  - Break timings
+  - Patrol routes
 
-## SECURITY COMMAND STAFF
-- Usually stationary
-- Focused on monitors
-
-## KEY PATTERN
-- Guard in B3 corridor carries access privileges
-- Master keycard found in corridor (dropped / stored)
-
-## SHIFT LOGS
-- Located in Security Command
-- Can be used to:
-  - Predict guard absence
-  - Time movements
+## B3 KEYCARD LOCATION ##
+The B3 Keycard is stored in the Cashier Cage key lockbox on the casino floor.
+It is NOT carried by any individual guard during patrol.
+Rick Green's access privileges are embedded in the biometric gate system, not on a physical card he carries.
 
 ## LOOPHOLES ##
---Shift overlap reduces coverage  
---Break timings predictable  
---Night shift slower (~1–2 sec)  
---Guards cluster near break rooms  
---Routes repeat without variation  
---Radio delay ~3 sec  
+--Shift overlap reduces coverage for 10 minutes
+--Break timings are fixed and predictable
+--Night shift guards are 1–2 seconds slower to react
+--Guards cluster near break rooms during rest periods
+--Patrol routes repeat without variation
+--Radio delay of approximately 3 seconds between call and response

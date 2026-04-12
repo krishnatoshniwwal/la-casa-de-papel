@@ -4,56 +4,73 @@
 
 ## OVERVIEW ##
 B4 is a deep underground vault level.
-Depth: ~20–30 meters below ground  
-Access level: highest restriction  
+Depth: ~20–30 metres below ground
+Access level: highest restriction
 
 ## FUNCTION ##
 Stores high-value assets:
---Diamonds  
---Jewelry  
---Bullion  
---VIP collateral  
---Rare collectibles  
+--Diamonds
+--Jewellery
+--Gold bullion
+--VIP collateral
+--Rare collectibles
 
 ## STRUCTURE ##
---Reinforced concrete walls (1–2 m thick)  
---Steel inner lining  
---Blast-resistant design  
+--Reinforced concrete walls (1–2m thick)
+--Steel inner lining
+--Blast-resistant design
 
 Vault Layout:
---1 central corridor  
---10–20 vault chambers  
---Private storage compartments  
+--1 central corridor
+--10–20 vault chambers
+--Private storage compartments
 
-## ACCESS ##
---No public access  
---Entry via secure elevator from B3  
---Reinforced stairwell backup  
+## ACCESS ROUTES ##
 
-## SECURITY ##
---24/7 surveillance (controlled from B3)  
---Motion + thermal sensors  
---Alarm system active  
+Route 1 — B3 Elevator:
+--Requires B3 Keycard + biometric fingerprint authorisation (cloned or genuine)
+--Arrives at B4 Vault Antechamber
 
-Authentication Layers:
---Keycard  
---Biometric (fingerprint)  
---Dual authorization  
---Time-based access  
+Route 2 — B3 Maintenance Shaft:
+--No authentication required for shaft traversal
+--Shaft connects from B3 level directly to B4 Vault Antechamber
+--Slower route, thermal sensor risk
 
-## VAULT DOORS ##
---Weight: 20–50 tons  
---Dual-key system  
---Time-lock enabled  
+## VAULT ANTECHAMBER SECURITY ##
+--Motion sensors (active by default — can be disabled from B3 Security Command)
+--Thermal sensors (active by default — can be disabled from B3 Security Command)
+--10–15 vault security staff patrolling
+--Custodian pair on fixed schedule
+
+## VAULT DOOR UNLOCK (CANONICAL SEQUENCE) ##
+Three items are required — all must be present:
+
+1. Vault Key ALPHA — stored in Count Room lockbox (unguarded 03:00–03:15)
+2. Vault Key BETA  — stored in Count Room lockbox alongside ALPHA
+3. Vault PIN       — 4-digit code on sticky note in Security Command desk top drawer
+
+Unlock procedure:
+1. Insert Key ALPHA (left keyhole) and Key BETA (right keyhole)
+2. Turn both keys simultaneously within a 5-second window
+3. Enter Vault PIN on keypad
+4. Time-lock check passes
+5. Door opens (20-second window)
+
+## ALARM CONDITIONS ##
+--Forced entry → immediate alarm
+--Incorrect PIN 3 times → 60-second lockout
+--Weight sensors inside vault trigger alarm if items removed incorrectly
+--Alarm system remains active even if motion/thermal sensors are disabled
 
 ## STAFF ##
---Security: 10–15  
---Custodians: 5–8  
---Audit staff: 3–5  
+--Security: 10–15 active
+--Custodians: 5–8 on rota
+--Audit staff: 3–5
 
 ## LOOPHOLES ##
---Access depends fully on B3 systems  
---Dual authorization requires coordination  
---Time-lock windows create predictable access periods  
---Vault chambers separated (partial access possible)  
---Surveillance controlled from single location (B3)  
+--All B4 security depends on B3 systems being intact
+--Sensor control panel in B3 Security Command can disable B4 motion and thermal sensors
+--Vault surveillance is controlled from a single location (B3 Surveillance HQ) — loop feed to move freely
+--Maintenance shaft bypasses all B4 elevator authentication
+--Both vault keys are stored in the same location — one search yields both
+--Vault PIN is stored in plain text in Security Command desk

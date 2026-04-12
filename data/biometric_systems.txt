@@ -4,50 +4,58 @@
 
 ## OVERVIEW ##
 Biometric systems control access to B3 and B4.
+Two separate authentication systems are in use — one for B3 zone entry, one for the B3→B4 elevator.
 
-## COMPONENTS ##
---Keycard (entry trigger)  
---Fingerprint scanner (1.5 sec)    
+## B3 ZONE ENTRY (BIOMETRIC GATE IN CORRIDOR) ##
 
-## AUTH FLOW ##
-1. Keycard  
-2. Fingerprint  
-4. Door unlock  
+Components:
+--B3 Keycard (entry trigger)
+--Fingerprint scanner (1.5 sec scan)
 
-## AUTHORIZED PEOPLE ##
+Auth Flow:
+1. Swipe B3 Keycard at reader
+2. Place finger on fingerprint scanner
+3. Door unlocks
+
+Authorised personnel for B3 gate:
 1. RICK GREEN
-2. LUIZ MARTINEZ
+2. LUIS MARTINEZ
 3. EMILY PARK
 4. ALBERT KING
 
-## FAILURE RULES ##
---3 failed attempts → 15 sec lock  
---All attempts logged 
---Door Remains Locked
---Alarm goes off 
+## B3→B4 ELEVATOR AUTHENTICATION ##
 
-## REBOOT ##
---Triggered by glitch or signal issue  
---Duration: 30–45 sec  
---Door remains in last state  
+Components:
+--B3 Keycard (elevator activation)
+--Fingerprint scan matching a B4-authorised staff member
 
+How to bypass as an outsider:
+--Access the biometric records terminal in Surveillance HQ
+--Extract or clone fingerprint data for any B4-authorised staff member
+--Use cloned fingerprint data at the elevator scanner
 
-## MASTER KEYCARD SYSTEM
-- Located in B3 corridor
-- Contains embedded fingerprint data of guard
-- Used for:
-  - Elevator access (B3 → B4)
-  - Vault authentication
+This is referred to as a BIOMETRIC BYPASS.
+The bypass is purely a fingerprint clone — no retina scan is required for the elevator.
 
-## FINGERPRINT AUTHENTICATION
-- Vault requires fingerprint match
-- Master keycard provides valid fingerprint
-- No need for separate biometric spoofing
+## VAULT DOOR AUTHENTICATION (SEPARATE SYSTEM) ##
+The vault door does NOT use biometrics.
+Vault unlock requires: Vault Key ALPHA + Vault Key BETA + 4-digit Vault PIN.
+See vault_locking_mechanism.txt for full details.
 
+## FAILURE RULES (B3 GATE) ##
+--3 failed attempts → 15-second lockout
+--All attempts are logged
+--Door remains locked during lockout
+--Alarm triggers on third failure
+
+## SYSTEM REBOOT ##
+--Triggered by signal glitch or power fluctuation
+--Duration: 30–45 seconds
+--Door remains in last known state during reboot
 
 ## LOOPHOLES ##
---2 sec cache of last valid scan  
---Door stays open/closed during reboot  
---Retina fails under strong light  
---Fingerprint accepts ~70% match  
---No cross-check between fingerprint  
+--2-second cache of last valid scan — door briefly stays open after a valid auth
+--Door stays in last state during reboot (if open, stays open)
+--Fingerprint scanner accepts ~70% match threshold
+--Biometric records in Surveillance HQ are not encrypted — data is extractable
+--No cross-check between gate fingerprint log and elevator fingerprint log

@@ -3,119 +3,149 @@
 # SENSITIVITY : PUBLIC
 
 ## OVERVIEW ##
-Property Name: The Velvet Ace Resort and Casino  
-Total Area: 2,500,000 sq ft  
+Property Name: The Velvet Ace Resort and Casino
+Total Area: 2,500,000 sq ft
 
 Hotel:
---1200 rooms  
---22 floors  
+--1200 rooms
+--22 floors
 
 Casino:
---150,000 sq ft  
---Located on Ground Floor  
+--150,000 sq ft
+--Located on Ground Floor
 
 Parking:
---Total capacity: 2500 vehicles  
---Levels: B1, B2  
+--Total capacity: 2500 vehicles
+--Levels: B1, B2
 
 ## FLOOR STRUCTURE ##
 
-B2:
---Parking  
---Engineering systems  
-
-B1:
---Parking  
---Loading docks  
---Waste management  
+B4:
+--Deep vault level
+--20–30 meters below ground
+--Reinforced concrete (1–2m thick), steel-lined
 
 B3:
---Casino operations  
---Surveillance HQ  
---Security command  
---Count room  
---Vault storage  
+--Casino operations
+--Surveillance HQ
+--Security Command
+--Count Room
+--Maintenance shaft access
 
-Ground Floor:
---Casino floor  
---Kitchen
+B2:
+--Parking
+--Engineering systems
 
-Level 1:
---Hotel lobby  
---Reception  
---Hotel lounge  
+B1:
+--Parking
+--Loading docks
+--Waste management
 
-Level 2:
---Fine dining restaurants  
+Ground Floor (L0):
+--Casino floor (150,000 sq ft)
+--Kitchen (staff access)
+--Cashier Cage
+
+Level 1 (L1):
+--Hotel lobby
+--Reception
+--Hotel lounge
+
+Level 2 (L2):
+--Fine dining restaurants
+--Kitchen (HVAC access point)
 
 Level 3:
---Convention hall  
---Entertainment theatre  
+--Convention hall
+--Entertainment theatre
 
 Levels 4–25:
---Hotel rooms  
+--Hotel rooms
 
 ## ACCESS SYSTEM ##
 
 Public Elevators:
---B2 → Level 1 (lobby access)  
+--B2 → Level 1 (lobby access only)
 
 Staff Elevators:
---B2 → Level 25  
+--B2 → Level 25 (all floors, no keycard required for non-B3 floors)
+--B3 floor requires B3 Keycard swipe
 
 B3 Access:
---Secure elevators only  
---Requires keycard + biometric  
+--Staff elevator (B3 floor, requires B3 Keycard)
+--OR HVAC shaft from L2 Kitchen → B3 Maintenance Shaft (no authentication)
+--Biometric gate in B3 corridor (keycard + fingerprint)
+
+B4 Access:
+--Secure elevator from B3 (requires B3 Keycard + biometric fingerprint bypass)
+--OR B3 Maintenance Shaft → B4 Vault Antechamber (no authentication for shaft itself)
+
+## KEY ITEM LOCATIONS (CANONICAL) ##
+
+B3 Keycard:
+--Locked in key lockbox in Cashier Cage
+--Rick Green rotation sheet also stored here
+
+Vault Key ALPHA + Vault Key BETA:
+--Both stored together in the Count Room lockbox
+--Unguarded window: 03:00–03:15
+--NOTE: Keys are NOT in Security Command
+
+Vault PIN (4-digit code):
+--Written on a sticky note hidden in the top drawer of the Security Command desk
+
+Biometric Bypass:
+--Extractable from Surveillance HQ biometric records terminal
+--Contains fingerprint data for all B4-authorised staff
+
+Camera Loop Device + Laser Grid Specs:
+--Both obtainable in Surveillance HQ
+
+Guard Rotation Sheet:
+--Found in Cashier Cage alongside the B3 Keycard
+
+## B3 ZONE DETAIL ##
+
+B3 Corridor:
+--Central spine of B3 level
+--Contains biometric gate, laser grid emitters, maintenance shaft junction
+--Guard: Rick Green (distracted, checks phone every 3-5 min)
+
+Surveillance HQ:
+--Primary camera control terminal (can loop B3/B4 feed)
+--Biometric records terminal (contains staff fingerprint data)
+--Eric Chen on duty (checks systems hourly)
+
+Security Command:
+--Guard rotation board and radio dispatch unit
+--Sensor control panel (can disable B4 motion and thermal sensors)
+--Desk with top drawer (vault PIN hidden inside)
+--2 guards on rotation, radio check every 10 min
+
+Count Room:
+--Cash processing equipment
+--Key lockbox containing Vault Key ALPHA and Vault Key BETA
+--Albert King (vault staff, strict routine)
+--2 armed escorts present
+
+B3 Maintenance Shaft:
+--Camera blind spot (confirmed)
+--Connects upward to HVAC shaft (L2 Kitchen)
+--Connects downward to B4 Vault Antechamber
+--No authentication required for traversal
+
+B3 Elevator:
+--Connects B3 → B4
+--Requires: B3 Keycard + biometric fingerprint authorisation
 
 ## FLOW DESIGN ##
---Guests pass through casino before reaching rooms  
---Public and staff movement separated  
---Restricted zones isolated  
+--Guests pass through casino before reaching hotel rooms
+--Public and staff movement separated
+--Restricted zones isolated
+--HVAC shaft provides an unauthenticated route from L2 to B3
 
 ## LOOPHOLES ##
---Public elevators stop at lobby only  
---Staff elevators connect full building  
---Casino acts as central transit layer  
---Service routes connect multiple floors  
-
-# PROPERTY LAYOUT
-
-## CASINO FLOOR (GROUND LEVEL)
-- Main gaming area
-- Bar and lounge
-- Cashier cage
-- Security desk
-- Elevator access to Level 1 (Lobby)
-- Access to Kitchen (staff door)
-
-## KITCHEN (CONNECTED TO CASINO)
-- High activity area
-- Steam reduces visibility
-- Contains item: TAPE
-- Vent entry point to HVAC system
-
-## B3 CORRIDOR
-- Central corridor in B3
-- Contains item: MASTER_KEYCARD
-- Keycard includes fingerprint data of authorized guard
-
-## B3 MAINTENANCE SHAFT
-- Connected to HVAC shaft
-- Entry point from L2 kitchen vents
-- No authentication required for entry
-
-## B3 SECURITY COMMAND / SURVEILLANCE HQ
-- Contains:
-  - Dual Keys (ALPHA + BETA)
-  - Security shift logs
-  - CCTV monitoring system
-  - Sensor control panel
-
-## B3 ELEVATOR
-- Connects B3 → B4
-- Requires MASTER_KEYCARD to unlock
-
-## B4 VAULT LEVEL
-- Vault antechamber
-- Vault door
-- Alarm system only (no motion/thermal sensors if disabled)
+--Staff elevator connects full building (B3 floor needs keycard, others do not)
+--Casino acts as central transit layer
+--HVAC shaft bypasses all checkpoints between L2 and B3
+--B3 maintenance shaft bypasses B4 elevator authentication

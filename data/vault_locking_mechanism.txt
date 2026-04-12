@@ -3,44 +3,46 @@
 # SENSITIVITY : HIGHLY CONFIDENTIAL
 
 ## OVERVIEW ##
-Vault secured by keys + biometrics + time-lock.
+The B4 vault is secured by a three-factor unlock sequence.
+No single item or credential is sufficient alone.
 
-## UNLOCK SEQUENCE ##
-1. Insert 2 keys  
-2. Turn both within 5 sec  
-3. Biometric scan  
-4. Time-lock check  
-5. Door opens  
+## CANONICAL UNLOCK SEQUENCE ##
+1. Insert Vault Key ALPHA into left keyhole
+2. Insert Vault Key BETA into right keyhole
+3. Turn both keys simultaneously within a 5-second window
+4. Enter 4-digit Vault PIN on the keypad
+5. Time-lock check passes
+6. Vault door opens (20-second window)
+
+## WHERE TO FIND EACH ITEM ##
+- Vault Key ALPHA : Count Room lockbox (unguarded 03:00–03:15)
+- Vault Key BETA  : Count Room lockbox (stored alongside ALPHA)
+- Vault PIN       : Written on a note hidden in Security Command desk top drawer
 
 ## DOOR SPECS ##
---Weight: 20–50 tons  
---Unlock delay: 3 sec  
---Open time: 20 sec  
+--Weight: 20–50 tons
+--Unlock delay: 3 seconds after sequence completes
+--Open window: 20 seconds
+--Door cannot be stopped once it begins opening
 
 ## FAILURE RULES ##
---Wrong timing → reset  
---3 failures → 60 sec lock  
+--Keys must be turned within 5 seconds of each other or sequence resets
+--Wrong PIN → sequence resets
+--3 PIN failures → 60-second lockout
+
+## ALARM CONDITIONS ##
+--Forced entry attempt triggers alarm immediately
+--Incorrect key sequence triggers silent alert
+--Weight sensors inside vault trigger alarm if items removed incorrectly
 
 ## LOOPHOLES ##
---Key timing extends to ~6 sec with partial turn  
---Biometric can be triggered early  
---Door cannot be stopped once opening  
---Time-lock checked only at final step  
---First key can be held in position  
+--Key timing window extends to ~6 seconds with a careful partial-turn technique
+--PIN keypad has no delay between digits
+--Door cannot be stopped once opening sequence begins
+--Time-lock is only checked at the final step — keys and PIN can be staged beforehand
 
-# VAULT LOCKING MECHANISM
-
-## REQUIREMENTS
-1. Master Keycard
-2. Fingerprint authentication (from keycard)
-
-## PROCESS
-1. Insert master keycard
-2. System reads embedded fingerprint
-3. Authentication succeeds
-4. Vault unlocks
-
-## NOTES
-- No dual-key requirement at vault
-- Dual keys used elsewhere (security command)
-- Alarm triggers if forced entry attempted
+## NOTE ON B3 ELEVATOR ##
+The B3-to-B4 elevator requires:
+- B3 Keycard (for elevator activation)
+- Biometric bypass / valid staff fingerprint (for floor authorisation)
+These are NOT the same credentials as the vault unlock sequence above.

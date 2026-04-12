@@ -3,69 +3,50 @@
 # SENSITIVITY : HIGHLY CONFIDENTIAL
 
 ## OVERVIEW ##
-Laser grids secure B3 corridors, B3→B4 access, and B4 vault perimeter.
-System is always active and monitored from B3.
+Laser grids secure B3 corridors and the B4 vault perimeter.
+System is always active and monitored from B3 Security Command.
 
 ## SYSTEM STRUCTURE ##
---Emitters at 1.2m and 2.1m
---Spacing: every 3 meters
---Auto-calibration every 12 minutes
+--Emitters mounted at 1.2m and 2.1m height
+--Emitter spacing: every 3 metres along corridor
+--Auto-recalibration: every 12 minutes (creates a brief 0.8-second gap)
 
-Grid Type:
---Infrared (primary, invisible)
---UV grid (activates on alert)
+Grid Types:
+--Infrared (primary, invisible under normal light)
+--UV grid (activates on Level 1 alert or higher)
 
-## DETECTION RULES ##
+## DETECTION THRESHOLDS ##
 Motion:
---Min displacement: 2 mm
---Max safe speed: 0.08 m/s
---Acceleration spikes trigger alert
+--Minimum displacement to trigger: 2mm
+--Maximum safe movement speed: 0.08 m/s
+--Acceleration spikes trigger alert regardless of speed
 
 Thermal:
---Safe range: 26–28°C
---Trigger: >30°C
+--Triggers on heat sources above 30°C within detection range
+--Note: human body heat (~37°C) will trigger thermal sensors
+--Mitigation: move extremely slowly to reduce radiated heat signature
 
 ## ALERT LEVELS ##
-Level 0: Normal
-Level 1: Silent alert (no lock)
-Level 2: UV grid activated
-Level 3: Lockdown (doors close in 3 sec)
+Level 0: Normal — no activity
+Level 1: Silent alert — log entry, no lock
+Level 2: UV grid activates — visible to guards
+Level 3: Lockdown — doors close within 3 seconds
+
+## HOW TO DISABLE ##
+B4 motion and thermal sensors can be turned off from the sensor control panel
+located in B3 Security Command.
+Disabling affects only B4 — B3 laser grid remains active.
+After disabling: only the vault alarm system remains active in B4.
+The vault alarm triggers only on forced entry or incorrect vault interaction.
 
 ## FAILURE CONDITIONS ##
---Beam break >0.2 sec → alert
---Repeated small disturbances escalate level
-
-
-# SENSOR SYSTEM (UPDATED)
-
-## B4 CURRENT SECURITY
-- Motion sensors
-- Thermal sensors
-- Alarm system
-
-## SENSOR CONTROL
-- Located in B3 Security Command
-
-## DISABLE SYSTEM
-- Player can:
-  - Access control panel in Security Command
-  - Turn OFF motion sensors
-  - Turn OFF thermal sensors
-
-## RESULT AFTER DISABLE
-- Only alarm system remains active
-- Player can move freely inside vault area
-- Alarm triggers only if:
-  - Wrong interaction with vault
-  - Forced entry attempt
-
-## NOTES
-- Sensors affect only B4
-- B3 remains unaffected
+--Beam break sustained for more than 0.2 seconds → alert
+--Repeated small disturbances escalate the alert level progressively
 
 ## LOOPHOLES ##
---0.8 sec gap during 12-min recalibration
---~2 cm gap directly under emitters
---Thermal delay ~1 sec after cooling
---First anomaly ignored if isolated
---Edges near walls have slightly wider gaps
+--0.8-second gap during 12-minute recalibration window (grid resets momentarily)
+--~2cm gap directly under each emitter (floor-level crawl possible)
+--Thermal sensor lag: ~1 second after heat source passes
+--First isolated anomaly is logged but does not immediately escalate
+--Grid edges near walls have marginally wider gaps (~3–4cm)
+--Laser Specs document (found in Surveillance HQ) contains emitter positions and recalibration timing

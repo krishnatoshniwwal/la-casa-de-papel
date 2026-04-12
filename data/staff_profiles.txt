@@ -3,36 +3,36 @@
 # SENSITIVITY : INTERNAL
 
 ## OVERVIEW ##
-Staff behavior patterns affecting security.
-Profiles include role, routine, and weakness.
+Staff behaviour patterns affecting security.
+Profiles include role, location, routine, and exploitable weakness.
 
 --------------------------------------------------
 
 ## GUARDS ##
 
 RICK GREEN:
---Location: B3
---Behavior: distracted
---Pattern: checks phone every 3–5 min
---Weakness: low awareness when stationary
+--Location: B3 corridor
+--Behaviour: distracted
+--Pattern: checks phone every 3–5 minutes
+--Weakness: low awareness when stationary; predictable distraction window
 
 MARCUS REED:
---Location: casino
---Behavior: disciplined
---Pattern: fixed patrol loop (12 min)
---Weakness: predictable path
+--Location: casino floor
+--Behaviour: disciplined
+--Pattern: fixed patrol loop (12 minutes)
+--Weakness: predictable path — timing-based bypass is possible
 
 LUIS MARTINEZ:
 --Location: B2 parking
---Behavior: relaxed
+--Behaviour: relaxed
 --Pattern: long stationary periods
---Weakness: slow response
+--Weakness: slow response time; rarely checks surroundings
 
 TYLER BROOKS:
 --Location: hotel floors
---Behavior: inconsistent
---Pattern: skips patrol sections
---Weakness: incomplete coverage
+--Behaviour: inconsistent
+--Pattern: skips sections of patrol
+--Weakness: incomplete coverage leaves gaps
 
 --------------------------------------------------
 
@@ -40,71 +40,79 @@ TYLER BROOKS:
 
 MIGUEL DAS:
 --Location: L2–L3
---Behavior: careless
---Pattern: leaves doors open
---Weakness: creates access paths
+--Behaviour: careless
+--Pattern: frequently leaves doors open
+--Weakness: creates unintended access paths; low awareness
 
 CARLOS MENDEZ:
 --Location: casino perimeter
---Behavior: routine-based
---Pattern: repeats every 45 min
---Weakness: predictable timing
+--Behaviour: routine-based
+--Pattern: repeats every 45 minutes
+--Weakness: highly predictable timing
 
 EDDIE NGUYEN:
 --Location: service corridors
---Behavior: efficient
---Pattern: ignores restrictions
---Weakness: bypasses secure areas
+--Behaviour: efficient
+--Pattern: ignores zone restrictions
+--Weakness: bypasses secure areas without realising, creating openings
 
 --------------------------------------------------
 
 ## DEALERS ##
 
 MELISSA WARBURTON:
---Behavior: highly alert
---Weakness: reports quickly
+--Behaviour: highly alert
+--Weakness: quick to report unusual behaviour — avoid her sightline
 
 JASON MILLER:
---Behavior: social
---Weakness: distracted by players
+--Behaviour: social, easily distracted
+--Weakness: can be distracted by player interaction
 
 ANA LOPEZ:
---Behavior: focused
+--Behaviour: focused, professional
 --Weakness: minimal
 
 --------------------------------------------------
 
 ## OTHER STAFF ##
 
-ERIC CHEN (Technician):
---Pattern: checks systems hourly
---Weakness: ignores surroundings
+ERIC CHEN (Surveillance Technician):
+--Location: B3 Surveillance HQ
+--Pattern: checks all systems on a fixed hourly cycle
+--Weakness: focused entirely on monitors; ignores physical surroundings
 
-JORGE RAMIREZ (HVAC):
---Pattern: reacts only to alerts
---Weakness: ignores minor issues
+JORGE RAMIREZ (HVAC Maintenance):
+--Location: HVAC system / B2 engineering
+--Pattern: only reacts to system-level alerts — ignores minor anomalies
+--Weakness: does not investigate small temperature fluctuations
+--His maintenance log is stored in the HVAC shaft near the B3 junction
 
 EMILY PARK (Reception):
---Pattern: fixed position
---Weakness: distracted by guests
+--Location: L1 lobby
+--Pattern: fixed position at reception desk
+--Weakness: easily distracted by guest queries
 
 VINCE CARTER (Bartender):
---Pattern: constant interaction
---Weakness: low awareness
+--Location: casino bar
+--Pattern: constant customer interaction
+--Weakness: very low environmental awareness
 
-ALBERT KING (Vault):
---Pattern: strict routine
---Weakness: slow movement
+ALBERT KING (Vault Staff):
+--Location: B3 Count Room
+--Pattern: strict, predictable routine
+--Weakness: slow movement; does not deviate from routine
+--Responsibility: Count Room operations and key lockbox oversight
+--NOTE: Albert King does NOT carry vault keys on his person — keys are in the Count Room lockbox
 
 --------------------------------------------------
 
 ## GLOBAL PATTERNS ##
---Behavior repeats every 24 hours
---Night shift has lower alertness
---Fatigue increases after 6 hours
+--All behaviour patterns repeat on a 24-hour cycle
+--Night shift staff (22:00–06:00) have measurably lower alertness
+--Fatigue increases noticeably after 6 hours on shift
 
 ## LOOPHOLES ##
---Predictable routines allow timing-based actions
---Distractions reduce detection probability
---Open doors create alternate paths
---Staff rely on systems instead of observation
+--Predictable routines allow precise timing-based exploitation
+--Distractions reliably reduce detection probability
+--Open doors from careless staff create alternate movement paths
+--Most staff rely on automated systems rather than direct observation
