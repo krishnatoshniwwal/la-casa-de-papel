@@ -281,6 +281,86 @@ def render_bg():
 render_bg()
 
 
+# ── CURSOR GRID EFFECT ─────────────────────────────────────────────────────────
+components.html("""
+<script>
+(function() {
+  var pdoc = window.parent.document;
+
+  /* Remove any stale canvas from a previous Streamlit hot-reload */
+  var old = pdoc.getElementById('vbv-cursor-grid');
+  if (old) old.remove();
+
+  /* Create canvas directly in parent body */
+  var canvas = pdoc.createElement('canvas');
+  canvas.id = 'vbv-cursor-grid';
+  canvas.style.cssText = [
+    'position:fixed', 'top:0', 'left:0',
+    'width:100vw', 'height:100vh',
+    'pointer-events:none',
+    'z-index:99999',
+    'display:block'
+  ].join(';');
+  pdoc.body.appendChild(canvas);
+
+  var ctx = canvas.getContext('2d');
+  var CELL = 36;
+  var cells = {};
+
+  function resize() {
+    canvas.width  = window.parent.innerWidth;
+    canvas.height = window.parent.innerHeight;
+  }
+
+  function onMove(e) {
+    var col = Math.floor(e.clientX / CELL);
+    var row = Math.floor(e.clientY / CELL);
+    var key = col + '_' + row;
+    cells[key] = { x: col * CELL, y: row * CELL, alpha: 1.0 };
+
+    var nb = [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]];
+    for (var i = 0; i < nb.length; i++) {
+      var nc = col + nb[i][0], nr = row + nb[i][1];
+      var nk = nc + '_' + nr;
+      if (!cells[nk] || cells[nk].alpha < 0.35)
+        cells[nk] = { x: nc * CELL, y: nr * CELL, alpha: 0.35 };
+    }
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    var keys = Object.keys(cells);
+    for (var i = keys.length - 1; i >= 0; i--) {
+      var k = keys[i], c = cells[k];
+      if (c.alpha <= 0.004) { delete cells[k]; continue; }
+
+      ctx.globalAlpha = c.alpha * 0.18;
+      ctx.fillStyle   = '#ff2d78';
+      ctx.fillRect(c.x, c.y, CELL, CELL);
+
+      ctx.globalAlpha  = c.alpha * 0.65;
+      ctx.strokeStyle  = '#ff2d78';
+      ctx.lineWidth    = 1;
+      ctx.shadowColor  = '#ff2d78';
+      ctx.shadowBlur   = 12 * c.alpha;
+      ctx.strokeRect(c.x + 0.5, c.y + 0.5, CELL - 1, CELL - 1);
+      ctx.shadowBlur   = 0;
+      ctx.globalAlpha  = 1;
+
+      c.alpha *= 0.88;
+    }
+    requestAnimationFrame(draw);
+  }
+
+  resize();
+  pdoc.addEventListener('mousemove', onMove);
+  window.parent.addEventListener('resize', resize);
+  draw();
+})();
+</script>
+""", height=0)
+
+
 # ── BRAIN ──────────────────────────────────────────────────────────────────────
 @st.cache_resource
 def get_brain() -> HeistBrain:
