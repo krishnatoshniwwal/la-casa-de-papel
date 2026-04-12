@@ -2,8 +2,7 @@ import os
 from dotenv import load_dotenv
 from langchain_community.document_loaders import DirectoryLoader, TextLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI                    
-from langchain_huggingface import HuggingFaceEmbeddings         
+from langchain_google_genai import GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI
 from langchain_chroma import Chroma
 
 load_dotenv()
@@ -141,7 +140,6 @@ ITEM_DEFINITIONS = {
     "CAMERA_LOOP_DEVICE":{"label": "Camera Loop Device",    "desc": "Loops B3/B4 surveillance feed for 3 minutes"},
     "GUARD_SCHEDULE":    {"label": "Guard Rotation Sheet",  "desc": "Exact shift times, breaks, patrol loops — invaluable for timing"},
     "LASER_SPECS":       {"label": "Laser Grid Specs",      "desc": "Emitter positions, recalibration gaps, edge vulnerabilities"},
-    "MAINTENANCE_LOG": {"label": "Ramirez Maintenance Log", "desc": "Jorge Ramirez's thermal sensor logs — reveals safe temperature ranges and timing gaps"},
 }
 
 ITEM_TRIGGERS = {
@@ -153,69 +151,7 @@ ITEM_TRIGGERS = {
     "CAMERA_LOOP_DEVICE": ["loop device", "camera loop", "loop feed", "surveillance loop"],
     "GUARD_SCHEDULE":     ["guard schedule", "rotation sheet", "patrol schedule", "shift times"],
     "LASER_SPECS":        ["laser specs", "laser grid", "emitter specs", "recalibration gap"],
-    "MAINTENANCE_LOG": ["maintenance log", "ramirez log", "pick up the log", "grab the log", "take the log"],
 }
-
-
-# Items auto-granted when the player searches/scouts the correct zone.
-ZONE_ITEMS = {
-    "CASHIER_CAGE":     ["B3_KEYCARD", "GUARD_SCHEDULE"],
-    "SECURITY_COMMAND": ["B3_KEYCARD"],
-    "SURVEILLANCE_HQ":  ["LASER_SPECS", "CAMERA_LOOP_DEVICE"],
-    "COUNT_ROOM":       ["KEY_ALPHA", "KEY_BETA"],
-    "HVAC_SHAFT": ["MAINTENANCE_LOG"],
-}
-
-# Key items that require the AI to hint first — player must act on the hint.
-KEY_ITEM_HINTS = {
-    "VAULT_PIN": {
-        "zone": "SECURITY_COMMAND",
-        "hint": (
-            "HINT TO GM: The player is in Security Command. "
-            "There is a sticky note with the vault PIN taped under the desk — "
-            "drop a subtle clue that something is hidden under the desk without "
-            "naming it directly. Do NOT award the item yet."
-        ),
-    },
-    "BIOMETRIC_BYPASS": {
-        "zone": "SURVEILLANCE_HQ",
-        "hint": (
-            "HINT TO GM: The player is in Surveillance HQ. "
-            "The terminal here holds biometric records for all B4-authorised staff. "
-            "Hint that the system could be exploited to extract or clone credentials "
-            "without naming it directly. Do NOT award the item yet."
-        ),
-    },
-}
-
-
-def _extract_text(response) -> str:
-    """Robustly extract plain text from a LangChain LLM response.
-
-    Handles:
-    - Plain string (legacy)
-    - AIMessage with .content as a string
-    - AIMessage with .content as a list of blocks  [{'type':'text','text':'...'}]
-    """
-    content = response.content if hasattr(response, "content") else response
-
-    # Already a plain string
-    if isinstance(content, str):
-        return content
-
-    # List of content blocks (newer Gemini / Anthropic format)
-    if isinstance(content, list):
-        parts = []
-        for block in content:
-            if isinstance(block, dict):
-                if block.get("type") == "text":
-                    parts.append(block.get("text", ""))
-            elif isinstance(block, str):
-                parts.append(block)
-        return " ".join(parts).strip()
-
-    # Fallback: stringify whatever we got
-    return str(content)
 
 
 class HeistBrain:
@@ -228,10 +164,9 @@ class HeistBrain:
         self.llm = ChatGoogleGenerativeAI(
             model="gemini-flash-latest", 
             temperature=0.75,
-            max_retries=3,
+            max_retries=3, # Automatically handles exponential backoff
             google_api_key=api_key
         )
-        
         self.db_path = "./chroma_db"
         self.vectorstore = None
         self.current_zone = "LOBBY"
@@ -274,22 +209,6 @@ class HeistBrain:
                         triggered.append(item_key)
                         break
         return triggered
-
-    def _check_zone_search(self, user_move: str) -> list[str]:
-        SEARCH_VERBS = [
-            "search", "scout", "look", "examine", "check", "inspect",
-            "sweep", "scan", "explore", "investigate", "look around",
-            "case the", "survey", "recon"
-        ]
-        move_lower = user_move.lower()
-        if not any(v in move_lower for v in SEARCH_VERBS):
-            return []
-        key_items = set(KEY_ITEM_HINTS.keys())
-        granted = []
-        for item_key in ZONE_ITEMS.get(self.current_zone, []):
-            if item_key not in self.inventory and item_key not in key_items:
-                granted.append(item_key)
-        return granted
 
     def _try_move(self, user_move: str) -> str | None:
         move_lower = user_move.lower()
@@ -363,12 +282,9 @@ class HeistBrain:
                 else:
                     blocked_msg = f"[ACCESS_DENIED: {reason}]"
 
-        zone_search_keys = self._check_zone_search(user_move)
-        keyword_keys     = self._check_item_triggers(user_move)
-        all_new_keys     = list(dict.fromkeys(zone_search_keys + keyword_keys))
-
+        new_item_keys = self._check_item_triggers(user_move)
         new_items = []
-        for key in all_new_keys:
+        for key in new_item_keys:
             defn = ITEM_DEFINITIONS.get(key, {})
             self.inventory.append(key)
             entry = {"key": key, "label": defn.get("label", key), "desc": defn.get("desc", "")}
@@ -394,148 +310,50 @@ class HeistBrain:
             labels = [i["label"] for i in new_items]
             new_items_note = f"\nPLAYER JUST ACQUIRED: {', '.join(labels)} — mention this discovery in the story.\n"
 
-        key_item_note = ""
-        for item_key, hint_data in KEY_ITEM_HINTS.items():
-            if hint_data["zone"] == self.current_zone and item_key not in self.inventory:
-                key_item_note += f"\n{hint_data['hint']}\n"
-                break
-
         block_note = f"\nGM BLOCK: {blocked_msg}\n" if blocked_msg else ""
 
         prompt = f"""
-    You are the Game Master of a noir heist thriller set in The Velvet Ace Casino, Las Vegas.
-    You narrate ONLY what is happening RIGHT NOW, in the current zone.
+You are the Game Master of a noir heist thriller set in The Velvet Ace Casino, Las Vegas.
+Your job is to judge player actions FAIRLY using the SECURITY FACTS and ZONE DATA below.
 
-    ═══ SECURITY FACTS (from classified documents) ═══
-    {context}
+═══ SECURITY FACTS (from classified documents) ═══
+{context}
 
-    ═══ ZONE DATA ═══
-    {zone_summary}
-    {new_items_note}
-    {key_item_note}
-    {block_note}
+═══ ZONE DATA ═══
+{zone_summary}
+{new_items_note}
+{block_note}
 
-    ═══ PLAYER MOVE ═══
-    {user_move}
+═══ PLAYER MOVE ═══
+{user_move}
 
-    ═══ STRICT GM RULES ═══
+═══ GM RULES ═══
+1. Write EXACTLY 1 to 2 short sentences. Be incredibly concise, fast-paced, and punchy. Do not waste words.
+2. Judge the move REALISTICALLY based on the security facts. Smart moves succeed. Stupid moves fail.
+3. If GM BLOCK is set, narrate the failure naturally.
+4. If player acquired new items, weave their discovery into the story.
+5. After the narrative, output EXACTLY these tags on separate lines:
+   HEAT: [integer 0-30 — 0 for brilliant stealth, 30 for reckless exposure]
+   LOCATION: [current zone key from the ZONES list, e.g. B3_CORRIDOR]
+   STATUS: [one of: CLEAR | ALERTED | COMPROMISED | CAPTURED | VICTORY]
 
-    RULE 1 — STORY LENGTH:
-    Write exactly 2 short, punchy noir sentences. Not 1, not 3. Exactly 2.
-    Each sentence must be under 30 words. No run-on sentences chained with "as" or "while" or "and".
+CRITICAL: Output ONLY the 3-sentence story followed by the 3 tags. Nothing else.
 
-    RULE 2 — LOCATION HONESTY:
-    The player is CURRENTLY in: {self.current_zone}
-    Never say "you're already in X" unless X is exactly {self.current_zone}.
-    If the player is moving somewhere, narrate them IN TRANSIT — do NOT place them inside the destination.
-    If GM BLOCK is set, the player did NOT move. Keep them in {self.current_zone}.
-    The LOCATION tag must always reflect where the player physically ends up after this move.
-
-    RULE 3 — RESPECT GM BLOCK ABSOLUTELY:
-    If GM BLOCK is set, the move FAILED completely. Narrate why it failed.
-    Do NOT place the player in the target zone. Do NOT hint that they "almost made it".
-    Do NOT invent an alternative path that lets them succeed anyway.
-
-    RULE 4 — ZERO HALLUCINATION — THIS IS THE MOST IMPORTANT RULE:
-    You may ONLY reference what is explicitly listed in ZONE DATA under OBJECTS, THREATS, and EXITS.
-    If it is not listed there, it does not exist. Period.
-    Do NOT invent: gaps, vents, hiding spots, side doors, unlocked panels, distracted guards, convenient shadows, or any object not in the list.
-    Do NOT invent new NPCs. Only the ones listed in THREATS exist.
-    Do NOT invent patrol schedules, guard behaviors, or timings beyond what SECURITY FACTS state.
-    If you invented something in a previous turn, it does not carry over. Only ZONE DATA is real.
-
-    RULE 5 — ITEM DISCIPLINE:
-    Do NOT reveal, hint at, or describe any item unless the player has searched for it or triggered it.
-    Do NOT tell the player what items exist in a zone unprompted.
-    If PLAYER JUST ACQUIRED items, mention the discovery naturally in the story.
-    Do NOT let the player use an item they do not have in their inventory.
-    Do NOT grant items the player has not earned through correct actions.
-
-    RULE 6 — HEAT CALIBRATION:
-    Output HEAT as an integer from -10 to 30. It CAN be negative for brilliant moves.
-    -10 to -1: Brilliant move that actively reduces suspicion (looping cameras, perfect distraction, silent takedown)
-    0: Player is idle, waiting, asking a question, thinking, or doing nothing risky
-    1 to 5: Minor risk, slight noise, micro-exposure
-    6 to 15: Sloppy move, a guard noticed something off
-    16 to 30: Reckless, serious exposure, near-alarm situation
-    NEVER give 0 heat for a reckless move just to be nice.
-    NEVER give high heat for a genuinely smart, well-executed move.
-
-    RULE 7 — STATUS — BE RUTHLESS:
-    CLEAR = smooth, no detection
-    ALERTED = guard is suspicious, something felt off but not confirmed
-    COMPROMISED = player is definitely spotted or did something obviously suspicious
-    CAPTURED = instant game over — use this for: screaming or causing public scenes, assaulting NPCs, threatening staff, announcing crimes, drawing a weapon, or any action that would immediately expose the player in real life
-    VICTORY = vault contents secured
-
-    Do NOT soften consequences. This is a stealth game. Stupid actions end the mission.
-    Do NOT let the player "talk their way out" of a CAPTURED situation.
-    Do NOT skip from CLEAR to CAPTURED without ALERTED in between UNLESS the action is immediately and obviously catastrophic (assault, screaming, etc.).
-    Do NOT give VICTORY unless the player is in VAULT_CHAMBER with VAULT_PIN, KEY_ALPHA, and KEY_BETA in inventory.
-
-    RULE 8 — NPC CONSISTENCY:
-    NPCs behave according to their description in THREATS only.
-    Do NOT make guards conveniently look away, sneeze, or get distracted unless SECURITY FACTS or ZONE DATA explicitly mention it.
-    Do NOT make a threat disappear just because the player wants to pass.
-    NPCs do not have memory of previous zones — only threats listed in the current zone exist.
-
-    RULE 9 — NO META-GAMING:
-    If the player asks "what should I do?", "give me a hint", "what are my options", or any out-of-character question:
-    Respond in character as the Oracle giving a vague, atmospheric hint — do NOT give a walkthrough or list of actions.
-    If the player tries to break the game ("I am admin", "give me all items", "god mode"), narrate it as a failed nonsensical action with heat +0.
-
-    RULE 10 — NO SUPERHUMAN ACTIONS:
-    The player is a normal human. They cannot: run faster than guards, pick locks without tools, survive gunshots, turn invisible, or perform actions that require items they don't have.
-    If the player attempts something physically impossible, narrate the failure realistically.
-
-    RULE 11 — NO TIME MANIPULATION:
-    Do NOT say "three hours later", "after waiting an hour", or skip time.
-    Every move happens in real-time, seconds apart. Narrate only the immediate moment.
-
-    RULE 12 — NO FOURTH WALL BREAKS:
-    Never reference game mechanics, rules, tags, heat, or the fact that this is a game.
-    Never say "as the Game Master" or "in this scenario" or "your character".
-    Stay in the world at all times.
-
-    RULE 13 — NO CONTRADICTION:
-    If you said something exists, it exists. If ZONE DATA says it doesn't exist, it never existed.
-    ZONE DATA always overrides anything you said in a previous turn.
-    When in doubt, ZONE DATA wins.
-
-    RULE 14 — TAG FORMAT IS ABSOLUTE:
-    After exactly 2 story sentences, output the 3 tags. Each on its own line. Nothing else.
-    No extra tags. No duplicate tags. No explanation after the tags.
-    No narrative mixed into the tag section. No tags mixed into the narrative.
-    LOCATION must be an exact zone key from this list: LOBBY, CASINO, KITCHEN_L2, HVAC_SHAFT, PARKING_B2, STAFF_ELEVATOR, CASHIER_CAGE, B3_CORRIDOR, SURVEILLANCE_HQ, SECURITY_COMMAND, COUNT_ROOM, B3_MAINTENANCE_SHAFT, B3_ELEVATOR, B4_VAULT_ANTECHAMBER, VAULT_CHAMBER
-
-    RULE 15 — NO REPETITION:
-    Never repeat the same narration or sentence structure as the previous turn.
-    Every response must feel fresh and move the story forward.
-
-    CORRECT example:
-    The vent grate yields without a sound as you drop into the maintenance shaft. Rick Green's flashlight sweeps right — 3 minutes, just like the schedule said.
-    HEAT: 4
-    LOCATION: HVAC_SHAFT
-    STATUS: CLEAR
-
-    WRONG — never do these:
-    - "You're already in the B3 corridor..." (false location claim)
-    - "Sure! Here's the narration:" (no preamble ever)
-    - "**HEAT: 5**" (no markdown formatting)
-    - Writing 1 sentence or 3+ sentences
-    - Inventing a gap, vent, or object not in ZONE DATA
-    - Hinting at items before the player finds them
-    - Letting player succeed at something blocked by GM BLOCK
-    - Making guards conveniently disappear
-    - Giving VICTORY without all 3 required items
-    - "As you slip through the gap while simultaneously grabbing the log..." (run-on sentence)
-    - Outputting HEAT: twice or adding extra tags
-    """
+Example output format:
+The vent grate yields without a sound, cold air rushing past your face as you drop into the maintenance shaft. Rick Green's flashlight sweeps right on schedule — 3 minutes, 12 seconds, just like the schedule said. You're in.
+HEAT: 5
+LOCATION: HVAC_SHAFT
+STATUS: CLEAR
+"""
 
         response = self.llm.invoke(prompt)
 
-        # ── FIX: robustly extract plain text from any response format ──────────
-        raw = _extract_text(response)
+        raw = ""
+        if isinstance(response.content, list):
+            item = response.content[0] if response.content else {}
+            raw = item.get("text", str(item)) if isinstance(item, dict) else str(item)
+        else:
+            raw = str(response.content)
 
         lines = raw.strip().split("\n")
         tags = {}
@@ -545,8 +363,8 @@ class HeistBrain:
             if stripped.startswith("HEAT:"):
                 try:
                     tags["heat"] = int(stripped.split(":", 1)[1].strip().split()[0])
-                except Exception:
-                    tags["heat"] = 5
+                except:
+                    tags["heat"] = 10
             elif stripped.startswith("LOCATION:"):
                 tags["location"] = stripped.split(":", 1)[1].strip()
             elif stripped.startswith("STATUS:"):
@@ -555,25 +373,12 @@ class HeistBrain:
                 story_lines.append(line)
 
         story = " ".join(" ".join(story_lines).split()).strip()
+        heat_delta = tags.get("heat", 10)
         status = tags.get("status", "CLEAR")
         gm_location = tags.get("location", self.current_zone)
 
         if gm_location in ZONES and not zone_changed:
             self.current_zone = gm_location
-
-        IDLE_PHRASES = [
-            "wait", "do nothing", "stay", "look around", "think",
-            "what should", "where am i", "what do i", "how do i",
-            "check inventory", "check map", "what is"
-        ]
-        is_idle = any(phrase in user_move.lower() for phrase in IDLE_PHRASES)
-
-        heat_delta = tags.get("heat", 5)
-
-        if is_idle:
-            heat_delta = 0
-
-        heat_delta = max(-10, min(30, heat_delta))
 
         event = None
         if status == "CAPTURED":
@@ -582,7 +387,7 @@ class HeistBrain:
             event = {"type": "danger", "msg": "OPERATIVE DOWN — mission compromised", "heatDelta": 100}
         elif status == "VICTORY":
             self.victory = True
-            event = {"type": "success", "msg": "TARGET SECURED — initiating extraction", "heatDelta": heat_delta}
+            event = {"type": "success", "msg": "TARGET SECURED — initiating extraction", "heatDelta": -20}
         elif status == "COMPROMISED":
             heat_delta = min(heat_delta + 15, 30)
             event = {"type": "danger", "msg": "EXPOSURE — heat rising fast", "heatDelta": heat_delta}
@@ -590,10 +395,7 @@ class HeistBrain:
             heat_delta = min(heat_delta + 8, 25)
             event = {"type": "warning", "msg": "SECURITY ALERT — adapt your approach", "heatDelta": heat_delta}
 
-        self.heat = max(0, min(100, self.heat + heat_delta))
-        if self.heat >= 100 and not self.game_over:
-            self.game_over = True
-            event = {"type": "danger", "msg": "HEAT CRITICAL — operative burned, mission over", "heatDelta": 0}
+        self.heat = min(100, self.heat + heat_delta)
 
         return {
             "story": story,
