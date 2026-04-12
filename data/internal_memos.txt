@@ -33,3 +33,11 @@ The note has not been removed as of last audit.
 ## MEMO 6 — B3 Keycard Storage (Access Control)
 The B3 Keycard is stored in the key lockbox in the Cashier Cage.
 Guards do not carry spare keycards during patrol.
+
+## MEMO 7 — Cashier Cage Staff Elevator (Facilities — RESTRICTED)
+A staff service elevator is located inside the Cashier Cage, concealed behind the supervisor's desk.
+The elevator is unmarked and not included on public casino maps.
+It provides direct access to B3 Corridor — bypassing the Kitchen and HVAC route entirely.
+The elevator requires a B3 Keycard to operate (same keycard as B3 biometric gate).
+No cameras are installed inside the elevator shaft.
+This elevator was installed for rapid cash transport to the count room and is rarely used by staff.
