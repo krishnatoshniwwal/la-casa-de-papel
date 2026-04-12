@@ -51,6 +51,7 @@ def render_start_screen():
         <br>• Breach underground security (B3)
         <br>• Reach the vault (B4)
         <br>• Extract high-value assets
+        <br>• You can only scan or search for items once you're already inside that room.
         <br><br>
         Avoid detection. Minimize heat. Execute flawlessly.
       </div>
@@ -383,11 +384,13 @@ ZONE_ICONS = {
     "B3_CORRIDOR": "🔐", "SURVEILLANCE_HQ": "📹",
     "SECURITY_COMMAND": "📡", "COUNT_ROOM": "💵",
     "B3_ELEVATOR": "🛗", "B4_VAULT_ANTECHAMBER": "🚪", "VAULT_CHAMBER": "💎",
+    "STAFF_ELEVATOR": "🛗",
 }
 
 ITEM_ICONS = {
     "B3_KEYCARD": "💳", "VAULT_PIN": "🔢",
     "VAULT_KEYS": "🗝️", "CAMERA_LOOP_DEVICE": "📷",
+    "SENSORS_DISABLED": "🔕",
 }
 
 ZONE_TO_FLOOR = {
@@ -404,7 +407,7 @@ _B3_GRID = [
     ["X","SURVEILLANCE_HQ","SURVEILLANCE_HQ","X","SECURITY_COMMAND","X"],
     ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","COUNT_ROOM","X"],
     ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","COUNT_ROOM","X"],
-    ["X","B3_CORRIDOR","HVAC_SHAFT","B3_CORRIDOR","B3_ELEVATOR","X"],
+    ["X","STAFF_ELEVATOR","HVAC_SHAFT","B3_CORRIDOR","B3_ELEVATOR","X"],
     ["X","X","X","X","X","X"],
 ]
 
@@ -428,9 +431,18 @@ FLOOR_GRIDS = {
             ["X","X","CASINO","X","X"],
         ],
     },
-    "CASINO":        {"title": "GROUND FLOOR — CASINO",   "grid": _CASINO_GRID},
-    "CASHIER_CAGE":  {"title": "GROUND FLOOR — CASINO",   "grid": _CASINO_GRID},
-    "KITCHEN_L2":    {"title": "GROUND FLOOR — CASINO",   "grid": _CASINO_GRID},
+    "CASINO":     {"title": "GROUND FLOOR — CASINO",              "grid": _CASINO_GRID},
+    "KITCHEN_L2": {"title": "GROUND FLOOR — CASINO",              "grid": _CASINO_GRID},
+    "CASHIER_CAGE": {
+        "title": "L0 — CASHIER CAGE & STAFF ELEVATOR",
+        "grid": [
+            ["X","CASINO","X"],
+            ["X","CASHIER_CAGE","X"],
+            ["X","CASHIER_CAGE","X"],
+            ["X","STAFF_ELEVATOR","X"],
+            ["X","B3_CORRIDOR","X"],
+        ],
+    },
     "HVAC_SHAFT": {
         "title": "HVAC VERTICAL SHAFT",
         "grid": [
@@ -873,9 +885,9 @@ def render_sidebar():
 if "show_map"    not in st.session_state: st.session_state.show_map    = False
 if "heat_level"  not in st.session_state: st.session_state.heat_level  = 0
 if "chat_history" not in st.session_state:
-    st.session_state.chat_history = [{"role": "assistant", "content": "You are in the Hotel Lobby. Give your orders, Mastermind.", "heat_delta": 0}]
+    st.session_state.chat_history = [{"role": "assistant", "content": "You're on the Casino Floor — 150,000 sq ft of noise and distraction. The Cashier Cage is straight ahead. Give your orders, Mastermind.", "heat_delta": 0}]
 if "inventory"   not in st.session_state: st.session_state.inventory   = []
-if "zone"        not in st.session_state: st.session_state.zone        = "LOBBY"
+if "zone"        not in st.session_state: st.session_state.zone        = "CASINO"
 if "game_over"   not in st.session_state: st.session_state.game_over   = False
 if "victory"     not in st.session_state: st.session_state.victory     = False
 if "game_started" not in st.session_state:

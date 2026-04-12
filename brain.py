@@ -9,14 +9,16 @@ load_dotenv()
 api_key = os.getenv("GOOGLE_API_KEY")
 
 # ══════════════════════════════════════════════════════════════════════════════
-# CANONICAL WIN PATH (simplified):
-#   LOBBY → CASINO → CASHIER_CAGE   (search → B3_KEYCARD)
-#   CASINO → KITCHEN_L2 → HVAC_SHAFT → B3_CORRIDOR  (needs B3_KEYCARD at gate)
-#   B3_CORRIDOR → SURVEILLANCE_HQ   (search → CAMERA_LOOP_DEVICE)
-#   B3_CORRIDOR → SECURITY_COMMAND  (interact desk → VAULT_PIN)
-#   B3_CORRIDOR → COUNT_ROOM        (search → VAULT_KEYS)
-#   B3_CORRIDOR → B3_ELEVATOR (needs B3_KEYCARD) → B4_VAULT_ANTECHAMBER
-#   B4_VAULT_ANTECHAMBER → VAULT_CHAMBER (needs VAULT_KEYS + VAULT_PIN)
+# CANONICAL WIN PATH (optimised — ~15 moves minimum):
+#   START: CASINO
+#   CASINO → CASHIER_CAGE              (grab B3_KEYCARD from lockbox)
+#   CASHIER_CAGE → B3_CORRIDOR         (staff service elevator — needs B3_KEYCARD)
+#   B3_CORRIDOR → SECURITY_COMMAND     (read sticky note → VAULT_PIN)
+#   B3_CORRIDOR → COUNT_ROOM           (grab keys → VAULT_KEYS)
+#   B3_CORRIDOR → B3_ELEVATOR          (needs B3_KEYCARD) → B4_VAULT_ANTECHAMBER
+#   B4_VAULT_ANTECHAMBER → VAULT_CHAMBER (needs VAULT_KEYS + VAULT_PIN) → VICTORY
+# ALTERNATE ROUTE (longer, more atmospheric):
+#   CASINO → KITCHEN_L2 → HVAC_SHAFT → B3_CORRIDOR  (still works)
 # ══════════════════════════════════════════════════════════════════════════════
 
 ZONES = {
@@ -38,14 +40,15 @@ ZONES = {
     },
     "CASHIER_CAGE": {
         "label": "L0 — Cashier Cage",
-        "exits": ["CASINO"],
+        "exits": ["CASINO", "B3_CORRIDOR"],
         "objects": [
             "Key lockbox on wall — contains the B3 Keycard",
-            "Guard rotation board"
+            "Guard rotation board",
+            "Staff service elevator (concealed behind supervisor's desk — B3 Keycard required)"
         ],
         "threats": ["2 armed cashier guards"],
         "required_items": [],
-        "flavor": "Rows of cash behind thick glass. The keycard lockbox is right there on the wall."
+        "flavor": "Rows of cash behind thick glass. The keycard lockbox is right there — and behind the supervisor's desk, a concealed staff elevator drops straight to B3."
     },
     "KITCHEN_L2": {
         "label": "L2 — Kitchen",
@@ -68,8 +71,8 @@ ZONES = {
     },
     "B3_CORRIDOR": {
         "label": "B3 — Central Corridor",
-        "exits": ["SURVEILLANCE_HQ", "SECURITY_COMMAND", "COUNT_ROOM", "B3_ELEVATOR", "HVAC_SHAFT"],
-        "objects": ["Biometric gate (keycard entry)", "Laser grid emitters", "HVAC shaft junction"],
+        "exits": ["SURVEILLANCE_HQ", "SECURITY_COMMAND", "COUNT_ROOM", "B3_ELEVATOR", "HVAC_SHAFT", "CASHIER_CAGE"],
+        "objects": ["Biometric gate (keycard entry)", "Laser grid emitters", "HVAC shaft junction", "Staff service elevator (returns to Cashier Cage)"],
         "threats": [
             "Rick Green (distracted, checks phone every 3-5 min)",
             "Laser grid — recalibrates every 12 min (brief gap to slip through)"
@@ -163,6 +166,10 @@ ITEM_DEFINITIONS = {
         "label": "Camera Loop Device",
         "desc": "Loops B3/B4 camera feed for up to 3 minutes. Found in Surveillance HQ. Not required but highly useful."
     },
+    "SENSORS_DISABLED": {
+        "label": "B4 Sensors: Offline",
+        "desc": "Motion sensors disabled at Security Command. B4 approach is clear."
+    },
 }
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -172,6 +179,7 @@ ZONE_ITEMS = {
     "CASHIER_CAGE":    ["B3_KEYCARD"],
     "SURVEILLANCE_HQ": ["CAMERA_LOOP_DEVICE"],
     "COUNT_ROOM":      ["VAULT_KEYS"],
+    "SECURITY_COMMAND": ["VAULT_PIN", "SENSORS_DISABLED"],
 }
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -190,44 +198,6 @@ KEY_ITEM_HINTS = {
     },
 }
 
-# ══════════════════════════════════════════════════════════════════════════════
-# ITEM_TRIGGERS — explicit action phrases that grant items immediately
-# ══════════════════════════════════════════════════════════════════════════════
-ITEM_TRIGGERS = {
-    "B3_KEYCARD": [
-        "grab the keycard", "take the keycard", "pocket the keycard",
-        "take the key card", "grab the key card",
-        "take the badge", "grab the badge",
-        "take the access card", "grab the access card",
-        "open the lockbox", "grab from the lockbox",
-        "take the card", "grab the card",
-    ],
-
-    "VAULT_KEYS": [
-        "take both keys", "grab both keys",
-        "take the keys", "grab the keys",
-        "open the lockbox", "grab the keys from the lockbox",
-        "grab the vault keys", "take the vault keys",
-        "take key alpha", "grab key alpha",
-        "take key beta", "grab key beta",
-        "take alpha key", "take beta key",
-        "pick up the keys", "collect the keys",
-    ],
-
-    "VAULT_PIN": [
-        "open the drawer", "check the drawer", "look in the drawer",
-        "search the desk", "rifle through the desk",
-        "grab the note", "take the note", "read the note",
-        "grab the sticky note", "take the sticky note", "read the sticky note",
-    ],
-
-    "CAMERA_LOOP_DEVICE": [
-        "grab the loop device", "take the loop device",
-        "plug in the loop device", "loop the cameras",
-        "loop the feed", "grab the device", "take the device",
-        "use the terminal", "access the terminal",
-    ],
-}
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -268,7 +238,7 @@ class HeistBrain:
         )
         self.db_path = "./chroma_db"
         self.vectorstore = None
-        self.current_zone = "LOBBY"
+        self.current_zone = "CASINO"
         self.inventory: list[str] = []
         self.intel_log: list[dict] = []
         self.heat = 0
@@ -297,86 +267,21 @@ class HeistBrain:
     def _zone_data(self) -> dict:
         return ZONES.get(self.current_zone, {})
 
-    def _check_zone_search(self, user_move: str) -> list[str]:
-        SEARCH_VERBS = [
-            "search", "scout", "look around", "examine", "check", "inspect",
-            "sweep", "scan", "explore", "investigate", "case the", "survey",
-            "recon", "look for", "hunt for", "ransack", "go through",
-        ]
-        if not any(v in user_move.lower() for v in SEARCH_VERBS):
-            return []
-        key_items = set(KEY_ITEM_HINTS.keys())
-        granted = []
-        for item_key in ZONE_ITEMS.get(self.current_zone, []):
-            if item_key not in self.inventory and item_key not in key_items:
-                granted.append(item_key)
-        return granted
-
-    def _check_item_triggers(self, user_move: str) -> list[str]:
-        move_lower = user_move.lower()
-        triggered = []
-
-        # Independent verb + noun matching — far more robust than exact phrases.
-        # Both a verb AND a relevant noun must appear anywhere in the input.
-        TAKE_VERBS = {
-            "take", "grab", "pocket", "steal", "snatch", "slip", "swipe",
-            "lift", "collect", "pick up", "retrieve", "secure", "get",
-        }
-        KEYCARD_NOUNS = {
-            "keycard", "key card", "key-card", "badge", "access card",
-            "card", "b3 card", "b3 keycard", "b3 key",
-        }
-        KEY_NOUNS = {
-            "vault key", "vault keys", "key alpha", "key beta",
-            "alpha key", "beta key", "keys", "both key",
-        }
-        PIN_VERBS = {
-            "open", "check", "look", "search", "rifle", "read",
-            "grab", "take", "find", "inspect",
-        }
-        PIN_NOUNS = {
-            "drawer", "desk", "top drawer", "sticky note", "note",
-            "sticky", "pin", "vault pin",
-        }
-        LOOP_NOUNS = {
-            "loop device", "device", "camera loop", "loop", "terminal",
-        }
-
-        def has_verb(verbs):
-            return any(v in move_lower for v in verbs)
-
-        def has_noun(nouns):
-            return any(n in move_lower for n in nouns)
-
-        # B3_KEYCARD — must be in CASHIER_CAGE
-        if self.current_zone == "CASHIER_CAGE":
-            if "B3_KEYCARD" not in self.inventory:
-                if has_verb(TAKE_VERBS) and has_noun(KEYCARD_NOUNS):
-                    triggered.append("B3_KEYCARD")
-
-        # VAULT_KEYS — must be in COUNT_ROOM
-        if self.current_zone == "COUNT_ROOM":
-            if "VAULT_KEYS" not in self.inventory:
-                if has_verb(TAKE_VERBS) and has_noun(KEY_NOUNS):
-                    triggered.append("VAULT_KEYS")
-
-        # VAULT_PIN — must be in SECURITY_COMMAND
-        if self.current_zone == "SECURITY_COMMAND":
-            if "VAULT_PIN" not in self.inventory:
-                if has_verb(PIN_VERBS) and has_noun(PIN_NOUNS):
-                    triggered.append("VAULT_PIN")
-
-        # CAMERA_LOOP_DEVICE — must be in SURVEILLANCE_HQ
-        if self.current_zone == "SURVEILLANCE_HQ":
-            if "CAMERA_LOOP_DEVICE" not in self.inventory:
-                if has_verb(TAKE_VERBS) and has_noun(LOOP_NOUNS):
-                    triggered.append("CAMERA_LOOP_DEVICE")
-
-        return triggered
 
 
     def _try_move(self, user_move: str) -> str | None:
         move_lower = user_move.lower()
+
+        # ── Context-aware routing ─────────────────────────────────────────────
+        # From CASHIER_CAGE, any mention of "elevator" means the staff service
+        # elevator → destination is B3_CORRIDOR (not the B3→B4 elevator).
+        ELEVATOR_WORDS = ["elevator", "lift", "staff elevator", "service elevator",
+                          "concealed elevator", "supervisor"]
+        if self.current_zone == "CASHIER_CAGE":
+            if any(e in move_lower for e in ELEVATOR_WORDS):
+                return "B3_CORRIDOR"
+        # ─────────────────────────────────────────────────────────────────────
+
         zone_hints = {
             "lobby":             "LOBBY",
             "casino":            "CASINO",
@@ -391,8 +296,13 @@ class HeistBrain:
             "surveillance":      "SURVEILLANCE_HQ",
             "security command":  "SECURITY_COMMAND",
             "count room":        "COUNT_ROOM",
+            # specific elevator hints must come BEFORE the generic "elevator"
+            "staff elevator":    "B3_CORRIDOR",
+            "service elevator":  "B3_CORRIDOR",
+            "concealed elevator": "B3_CORRIDOR",
             "b3 elevator":       "B3_ELEVATOR",
             "secure elevator":   "B3_ELEVATOR",
+            "elevator to b4":    "B3_ELEVATOR",
             "elevator":          "B3_ELEVATOR",
             "antechamber":       "B4_VAULT_ANTECHAMBER",
             "vault antechamber": "B4_VAULT_ANTECHAMBER",
@@ -413,6 +323,8 @@ class HeistBrain:
             "duck into", "duck to", "creep into", "creep to",
             "slide into", "slide to", "push into", "push to",
             "go through", "pass through",
+            # elevator / access action verbs:
+            "use the", "use", "ride", "take the", "activate",
         ]
         if not any(v in move_lower for v in movement_verbs):
             return None
@@ -440,6 +352,7 @@ class HeistBrain:
         self.move_count += 1
 
         zone = self._zone_data()
+        zone_at_turn_start = self.current_zone  # saved for dual-zone PICKUP validation
 
         # Movement
         target_zone = self._try_move(user_move)
@@ -458,19 +371,7 @@ class HeistBrain:
                 else:
                     blocked_msg = f"[ACCESS_DENIED: {reason}]"
 
-        # Item discovery
-        zone_search_keys = self._check_zone_search(user_move)
-        keyword_keys     = self._check_item_triggers(user_move)
-        all_new_keys     = list(dict.fromkeys(zone_search_keys + keyword_keys))
-
         new_items: list[dict] = []
-        for key in all_new_keys:
-            if key not in self.inventory:
-                defn = ITEM_DEFINITIONS.get(key, {})
-                self.inventory.append(key)
-                entry = {"key": key, "label": defn.get("label", key), "desc": defn.get("desc", "")}
-                self.intel_log.append(entry)
-                new_items.append(entry)
 
         # RAG context
         try:
@@ -488,13 +389,32 @@ class HeistBrain:
             f"PLAYER INVENTORY: {', '.join(self.inventory) if self.inventory else 'nothing'}\n"
         )
 
-        new_items_note = ""
-        if new_items:
-            labels = [i["label"] for i in new_items]
-            new_items_note = (
-                f"\nPLAYER JUST ACQUIRED: {', '.join(labels)} — "
-                f"weave this discovery naturally into the narration.\n"
-            )
+        # Items acquirable in the current zone (for GM guidance)
+        # Build a label→key map so label-typed PICKUP values still match
+        LABEL_TO_KEY = {v.get("label", "").lower(): k for k, v in ITEM_DEFINITIONS.items()}
+
+        ITEM_PICKUP_RULES = {
+            "B3_KEYCARD":        "PHYSICAL — grant if player picks up or takes the keycard from the lockbox",
+            "VAULT_KEYS":        "PHYSICAL — grant if player picks up / grabs the vault keys from the lockbox",
+            "CAMERA_LOOP_DEVICE": "PHYSICAL — grant if player takes or uses the loop device at the terminal",
+            "VAULT_PIN":         "KNOWLEDGE — grant if player reads, notes, memorizes, photographs or otherwise learns the PIN code. 'Noting down' COUNTS.",
+            "SENSORS_DISABLED":  "STATE — grant if player disables, deactivates, or turns off the motion sensor panel",
+        }
+
+        zone_acquirable = ZONE_ITEMS.get(self.current_zone, [])
+        acquirable_note = ""
+        if zone_acquirable:
+            not_yet_held = [k for k in zone_acquirable if k not in self.inventory]
+            if not_yet_held:
+                item_lines = []
+                for k in not_yet_held:
+                    label = ITEM_DEFINITIONS.get(k, {}).get("label", k)
+                    rule  = ITEM_PICKUP_RULES.get(k, "grant if player acquires it")
+                    item_lines.append(f"  • {k} (\"{label}\") — {rule}")
+                acquirable_note = (
+                    "ACQUIRABLE ITEMS HERE (output EXACT key in PICKUP tag):\n"
+                    + "\n".join(item_lines) + "\n"
+                )
 
         key_item_note = ""
         for item_key, hint_data in KEY_ITEM_HINTS.items():
@@ -517,7 +437,7 @@ SECURITY FACTS (RAG — classified documents):
 
 ZONE DATA:
 {zone_summary}
-{new_items_note}
+{acquirable_note}
 {key_item_note}
 {block_note}
 
@@ -529,14 +449,22 @@ STRICT GM RULES:
 2. Judge the move realistically. Smart moves succeed. Stupid moves fail.
 3. NEVER invent items, people, or routes not in ZONE DATA.
 4. If GM BLOCK is set, narrate the failure naturally.
-5. If player acquired new items, weave their discovery into the story.
-6. Heat (integer, -10 to 30): -10 to -1 = brilliant; 0 = idle; 1-5 = minor risk; 6-15 = sloppy; 16-30 = reckless.
-7. After the story, output EXACTLY on separate lines:
+5. Heat (integer, -10 to 30): -10 to -1 = brilliant; 0 = idle; 1-5 = minor risk; 6-15 = sloppy; 16-30 = reckless.
+6. After the story, output EXACTLY on separate lines:
    HEAT: [integer]
-   LOCATION: [zone key]
+   LOCATION: [zone key, e.g. CASHIER_CAGE]
    STATUS: [CLEAR | ALERTED | COMPROMISED | CAPTURED | VICTORY]
+   PICKUP: [comma-separated EXACT item keys from ACQUIRABLE ITEMS HERE — or NONE]
+7. PICKUP rules (read carefully):
+   - PHYSICAL items (keycard, keys, device): grant if player physically takes/grabs/pockets the object.
+   - KNOWLEDGE items (VAULT_PIN): grant if player reads, notes, memorizes, photographs, or examines the source. 'Note down' and 'memorize' COUNT as acquisition.
+   - STATE items (SENSORS_DISABLED): grant if player disables/deactivates the referenced system.
+   - Use the EXACT key from ACQUIRABLE ITEMS HERE (e.g. VAULT_PIN, not 'Vault PIN Code').
+   - Do NOT grant items not listed in ACQUIRABLE ITEMS HERE.
+   - Do NOT grant items already in PLAYER INVENTORY.
+   - If nothing acquired, output: PICKUP: NONE
 
-Output ONLY the story + 3 tags. Nothing else.
+Output ONLY the story + 4 tags. Nothing else.
 """
 
         response = self.llm.invoke(prompt)
@@ -556,6 +484,8 @@ Output ONLY the story + 3 tags. Nothing else.
                 tags["location"] = stripped.split(":", 1)[1].strip()
             elif stripped.startswith("STATUS:"):
                 tags["status"] = stripped.split(":", 1)[1].strip()
+            elif stripped.startswith("PICKUP:"):
+                tags["pickup"] = stripped.split(":", 1)[1].strip()
             else:
                 story_lines.append(line)
 
@@ -563,19 +493,35 @@ Output ONLY the story + 3 tags. Nothing else.
         status = tags.get("status", "CLEAR")
         gm_location = tags.get("location", self.current_zone)
 
+        # ── Zone update (LLM-driven movement) ─────────────────────────────────
         llm_zone_changed = False
         if gm_location in ZONES and not zone_changed:
             prev_zone = self.current_zone
-            self.current_zone = gm_location
-            llm_zone_changed = (self.current_zone != prev_zone)
+            # Validate: target zone must be a valid exit AND player meets requirements
+            exits = ZONES.get(prev_zone, {}).get("exits", [])
+            can_enter, _ = self._can_enter(gm_location)
+            if gm_location == prev_zone or (gm_location in exits and can_enter):
+                self.current_zone = gm_location
+                llm_zone_changed = (self.current_zone != prev_zone)
 
-        # If the LLM moved the player to a new zone that _try_move missed,
-        # re-run item triggers with the updated zone so pickups aren't lost.
-        if llm_zone_changed:
-            late_keys = self._check_item_triggers(user_move)
-            for key in late_keys:
-                if key not in self.inventory:
-                    defn = ITEM_DEFINITIONS.get(key, {})
+        # ── AI-driven item pickup (PICKUP tag from GM) ─────────────────────────
+        # The LLM decides what the player acquired; Python only validates.
+        pickup_raw = tags.get("pickup", "NONE").strip()
+        if pickup_raw.upper() != "NONE" and pickup_raw:
+            # Zones eligible for pickup this turn (where the player was AND where they are now)
+            eligible_zones = {self.current_zone, zone_at_turn_start}
+            for raw_key in pickup_raw.split(","):
+                key = raw_key.strip()
+                # Fallback: LLM sometimes outputs the label instead of the key
+                if key not in ITEM_DEFINITIONS:
+                    key = LABEL_TO_KEY.get(key.lower(), key)
+                # Validate: item must exist, be in an eligible zone, not already owned
+                if (
+                    key in ITEM_DEFINITIONS
+                    and any(key in ZONE_ITEMS.get(z, []) for z in eligible_zones)
+                    and key not in self.inventory
+                ):
+                    defn = ITEM_DEFINITIONS[key]
                     self.inventory.append(key)
                     entry = {"key": key, "label": defn.get("label", key), "desc": defn.get("desc", "")}
                     self.intel_log.append(entry)
