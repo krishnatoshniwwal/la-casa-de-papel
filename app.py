@@ -346,23 +346,28 @@ def render_floor_map(zone_key: str):
         return
 
     grid = floor["grid"]
+    rows_count = len(grid)
     cols = len(grid[0]) if grid else 0
     cells = []
-    player_marked = False
 
-    for row in grid:
-        for cell in row:
-            if cell == zone_key and not player_marked:
-                cell_value = f"{cell}__YOU"
-                player_marked = True
-            else:
-                cell_value = cell
+    def same_zone(r, c, r2, c2):
+        """Return True if two cells belong to the same visual zone block."""
+        if r2 < 0 or r2 >= rows_count or c2 < 0 or c2 >= cols:
+            return False
+        return grid[r][c] == grid[r2][c2] and grid[r][c] != "X"
+
+    def is_you_cell(r, c):
+        """True if this cell belongs to the player zone."""
+        if r < 0 or r >= rows_count or c < 0 or c >= cols:
+            return False
+        return grid[r][c] == zone_key
+
+    for ri, row in enumerate(grid):
+        for ci, cell in enumerate(row):
+            cell_value = cell
 
             if cell_value == "X":
                 cls = "wall"
-            elif cell_value.endswith("__YOU"):
-                cls = "you"
-                cell_value = cell_value.replace("__YOU", "")
             elif cell_value == "CORE":
                 cls = "core"
             elif cell_value == "ELEVATOR":
@@ -376,14 +381,93 @@ def render_floor_map(zone_key: str):
             else:
                 cls = "zone"
 
-            label    = "" if cell_value == "X" else cell_value.replace("_", " ")
-            icon     = ZONE_ICONS.get(cell_value, "")
-            you_badge = '<span class="you-badge">◈ YOU</span>' if cls == "you" else ""
-            cells.append(
-                f'<div class="cell {cls}">'
-                f'{you_badge}'
+            label = "" if cell_value == "X" else cell_value.replace("_", " ")
+            icon  = ZONE_ICONS.get(cell_value, "")
+
+            # Show label/icon only on the top-left representative cell of merged block
+            is_top  = not same_zone(ri, ci, ri - 1, ci)
+            is_left = not same_zone(ri, ci, ri, ci - 1)
+            show_content = (is_top and is_left) and cell_value != "X"
+
+            # Compute neighbour merges (for zone border suppression)
+            merge_top    = same_zone(ri, ci, ri - 1, ci)
+            merge_bottom = same_zone(ri, ci, ri + 1, ci)
+            merge_left   = same_zone(ri, ci, ri, ci - 1)
+            merge_right  = same_zone(ri, ci, ri, ci + 1)
+
+            # border-radius: only on outer corners
+            def cr(t, l): return "0" if (t or l) else "10px"
+            tl = cr(merge_top, merge_left)
+            tr = cr(merge_top, merge_right)
+            bl = cr(merge_bottom, merge_left)
+            br = cr(merge_bottom, merge_right)
+            radius_style = f"border-radius:{tl} {tr} {br} {bl};"
+
+            # Suppress shared borders between same-zone cells
+            bs = []
+            if merge_top:    bs.append("border-top:none;")
+            if merge_bottom: bs.append("border-bottom:none;")
+            if merge_left:   bs.append("border-left:none;")
+            if merge_right:  bs.append("border-right:none;")
+            border_style = "".join(bs)
+
+            # Margin gap only on outer edges (between different zones)
+            gap = "2px"
+            mt = "0" if merge_top    else gap
+            mb = "0" if merge_bottom else gap
+            ml = "0" if merge_left   else gap
+            mr = "0" if merge_right  else gap
+            margin_style = f"margin:{mt} {mr} {mb} {ml};"
+
+            inline = radius_style + border_style + margin_style
+
+            inner = (
                 f'<span class="cell-icon">{icon}</span>'
                 f'<span class="cell-label">{escape(label)}</span>'
+            ) if show_content else ""
+
+            # YOU highlighting: per-cell green border on exposed edges only.
+            # Works for rectangles, L-shapes, and any irregular room geometry.
+            you_overlay = ""
+            if is_you_cell(ri, ci):
+                # Which sides are exposed (not touching another YOU cell)?
+                exp_top    = not is_you_cell(ri - 1, ci)
+                exp_bottom = not is_you_cell(ri + 1, ci)
+                exp_left   = not is_you_cell(ri, ci - 1)
+                exp_right  = not is_you_cell(ri, ci + 1)
+
+                # Build per-side border for the inset overlay div
+                bw = "2px"
+                green = "rgba(0,255,136,0.92)"
+                none  = "none"
+                bt = f"{bw} solid {green}" if exp_top    else none
+                bb = f"{bw} solid {green}" if exp_bottom else none
+                bl_s = f"{bw} solid {green}" if exp_left   else none
+                br_s = f"{bw} solid {green}" if exp_right  else none
+
+                # Corner radius on exposed outer corners only
+                otl = "8px" if (exp_top and exp_left)    else "0"
+                otr = "8px" if (exp_top and exp_right)   else "0"
+                obl = "8px" if (exp_bottom and exp_left) else "0"
+                obr = "8px" if (exp_bottom and exp_right) else "0"
+
+                # Badge only on the top-left corner of the YOU region
+                badge = ""
+                if exp_top and exp_left:
+                    badge = '<span class="you-badge">◈ YOU</span>'
+
+                you_overlay = (
+                    f'<div class="you-cell-hl" style="' 
+                    f'border-top:{bt};border-bottom:{bb};' 
+                    f'border-left:{bl_s};border-right:{br_s};' 
+                    f'border-radius:{otl} {otr} {obr} {obl};">' 
+                    f'{badge}</div>'
+                )
+
+            cells.append(
+                f'<div class="cell {cls}" style="{inline}">' 
+                f'{you_overlay}' 
+                f'{inner}' 
                 f'</div>'
             )
 
@@ -445,15 +529,12 @@ def render_floor_map(zone_key: str):
     .close-btn {{ background:rgba(255,45,120,0.12); border:1px solid rgba(255,45,120,0.55); color:#ff2d78; border-radius:8px; padding:8px 18px; cursor:pointer; font-family:'Orbitron',monospace; font-size:0.65rem; font-weight:700; letter-spacing:0.15em; transition:all 0.2s ease; }}
     .close-btn:hover {{ background:rgba(255,45,120,0.3); box-shadow:0 0 20px rgba(255,45,120,0.45); color:#fff; border-color:#ff2d78; }}
     .modal-body {{ flex:1; overflow-y:auto; padding:18px 20px; }}
-    .map-grid {{ display:grid; gap:7px; grid-template-columns:repeat({cols},minmax(72px,1fr)); }}
-    .cell {{ min-height:62px; border-radius:10px; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:6px 4px; position:relative; }}
+    .map-grid {{ display:grid; gap:0; grid-template-columns:repeat({cols},minmax(72px,1fr)); }}
+    .cell {{ min-height:62px; border-radius:0; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; padding:6px 4px; position:relative; }}
     .cell-icon {{ font-size:1rem; line-height:1.2; }}
     .cell-label {{ font-size:8.5px; font-weight:700; line-height:1.2; letter-spacing:0.04em; margin-top:3px; }}
-    .you-badge {{ position:absolute; top:3px; right:4px; font-size:6.5px; color:#00ff88; letter-spacing:0.06em; text-shadow:0 0 6px #00ff88; }}
     .wall           {{ background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.04); }}
     .zone           {{ background:rgba(0,212,255,0.08);  border:1px solid rgba(0,212,255,0.28);  color:#a0d8ef; }}
-    .you            {{ background:rgba(0,255,136,0.13);  border:2px solid rgba(0,255,136,0.85); color:#ccffe8; box-shadow:0 0 22px rgba(0,255,136,0.35); animation:youPulse 2s ease-in-out infinite; }}
-    @keyframes youPulse {{ 0%,100% {{ box-shadow:0 0 22px rgba(0,255,136,0.35); }} 50% {{ box-shadow:0 0 38px rgba(0,255,136,0.65); }} }}
     .core           {{ background:rgba(255,215,0,0.12);  border:1px solid rgba(255,215,0,0.45);  color:#fef3c7; }}
     .elevator       {{ background:rgba(139,43,226,0.18); border:1px solid rgba(139,43,226,0.52); color:#e9d5ff; }}
     .staff_elevator {{ background:rgba(139,43,226,0.22); border:1px solid rgba(139,43,226,0.62); color:#f3e8ff; }}
@@ -463,6 +544,22 @@ def render_floor_map(zone_key: str):
     .legend {{ display:flex; gap:16px; flex-wrap:wrap; margin-top:14px; padding-top:12px; border-top:1px solid rgba(255,255,255,0.06); }}
     .leg {{ font-size:8.5px; letter-spacing:0.06em; opacity:0.7; }}
     .you-leg {{ color:#00ff88; }} .zone-leg {{ color:#00d4ff; }} .vault-leg {{ color:#ffd700; }} .elev-leg {{ color:#a78bfa; }} .shaft-leg {{ color:#2dd4bf; }}
+    /* YOU: per-cell inset border overlay — works for any room shape */
+    .you-cell-hl {{
+      position:absolute; inset:0; pointer-events:none;
+      background:rgba(0,255,136,0.07);
+      animation:youPulse 2s ease-in-out infinite;
+      z-index:5;
+    }}
+    @keyframes youPulse {{
+      0%,100% {{ box-shadow:inset 0 0 10px rgba(0,255,136,0.15); }}
+      50%      {{ box-shadow:inset 0 0 20px rgba(0,255,136,0.30); }}
+    }}
+    .you-badge {{
+      position:absolute; top:4px; left:5px;
+      font-size:6.5px; color:#00ff88; letter-spacing:0.08em;
+      text-shadow:0 0 8px #00ff88; white-space:nowrap; z-index:6;
+    }}
     </style>
     <div class="modal-wrap">
       <div class="modal-header">
