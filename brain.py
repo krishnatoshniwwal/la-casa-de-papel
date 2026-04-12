@@ -202,20 +202,25 @@ ITEM_TRIGGERS = {
         "open the lockbox", "grab from the lockbox",
         "take the card", "grab the card",
     ],
+
+    "VAULT_KEYS": [
+        "take both keys", "grab both keys",
+        "take the keys", "grab the keys",
+        "open the lockbox", "grab the keys from the lockbox",
+        "grab the vault keys", "take the vault keys",
+        "take key alpha", "grab key alpha",
+        "take key beta", "grab key beta",
+        "take alpha key", "take beta key",
+        "pick up the keys", "collect the keys",
+    ],
+
     "VAULT_PIN": [
         "open the drawer", "check the drawer", "look in the drawer",
         "search the desk", "rifle through the desk",
         "grab the note", "take the note", "read the note",
         "grab the sticky note", "take the sticky note", "read the sticky note",
     ],
-    "VAULT_KEYS": [
-        "take both keys", "grab both keys",
-        "take the keys", "grab the keys",
-        "take key alpha", "grab key alpha",
-        "take key beta", "grab key beta",
-        "open the lockbox", "grab the keys from the lockbox",
-        "grab the vault keys", "take the vault keys",
-    ],
+
     "CAMERA_LOOP_DEVICE": [
         "grab the loop device", "take the loop device",
         "plug in the loop device", "loop the cameras",
@@ -310,12 +315,21 @@ class HeistBrain:
     def _check_item_triggers(self, user_move: str) -> list[str]:
         move_lower = user_move.lower()
         triggered = []
+
         for item_key, keywords in ITEM_TRIGGERS.items():
+            if item_key == "B3_KEYCARD" and self.current_zone != "CASHIER_CAGE":
+                continue
+            if item_key == "VAULT_KEYS" and self.current_zone != "COUNT_ROOM":
+                continue
+            if item_key == "VAULT_PIN" and self.current_zone != "SECURITY_COMMAND":
+                continue
+
             if item_key not in self.inventory:
                 for kw in keywords:
                     if kw in move_lower:
                         triggered.append(item_key)
                         break
+
         return triggered
 
     def _try_move(self, user_move: str) -> str | None:
