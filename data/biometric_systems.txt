@@ -7,27 +7,34 @@ Biometric systems control access to B3 and B4.
 
 ## COMPONENTS ##
 --Keycard (entry trigger)  
---Fingerprint scanner (1.5 sec)  
---Retina scanner (2.0 sec, B4 only)  
+--Fingerprint scanner (1.5 sec)    
 
 ## AUTH FLOW ##
 1. Keycard  
 2. Fingerprint  
-3. Retina (B4)  
 4. Door unlock  
+
+## AUTHORIZED PEOPLE ##
+1. RICK GREEN
+2. LUIZ MARTINEZ
+3. EMILY PARK
+4. ALBERT KING
 
 ## FAILURE RULES ##
 --3 failed attempts → 15 sec lock  
---All attempts logged  
+--All attempts logged 
+--Door Remains Locked
+--Alarm goes off 
 
 ## REBOOT ##
 --Triggered by glitch or signal issue  
 --Duration: 30–45 sec  
 --Door remains in last state  
 
+
 ## LOOPHOLES ##
 --2 sec cache of last valid scan  
 --Door stays open/closed during reboot  
 --Retina fails under strong light  
 --Fingerprint accepts ~70% match  
---No cross-check between fingerprint & retina  
+--No cross-check between fingerprint  

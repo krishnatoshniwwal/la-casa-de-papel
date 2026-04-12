@@ -37,7 +37,7 @@ Vault Layout:
 
 Authentication Layers:
 --Keycard  
---Biometric (fingerprint + retina)  
+--Biometric (fingerprint)  
 --Dual authorization  
 --Time-based access  
 

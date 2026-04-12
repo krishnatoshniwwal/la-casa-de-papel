@@ -38,6 +38,7 @@ B3:
 
 Ground Floor:
 --Casino floor  
+--Kitchen
 
 Level 1:
 --Hotel lobby  

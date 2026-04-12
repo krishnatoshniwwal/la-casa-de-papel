@@ -35,7 +35,7 @@ ZONES = {
     },
     "HVAC_SHAFT": {
         "label": "HVAC Vertical Shaft",
-        "exits": ["KITCHEN_L2", "B3_CORRIDOR"],
+        "exits": ["KITCHEN_L2", "B3_MAINTENANCE_SHAFT"],
         "objects": ["80x80 cm main duct", "Filter panel (20 sec to remove)", "Jorge Ramirez maintenance log"],
         "threats": ["Thermal sensors (26-28°C safe range)", "Movement noise"],
         "required_items": [],
@@ -99,7 +99,7 @@ ZONES = {
     },
     "B3_MAINTENANCE_SHAFT": {
         "label": "B3 — Maintenance Shaft",
-        "exits": ["B3_CORRIDOR", "B4_VAULT_ANTECHAMBER"],
+        "exits": ["B3_CORRIDOR", "B4_VAULT_ANTECHAMBER","HVAC_SHAFT"],
         "objects": ["Camera blind spot (confirmed)", "Vent to B4 antechamber", "Biometric relay cable"],
         "threats": ["Thermal sensors (lag 1 sec after cooling)"],
         "required_items": [],
@@ -107,7 +107,7 @@ ZONES = {
     },
     "B3_ELEVATOR": {
         "label": "B3→B4 Secure Elevator",
-        "exits": ["B3_CORRIDOR", "B4_VAULT_ANTECHAMBER"],
+        "exits": ["B3_CORRIDOR"],
         "objects": ["Retina + fingerprint scanner", "Dual authorization panel"],
         "threats": ["Iris scanner", "Fingerprint scanner", "Dual auth required — two people"],
         "required_items": ["B3_KEYCARD", "BIOMETRIC_BYPASS"],
@@ -115,7 +115,7 @@ ZONES = {
     },
     "B4_VAULT_ANTECHAMBER": {
         "label": "B4 — Vault Antechamber",
-        "exits": ["B3_MAINTENANCE_SHAFT", "B3_ELEVATOR", "VAULT_CHAMBER"],
+        "exits": ["B3_ELEVATOR", "VAULT_CHAMBER"],
         "objects": ["Motion sensors", "Thermal sensors", "Dual-key vault door", "Vault PIN keypad"],
         "threats": ["Motion sensors (2mm trigger threshold)", "10-15 vault security staff", "Custodian pair"],
         "required_items": [],
