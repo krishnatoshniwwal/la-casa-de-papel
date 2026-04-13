@@ -146,7 +146,7 @@ ZONES = {
         "objects": ["Diamonds", "Gold bullion", "Rare collectibles", "VIP collateral"],
         "threats": [],
         "required_items": ["VAULT_KEYS", "VAULT_PIN"],
-        "flavor": "TARGET ACQUIRED. The vault is open. Take only what you came for."
+        "flavor": "TARGET ACQUIRED. The vault is open. Grab the assets — the job is done."
     },
 }
 
@@ -174,6 +174,10 @@ ITEM_DEFINITIONS = {
         "label": "B4 Sensors: Offline",
         "desc": "Motion sensors disabled at Surveillance HQ. B4 approach is clear."
     },
+    "ASSETS_SECURED": {
+        "label": "High-Value Assets Secured",
+        "desc": "Diamonds, gold bullion, and rare collectibles — the take of a lifetime. Mission complete."
+    },
 }
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -184,6 +188,7 @@ ZONE_ITEMS = {
     "CASHIER_CAGE":    ["B3_KEYCARD"],
     "SURVEILLANCE_HQ": ["CAMERA_LOOP_DEVICE", "SENSORS_DISABLED"],
     "SECURITY_COMMAND": ["VAULT_KEYS", "VAULT_PIN"],
+    "VAULT_CHAMBER":   ["ASSETS_SECURED"],
 }
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -409,6 +414,7 @@ class HeistBrain:
             "CAMERA_LOOP_DEVICE": "PHYSICAL — grant if player takes or uses the loop device at the terminal",
             "VAULT_PIN":         "KNOWLEDGE — grant if player reads, notes, memorizes, photographs or otherwise learns the PIN code. 'Noting down' COUNTS.",
             "SENSORS_DISABLED":  "STATE — grant if player disables, deactivates, or turns off the motion sensor panel",
+            "ASSETS_SECURED":    "STATE — grant if the player takes, grabs, collects, pockets, or secures ANY of the vault assets (diamonds, gold, collectibles). This is the mission objective — grant it the moment the player interacts with the loot.",
         }
 
         zone_acquirable = ZONE_ITEMS.get(self.current_zone, [])
@@ -441,7 +447,7 @@ Narrate ONLY what is happening RIGHT NOW in the current zone.
 CRITICAL RULE: Only reference items, routes, people, and objects explicitly listed in ZONE DATA below.
 NEVER invent keycards, tools, NPCs, doors, security systems, or objects not present in the zone data or player inventory.
 NEVER mention laser grids or weight sensors — they do not exist in this game.
-The ONLY obtainable items in this entire game are: B3 Keycard, Vault Keys (Alpha + Beta), Vault PIN Code, Camera Loop Device, B4 Sensors Disabled.
+The ONLY obtainable items in this entire game are: B3 Keycard, Vault Keys (Alpha + Beta), Vault PIN Code, Camera Loop Device, B4 Sensors Disabled, High-Value Assets (ASSETS_SECURED).
 The B3/B4 elevator requires the B3 Keycard and works in BOTH directions (up to B3 and down to B4).
 The motion sensor control panel for B4 is in Surveillance HQ. Vault Keys and Vault PIN are BOTH in Security Command (keys in lockbox on wall, PIN in desk drawer). There is NO Count Room.
 SECURITY FACTS (RAG — classified documents):
@@ -467,13 +473,14 @@ STRICT GM RULES:
 8. After the story, output EXACTLY on separate lines:
    HEAT: [integer]
    LOCATION: [zone key, e.g. CASHIER_CAGE]
-   STATUS: [CLEAR | ALERTED | COMPROMISED | CAPTURED | VICTORY]
+   STATUS: [CLEAR | ALERTED | COMPROMISED | CAPTURED]
    PICKUP: [comma-separated EXACT item keys from ACQUIRABLE ITEMS HERE — or NONE]
 9. PICKUP rules (read carefully):
    - PHYSICAL items (keycard, keys, device): grant if player physically takes/grabs/pockets the object.
    - KNOWLEDGE items (VAULT_PIN): grant if player reads, notes, memorizes, photographs or otherwise learns the PIN code. 'Noting down' COUNTS.
-   - STATE items (SENSORS_DISABLED): grant if player disables/deactivates the referenced system.
-   - Use the EXACT key from ACQUIRABLE ITEMS HERE (e.g. VAULT_PIN, not 'Vault PIN Code').
+   - STATE items (SENSORS_DISABLED, ASSETS_SECURED): grant if player performs the relevant action (disables system / grabs vault loot).
+   - ASSETS_SECURED: grant the moment the player interacts with ANY vault asset (diamonds, gold, collectibles, loot). This ends the mission.
+   - Use the EXACT key from ACQUIRABLE ITEMS HERE (e.g. ASSETS_SECURED, not 'High-Value Assets').
    - Do NOT grant items not listed in ACQUIRABLE ITEMS HERE.
    - Do NOT grant items already in PLAYER INVENTORY.
    - If nothing acquired, output: PICKUP: NONE
@@ -541,6 +548,10 @@ Output ONLY the story + 4 tags. Nothing else.
                     self.intel_log.append(entry)
                     new_items.append(entry)
 
+        # ── Deterministic victory check — Python-driven, not LLM-driven ──────────
+        if "ASSETS_SECURED" in self.inventory and not self.victory:
+            self.victory = True
+
         IDLE_PHRASES = [
             "wait", "do nothing", "stay", "look around", "think",
             "what should", "where am i", "what do i", "how do i",
@@ -557,9 +568,8 @@ Output ONLY the story + 4 tags. Nothing else.
             self.game_over = True
             heat_delta = 100
             event = {"type": "danger", "msg": "OPERATIVE DOWN — mission compromised", "heatDelta": 100}
-        elif status == "VICTORY":
-            self.victory = True
-            event = {"type": "success", "msg": "TARGET SECURED — initiating extraction", "heatDelta": heat_delta}
+        elif self.victory:
+            event = {"type": "success", "msg": "TARGET SECURED — THE VELVET ACE IS YOURS", "heatDelta": heat_delta}
         elif status == "COMPROMISED":
             heat_delta = min(heat_delta + 15, 30)
             event = {"type": "danger", "msg": "EXPOSURE — heat rising fast", "heatDelta": heat_delta}

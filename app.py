@@ -389,7 +389,7 @@ ZONE_ICONS = {
 ITEM_ICONS = {
     "B3_KEYCARD": "💳", "VAULT_PIN": "🔢",
     "VAULT_KEYS": "🗝️", "CAMERA_LOOP_DEVICE": "📷",
-    "SENSORS_DISABLED": "🔕",
+    "SENSORS_DISABLED": "🔕", "ASSETS_SECURED": "💎",
 }
 
 ZONE_TO_FLOOR = {
@@ -956,58 +956,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-# ── GAME OVER / VICTORY BANNERS ────────────────────────────────────────────────
-if st.session_state.game_over:
-    components.html("""
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&display=swap" rel="stylesheet">
-    <div style="background:linear-gradient(135deg,rgba(255,0,60,0.15),rgba(80,0,0,0.25));
-                border:2px solid rgba(255,45,120,0.7); border-radius:16px; padding:22px 28px;
-                margin:16px 0; text-align:center;
-                box-shadow:0 0 60px rgba(255,45,120,0.3),inset 0 0 40px rgba(255,0,0,0.05);
-                animation:dangerPulse 1s ease-in-out infinite;">
-      <div style="font-family:'Orbitron',monospace; font-size:1.5rem; font-weight:900;
-                  color:#ff2d78; letter-spacing:0.2em; text-shadow:0 0 30px rgba(255,45,120,1);">
-        🚨 OPERATIVE CAPTURED
-      </div>
-      <div style="font-family:'Orbitron',monospace; font-size:0.7rem; color:rgba(255,150,150,0.7);
-                  letter-spacing:0.25em; margin-top:8px;">
-        MISSION COMPROMISED — REFRESH TO RESTART
-      </div>
-    </div>
-    <style>
-    @keyframes dangerPulse {
-      0%,100% { border-color:rgba(255,45,120,0.7); box-shadow:0 0 60px rgba(255,45,120,0.3); }
-      50%      { border-color:rgba(255,45,120,1);   box-shadow:0 0 90px rgba(255,45,120,0.6); }
-    }
-    </style>
-    """, height=120)
-
-elif st.session_state.victory:
-    components.html("""
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&display=swap" rel="stylesheet">
-    <div style="background:linear-gradient(135deg,rgba(255,215,0,0.15),rgba(0,80,0,0.1));
-                border:2px solid rgba(255,215,0,0.8); border-radius:16px; padding:22px 28px;
-                margin:16px 0; text-align:center;
-                box-shadow:0 0 60px rgba(255,215,0,0.35),inset 0 0 40px rgba(255,215,0,0.04);
-                animation:victoryPulse 2s ease-in-out infinite;">
-      <div style="font-family:'Orbitron',monospace; font-size:1.5rem; font-weight:900;
-                  color:#ffd700; letter-spacing:0.2em; text-shadow:0 0 30px rgba(255,215,0,1);">
-        💎 THE VELVET ACE IS YOURS
-      </div>
-      <div style="font-family:'Orbitron',monospace; font-size:0.7rem; color:rgba(255,215,100,0.7);
-                  letter-spacing:0.25em; margin-top:8px;">
-        EXTRACTION COMPLETE — MISSION SUCCESS
-      </div>
-    </div>
-    <style>
-    @keyframes victoryPulse {
-      0%,100% { box-shadow:0 0 60px rgba(255,215,0,0.35); }
-      50%      { box-shadow:0 0 100px rgba(255,215,0,0.65); }
-    }
-    </style>
-    """, height=120)
-
-
 # ── TACTICAL MAP MODAL (always rendered, shown/hidden via JS only) ─────────────
 render_floor_map(st.session_state.zone)
 
@@ -1047,6 +995,64 @@ for msg in st.session_state.chat_history:
               {escape(content)}
             </div>
             """, height=_bubble_height(content, base=70))
+
+
+# ── GAME OVER / VICTORY BANNERS (rendered at bottom, where the player is looking) ─────
+
+if st.session_state.victory:
+    components.html("""
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&display=swap" rel="stylesheet">
+    <div style="background:linear-gradient(135deg,rgba(255,215,0,0.18),rgba(0,80,0,0.12));
+                border:2px solid rgba(255,215,0,0.9); border-radius:16px; padding:26px 32px;
+                margin:20px 0 8px 0; text-align:center;
+                box-shadow:0 0 80px rgba(255,215,0,0.5),inset 0 0 40px rgba(255,215,0,0.06);
+                animation:victoryPulse 2s ease-in-out infinite;">
+      <div style="font-family:'Orbitron',monospace; font-size:1.6rem; font-weight:900;
+                  color:#ffd700; letter-spacing:0.2em; text-shadow:0 0 40px rgba(255,215,0,1);
+                  margin-bottom:10px;">
+        💎 THE VELVET ACE IS YOURS
+      </div>
+      <div style="font-family:'Orbitron',monospace; font-size:0.72rem; color:rgba(255,235,150,0.85);
+                  letter-spacing:0.25em; margin-bottom:16px;">
+        EXTRACTION COMPLETE — MISSION SUCCESS
+      </div>
+      <div style="font-family:'Orbitron',monospace; font-size:0.62rem; color:rgba(255,215,0,0.5);
+                  letter-spacing:0.18em;">
+        REFRESH TO PLAY AGAIN
+      </div>
+    </div>
+    <style>
+    @keyframes victoryPulse {
+      0%,100% { box-shadow:0 0 80px rgba(255,215,0,0.5); border-color:rgba(255,215,0,0.9); }
+      50%      { box-shadow:0 0 130px rgba(255,215,0,0.8); border-color:rgba(255,215,0,1); }
+    }
+    </style>
+    """, height=148)
+
+elif st.session_state.game_over:
+    components.html("""
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@900&display=swap" rel="stylesheet">
+    <div style="background:linear-gradient(135deg,rgba(255,0,60,0.15),rgba(80,0,0,0.25));
+                border:2px solid rgba(255,45,120,0.7); border-radius:16px; padding:22px 28px;
+                margin:20px 0 8px 0; text-align:center;
+                box-shadow:0 0 60px rgba(255,45,120,0.3),inset 0 0 40px rgba(255,0,0,0.05);
+                animation:dangerPulse 1s ease-in-out infinite;">
+      <div style="font-family:'Orbitron',monospace; font-size:1.5rem; font-weight:900;
+                  color:#ff2d78; letter-spacing:0.2em; text-shadow:0 0 30px rgba(255,45,120,1);">
+        🚨 OPERATIVE CAPTURED
+      </div>
+      <div style="font-family:'Orbitron',monospace; font-size:0.7rem; color:rgba(255,150,150,0.7);
+                  letter-spacing:0.25em; margin-top:8px;">
+        MISSION COMPROMISED — REFRESH TO RESTART
+      </div>
+    </div>
+    <style>
+    @keyframes dangerPulse {
+      0%,100% { border-color:rgba(255,45,120,0.7); box-shadow:0 0 60px rgba(255,45,120,0.3); }
+      50%      { border-color:rgba(255,45,120,1);   box-shadow:0 0 90px rgba(255,45,120,0.6); }
+    }
+    </style>
+    """, height=120)
 
 
 # ── CHAT INPUT ────────────────────────────────────────────────────────────────
