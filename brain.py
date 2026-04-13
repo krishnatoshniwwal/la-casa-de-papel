@@ -12,13 +12,17 @@ api_key = os.getenv("GOOGLE_API_KEY")
 # CANONICAL WIN PATH (optimised — ~15 moves minimum):
 #   START: CASINO
 #   CASINO → CASHIER_CAGE              (grab B3_KEYCARD from lockbox)
-#   CASHIER_CAGE → B3_CORRIDOR         (staff service elevator — needs B3_KEYCARD)
+#   CASHIER_CAGE → STAFF_ELEVATOR      (needs B3_KEYCARD)
+#   STAFF_ELEVATOR → B3_CORRIDOR
 #   B3_CORRIDOR → SECURITY_COMMAND     (read sticky note → VAULT_PIN)
 #   B3_CORRIDOR → COUNT_ROOM           (grab keys → VAULT_KEYS)
-#   B3_CORRIDOR → B3_ELEVATOR          (needs B3_KEYCARD) → B4_VAULT_ANTECHAMBER
+#   B3_CORRIDOR → VAULT_ELEVATOR       (needs B3_KEYCARD) → B4_VAULT_ANTECHAMBER
 #   B4_VAULT_ANTECHAMBER → VAULT_CHAMBER (needs VAULT_KEYS + VAULT_PIN) → VICTORY
+#   B4_VAULT_ANTECHAMBER → VAULT_ELEVATOR (B3_KEYCARD — works both ways) → B3_CORRIDOR
 # ALTERNATE ROUTE (longer, more atmospheric):
 #   CASINO → KITCHEN_L2 → HVAC_SHAFT → B3_CORRIDOR  (still works)
+# NOTE: No laser grids. No weight sensors. Vault elevator is bidirectional with keycard.
+#       Staff elevator is intermediate zone between CASHIER_CAGE and B3_CORRIDOR.
 # ══════════════════════════════════════════════════════════════════════════════
 
 ZONES = {
@@ -40,7 +44,7 @@ ZONES = {
     },
     "CASHIER_CAGE": {
         "label": "L0 — Cashier Cage",
-        "exits": ["CASINO", "B3_CORRIDOR"],
+        "exits": ["CASINO", "STAFF_ELEVATOR"],
         "objects": [
             "Key lockbox on wall — contains the B3 Keycard",
             "Guard rotation board",
@@ -69,16 +73,23 @@ ZONES = {
         "required_items": [],
         "flavor": "Dark, tight, and the only route that skips every checkpoint."
     },
+    "STAFF_ELEVATOR": {
+        "label": "Staff Service Elevator",
+        "exits": ["CASHIER_CAGE", "B3_CORRIDOR"],
+        "objects": ["Keycard reader", "Floor selector — Casino level and B3"],
+        "threats": ["No cameras inside the shaft"],
+        "required_items": ["B3_KEYCARD"],
+        "flavor": "Unmarked, unmonitored, and not on any public map. One swipe takes you straight to B3."
+    },
     "B3_CORRIDOR": {
         "label": "B3 — Central Corridor",
-        "exits": ["SURVEILLANCE_HQ", "SECURITY_COMMAND", "COUNT_ROOM", "B3_ELEVATOR", "HVAC_SHAFT", "CASHIER_CAGE"],
-        "objects": ["Biometric gate (keycard entry)", "Laser grid emitters", "HVAC shaft junction", "Staff service elevator (returns to Cashier Cage)"],
+        "exits": ["SURVEILLANCE_HQ", "SECURITY_COMMAND", "COUNT_ROOM", "VAULT_ELEVATOR", "HVAC_SHAFT", "STAFF_ELEVATOR"],
+        "objects": ["Biometric gate (keycard entry)", "HVAC shaft junction", "Staff service elevator (returns to Cashier Cage via Casino level)"],
         "threats": [
-            "Rick Green (distracted, checks phone every 3-5 min)",
-            "Laser grid — recalibrates every 12 min (brief gap to slip through)"
+            "Rick Green (distracted, checks phone every 3-5 min)"
         ],
         "required_items": ["B3_KEYCARD"],
-        "flavor": "The spine of their operation. One distracted guard, a 12-minute recalibration window."
+        "flavor": "The spine of their operation. One distracted guard between you and everything."
     },
     "SURVEILLANCE_HQ": {
         "label": "B3 — Surveillance HQ",
@@ -114,33 +125,34 @@ ZONES = {
         "required_items": ["B3_KEYCARD"],
         "flavor": "Millions move through here daily. Both vault keys sit in the lockbox — unguarded 03:00-03:15."
     },
-    "B3_ELEVATOR": {
-        "label": "B3 to B4 Secure Elevator",
+    "VAULT_ELEVATOR": {
+        "label": "Vault Elevator",
         "exits": ["B3_CORRIDOR", "B4_VAULT_ANTECHAMBER"],
-        "objects": ["Keycard reader", "Floor selector panel"],
-        "threats": ["Keycard required to activate B4 floor"],
+        "objects": ["Keycard reader (both floors)", "Floor selector panel — B3 and B4 buttons"],
+        "threats": ["Keycard required to activate on both floors"],
         "required_items": ["B3_KEYCARD"],
-        "flavor": "One swipe, one floor. The keycard makes it simple."
+        "flavor": "One swipe, one floor — works going down to B4 or back up to B3."
     },
     "B4_VAULT_ANTECHAMBER": {
         "label": "B4 — Vault Antechamber",
-        "exits": ["B3_ELEVATOR", "VAULT_CHAMBER"],
+        "exits": ["VAULT_ELEVATOR", "VAULT_CHAMBER"],
         "objects": [
             "Motion sensors (disable from Security Command sensor panel)",
-            "Vault door with dual keyhole and PIN keypad"
+            "Vault door with dual keyhole and PIN keypad",
+            "Elevator keycard reader (B3_KEYCARD — returns to B3)"
         ],
         "threats": [
             "Motion sensors — active unless disabled from Security Command",
             "5 vault security staff patrolling"
         ],
         "required_items": [],
-        "flavor": "20 meters underground. The vault door is the only thing between you and everything."
+        "flavor": "20 metres underground. The vault door ahead, the elevator behind — your exit is the same keycard that got you in."
     },
     "VAULT_CHAMBER": {
         "label": "B4 — VAULT CHAMBER",
         "exits": ["B4_VAULT_ANTECHAMBER"],
         "objects": ["Diamonds", "Gold bullion", "Rare collectibles", "VIP collateral"],
-        "threats": ["Time-lock (20 sec open window)", "Weight sensors — alarm if items removed incorrectly"],
+        "threats": ["Time-lock (20 sec open window)"],
         "required_items": ["VAULT_KEYS", "VAULT_PIN"],
         "flavor": "TARGET ACQUIRED. 20 seconds. Take only what you came for."
     },
@@ -273,43 +285,48 @@ class HeistBrain:
         move_lower = user_move.lower()
 
         # ── Context-aware routing ─────────────────────────────────────────────
-        # From CASHIER_CAGE, any mention of "elevator" means the staff service
-        # elevator → destination is B3_CORRIDOR (not the B3→B4 elevator).
         ELEVATOR_WORDS = ["elevator", "lift", "staff elevator", "service elevator",
                           "concealed elevator", "supervisor"]
+        # From CASHIER_CAGE, elevator goes to STAFF_ELEVATOR (intermediate zone)
         if self.current_zone == "CASHIER_CAGE":
             if any(e in move_lower for e in ELEVATOR_WORDS):
-                return "B3_CORRIDOR"
+                return "STAFF_ELEVATOR"
+        # From B4_VAULT_ANTECHAMBER, elevator goes back up to VAULT_ELEVATOR
+        if self.current_zone == "B4_VAULT_ANTECHAMBER":
+            if any(e in move_lower for e in ELEVATOR_WORDS) or "b3" in move_lower:
+                return "VAULT_ELEVATOR"
         # ─────────────────────────────────────────────────────────────────────
 
         zone_hints = {
-            "lobby":             "LOBBY",
-            "casino":            "CASINO",
-            "kitchen":           "KITCHEN_L2",
-            "hvac":              "HVAC_SHAFT",
-            "vent":              "HVAC_SHAFT",
-            "duct":              "HVAC_SHAFT",
-            "cashier":           "CASHIER_CAGE",
-            "cage":              "CASHIER_CAGE",
-            "b3 corridor":       "B3_CORRIDOR",
-            "corridor":          "B3_CORRIDOR",
-            "surveillance":      "SURVEILLANCE_HQ",
-            "security command":  "SECURITY_COMMAND",
-            "count room":        "COUNT_ROOM",
-            # specific elevator hints must come BEFORE the generic "elevator"
-            "staff elevator":    "B3_CORRIDOR",
-            "service elevator":  "B3_CORRIDOR",
-            "concealed elevator": "B3_CORRIDOR",
-            "b3 elevator":       "B3_ELEVATOR",
-            "secure elevator":   "B3_ELEVATOR",
-            "elevator to b4":    "B3_ELEVATOR",
-            "elevator":          "B3_ELEVATOR",
-            "antechamber":       "B4_VAULT_ANTECHAMBER",
-            "vault antechamber": "B4_VAULT_ANTECHAMBER",
-            "vault chamber":     "VAULT_CHAMBER",
-            "vault":             "VAULT_CHAMBER",
-            "b4":                "B4_VAULT_ANTECHAMBER",
-            "b3":                "B3_CORRIDOR",
+            "lobby":              "LOBBY",
+            "casino":             "CASINO",
+            "kitchen":            "KITCHEN_L2",
+            "hvac":               "HVAC_SHAFT",
+            "vent":               "HVAC_SHAFT",
+            "duct":               "HVAC_SHAFT",
+            "cashier":            "CASHIER_CAGE",
+            "cage":               "CASHIER_CAGE",
+            "b3 corridor":        "B3_CORRIDOR",
+            "corridor":           "B3_CORRIDOR",
+            "surveillance":       "SURVEILLANCE_HQ",
+            "security command":   "SECURITY_COMMAND",
+            "count room":         "COUNT_ROOM",
+            # staff elevator (cashier cage ↔ b3) — specific hints before generic
+            "staff elevator":     "STAFF_ELEVATOR",
+            "service elevator":   "STAFF_ELEVATOR",
+            "concealed elevator": "STAFF_ELEVATOR",
+            # vault elevator (b3 ↔ b4)
+            "vault elevator":     "VAULT_ELEVATOR",
+            "b3 elevator":        "VAULT_ELEVATOR",
+            "secure elevator":    "VAULT_ELEVATOR",
+            "elevator to b4":     "VAULT_ELEVATOR",
+            "elevator":           "VAULT_ELEVATOR",
+            "antechamber":        "B4_VAULT_ANTECHAMBER",
+            "vault antechamber":  "B4_VAULT_ANTECHAMBER",
+            "vault chamber":      "VAULT_CHAMBER",
+            "vault":              "VAULT_CHAMBER",
+            "b4":                 "B4_VAULT_ANTECHAMBER",
+            "b3":                 "B3_CORRIDOR",
         }
         movement_verbs = [
             "move to", "go to", "enter", "head to", "proceed to", "sneak into",
@@ -429,8 +446,10 @@ You are the Game Master of a noir heist thriller set in The Velvet Ace Casino, L
 Narrate ONLY what is happening RIGHT NOW in the current zone.
 
 CRITICAL RULE: Only reference items, routes, people, and objects explicitly listed in ZONE DATA below.
-NEVER invent keycards, tools, NPCs, doors, or objects not present in the zone data or player inventory.
+NEVER invent keycards, tools, NPCs, doors, security systems, or objects not present in the zone data or player inventory.
+NEVER mention laser grids or weight sensors — they do not exist in this game.
 The ONLY obtainable items in this entire game are: B3 Keycard, Vault Keys (Alpha + Beta), Vault PIN Code, Camera Loop Device.
+The B3/B4 elevator requires the B3 Keycard and works in BOTH directions (up to B3 and down to B4).
 
 SECURITY FACTS (RAG — classified documents):
 {context}
@@ -447,17 +466,19 @@ PLAYER MOVE:
 STRICT GM RULES:
 1. Write EXACTLY 1 to 2 short punchy sentences. No fluff.
 2. Judge the move realistically. Smart moves succeed. Stupid moves fail.
-3. NEVER invent items, people, or routes not in ZONE DATA.
-4. If GM BLOCK is set, narrate the failure naturally.
-5. Heat (integer, -10 to 30): -10 to -1 = brilliant; 0 = idle; 1-5 = minor risk; 6-15 = sloppy; 16-30 = reckless.
-6. After the story, output EXACTLY on separate lines:
+3. NEVER invent items, people, routes, security systems, or obstacles not listed in ZONE DATA. If it is not in ZONE DATA, it does not exist.
+4. NEVER mention laser grids, weight sensors, or any system not listed in ZONE DATA — these do not exist in this game.
+5. The elevator between B3 and B4 works with the B3 Keycard in BOTH directions. If the player has the keycard they can always use it to go up OR down.
+6. If GM BLOCK is set, narrate the failure naturally.
+7. Heat (integer, -10 to 30): -10 to -1 = brilliant; 0 = idle; 1-5 = minor risk; 6-15 = sloppy; 16-30 = reckless.
+8. After the story, output EXACTLY on separate lines:
    HEAT: [integer]
    LOCATION: [zone key, e.g. CASHIER_CAGE]
    STATUS: [CLEAR | ALERTED | COMPROMISED | CAPTURED | VICTORY]
    PICKUP: [comma-separated EXACT item keys from ACQUIRABLE ITEMS HERE — or NONE]
-7. PICKUP rules (read carefully):
+9. PICKUP rules (read carefully):
    - PHYSICAL items (keycard, keys, device): grant if player physically takes/grabs/pockets the object.
-   - KNOWLEDGE items (VAULT_PIN): grant if player reads, notes, memorizes, photographs, or examines the source. 'Note down' and 'memorize' COUNT as acquisition.
+   - KNOWLEDGE items (VAULT_PIN): grant if player reads, notes, memorizes, photographs or otherwise learns the PIN code. 'Noting down' COUNTS.
    - STATE items (SENSORS_DISABLED): grant if player disables/deactivates the referenced system.
    - Use the EXACT key from ACQUIRABLE ITEMS HERE (e.g. VAULT_PIN, not 'Vault PIN Code').
    - Do NOT grant items not listed in ACQUIRABLE ITEMS HERE.

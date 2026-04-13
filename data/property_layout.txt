@@ -42,4 +42,4 @@ Vault Chamber: Requires Vault Keys + Vault PIN
 1. Insert Vault Key ALPHA (left keyhole) and BETA (right keyhole)
 2. Turn both keys simultaneously within 5-second window
 3. Enter 4-digit Vault PIN on keypad
-4. Vault opens — 20 second window to enter
+4. Vault opens — 20 second window to enter

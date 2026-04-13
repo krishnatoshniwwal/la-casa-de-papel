@@ -383,8 +383,7 @@ ZONE_ICONS = {
     "KITCHEN_L2": "🍳", "HVAC_SHAFT": "🌀",
     "B3_CORRIDOR": "🔐", "SURVEILLANCE_HQ": "📹",
     "SECURITY_COMMAND": "📡", "COUNT_ROOM": "💵",
-    "B3_ELEVATOR": "🛗", "B4_VAULT_ANTECHAMBER": "🚪", "VAULT_CHAMBER": "💎",
-    "STAFF_ELEVATOR": "🛗",
+    "STAFF_ELEVATOR": "🛗", "VAULT_ELEVATOR": "🛗", "B4_VAULT_ANTECHAMBER": "🚪", "VAULT_CHAMBER": "💎",
 }
 
 ITEM_ICONS = {
@@ -398,7 +397,8 @@ ZONE_TO_FLOOR = {
     "KITCHEN_L2": "L2", "HVAC_SHAFT": "TRANSIT",
     "B3_CORRIDOR": "B3", "SURVEILLANCE_HQ": "B3",
     "SECURITY_COMMAND": "B3", "COUNT_ROOM": "B3",
-    "B3_ELEVATOR": "B3", "B4_VAULT_ANTECHAMBER": "B4", "VAULT_CHAMBER": "B4",
+    "STAFF_ELEVATOR": "TRANSIT",
+    "VAULT_ELEVATOR": "B3", "B4_VAULT_ANTECHAMBER": "B4", "VAULT_CHAMBER": "B4",
 }
 
 # ── FLOOR MAP DATA ─────────────────────────────────────────────────────────────
@@ -407,7 +407,7 @@ _B3_GRID = [
     ["X","SURVEILLANCE_HQ","SURVEILLANCE_HQ","X","SECURITY_COMMAND","X"],
     ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","COUNT_ROOM","X"],
     ["X","B3_CORRIDOR","B3_CORRIDOR","B3_CORRIDOR","COUNT_ROOM","X"],
-    ["X","STAFF_ELEVATOR","HVAC_SHAFT","B3_CORRIDOR","B3_ELEVATOR","X"],
+    ["X","STAFF_ELEVATOR","HVAC_SHAFT","B3_CORRIDOR","VAULT_ELEVATOR","X"],
     ["X","X","X","X","X","X"],
 ]
 
@@ -434,11 +434,19 @@ FLOOR_GRIDS = {
     "CASINO":     {"title": "GROUND FLOOR — CASINO",              "grid": _CASINO_GRID},
     "KITCHEN_L2": {"title": "GROUND FLOOR — CASINO",              "grid": _CASINO_GRID},
     "CASHIER_CAGE": {
-        "title": "L0 — CASHIER CAGE & STAFF ELEVATOR",
+        "title": "L0 — CASHIER CAGE",
         "grid": [
             ["X","CASINO","X"],
             ["X","CASHIER_CAGE","X"],
             ["X","CASHIER_CAGE","X"],
+            ["X","STAFF_ELEVATOR","X"],
+        ],
+    },
+    "STAFF_ELEVATOR": {
+        "title": "STAFF SERVICE ELEVATOR",
+        "grid": [
+            ["X","CASHIER_CAGE","X"],
+            ["X","STAFF_ELEVATOR","X"],
             ["X","STAFF_ELEVATOR","X"],
             ["X","B3_CORRIDOR","X"],
         ],
@@ -456,14 +464,14 @@ FLOOR_GRIDS = {
     "SURVEILLANCE_HQ":  {"title": "B3 — SECURITY CORE", "grid": _B3_GRID},
     "SECURITY_COMMAND": {"title": "B3 — SECURITY CORE", "grid": _B3_GRID},
     "COUNT_ROOM":       {"title": "B3 — SECURITY CORE", "grid": _B3_GRID},
-    "B3_ELEVATOR":      {"title": "B3 — SECURITY CORE", "grid": _B3_GRID},
+    "VAULT_ELEVATOR":   {"title": "B3 — SECURITY CORE", "grid": _B3_GRID},
     "B4_VAULT_ANTECHAMBER": {
         "title": "B4 — VAULT LEVEL",
         "grid": [
             ["X","X","VAULT_CHAMBER","X","X"],
             ["X","B4_VAULT_ANTECHAMBER","B4_VAULT_ANTECHAMBER","B4_VAULT_ANTECHAMBER","X"],
             ["X","B4_VAULT_ANTECHAMBER","CORE","B4_VAULT_ANTECHAMBER","X"],
-            ["X","B3_ELEVATOR","B4_VAULT_ANTECHAMBER","X","X"],
+            ["X","VAULT_ELEVATOR","B4_VAULT_ANTECHAMBER","X","X"],
             ["X","X","X","X","X"],
         ],
     },
@@ -473,7 +481,7 @@ FLOOR_GRIDS = {
             ["X","X","VAULT_CHAMBER","X","X"],
             ["X","B4_VAULT_ANTECHAMBER","B4_VAULT_ANTECHAMBER","B4_VAULT_ANTECHAMBER","X"],
             ["X","B4_VAULT_ANTECHAMBER","CORE","B4_VAULT_ANTECHAMBER","X"],
-            ["X","B3_ELEVATOR","B4_VAULT_ANTECHAMBER","X","X"],
+            ["X","VAULT_ELEVATOR","B4_VAULT_ANTECHAMBER","X","X"],
             ["X","X","X","X","X"],
         ],
     },
@@ -519,7 +527,7 @@ def render_floor_map(zone_key: str):
                 cls = "core"
             elif cell_value == "ELEVATOR":
                 cls = "elevator"
-            elif cell_value in {"STAFF_ELEVATOR", "B3_ELEVATOR"}:
+            elif cell_value in {"STAFF_ELEVATOR", "VAULT_ELEVATOR"}:
                 cls = "staff_elevator"
             elif cell_value in {"HVAC_SHAFT", "B3_MAINTENANCE_SHAFT"}:
                 cls = "shaft"

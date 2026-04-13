@@ -15,7 +15,8 @@ Reinforced concrete walls (1–2m thick), steel inner lining, blast-resistant.
 
 ## ACCESS ROUTES
 Route 1 — B3 Elevator:
-  Requires B3 Keycard. Arrives at B4 Vault Antechamber.
+  Requires B3 Keycard. Elevator works in both directions — swipe to go down to B4 or back up to B3.
+  Arrives at B4 Vault Antechamber.
 
 ## VAULT ANTECHAMBER SECURITY
 Motion sensors (active by default — can be disabled from B3 Security Command sensor panel).
@@ -36,7 +37,6 @@ Unlock procedure:
 ## ALARM CONDITIONS
 Forced entry triggers immediate alarm.
 Incorrect PIN 3 times triggers 60-second lockout.
-Weight sensors inside vault trigger alarm if items removed incorrectly.
 Alarm system remains active even if motion sensors are disabled.
 
 ## LOOPHOLES

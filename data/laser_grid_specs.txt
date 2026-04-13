@@ -1,36 +1,11 @@
-# SECURITY LOG : LASER GRID SYSTEM
+# SECURITY LOG : LASER GRID SYSTEM — DECOMMISSIONED
 
-## OVERVIEW
-Laser grids secure B3 corridors and the B4 vault perimeter.
-System is always active and monitored from B3 Security Command.
+## STATUS
+The laser grid system has been fully decommissioned and removed from all B3 and B4 corridors.
+No laser grids are installed or operational anywhere on the property.
+This file is retained for audit purposes only.
 
-## SYSTEM STRUCTURE
-Emitters mounted at 1.2m and 2.1m height.
-Emitter spacing: every 3 metres along corridor.
-Auto-recalibration: every 12 minutes (creates a brief 0.8-second gap).
-
-Grid types:
-  Infrared (primary, invisible under normal light)
-  UV grid (activates on Level 1 alert or higher)
-
-## DETECTION THRESHOLDS
-Minimum displacement to trigger: 2mm
-Maximum safe movement speed: 0.08 m/s
-Acceleration spikes trigger alert regardless of speed.
-
-## ALERT LEVELS
-Level 0: Normal — no activity
-Level 1: Silent alert — log entry, no lock
-Level 2: UV grid activates — visible to guards
-Level 3: Lockdown — doors close within 3 seconds
-
-## HOW TO DISABLE
-B4 motion sensors can be turned off from the sensor control panel in B3 Security Command.
-Disabling affects only B4 — B3 laser grid remains active.
-After disabling: only the vault alarm system remains active in B4.
-
-## LOOPHOLES
-0.8-second gap during 12-minute recalibration window (grid resets momentarily).
-~2cm gap directly under each emitter (floor-level crawl possible).
-First isolated anomaly is logged but does not immediately escalate.
-Grid edges near walls have marginally wider gaps (~3–4cm).
+## CURRENT B3/B4 CORRIDOR SECURITY
+B3 corridor security relies on guard patrols and the biometric keycard gate.
+B4 vault antechamber security relies on motion sensors (disableable from Security Command) and vault security staff.
+There are no laser grids, beam sensors, or grid-based detection systems anywhere in the building.

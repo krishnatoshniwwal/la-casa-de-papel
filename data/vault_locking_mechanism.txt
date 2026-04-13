@@ -30,7 +30,6 @@ Wrong PIN resets the sequence.
 ## ALARM CONDITIONS
 Forced entry attempt triggers alarm immediately.
 Incorrect key sequence triggers silent alert.
-Weight sensors inside vault trigger alarm if items removed incorrectly.
 
 ## LOOPHOLES
 PIN keypad has no delay between digits.
