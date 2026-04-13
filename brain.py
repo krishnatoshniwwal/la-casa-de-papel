@@ -84,7 +84,7 @@ ZONES = {
     "B3_CORRIDOR": {
         "label": "B3 — Central Corridor",
         "exits": ["SURVEILLANCE_HQ", "SECURITY_COMMAND", "COUNT_ROOM", "VAULT_ELEVATOR", "HVAC_SHAFT", "STAFF_ELEVATOR"],
-        "objects": ["Biometric gate (keycard entry)", "HVAC shaft junction", "Staff service elevator (returns to Cashier Cage via Casino level)"],
+        "objects": ["HVAC shaft junction", "Staff service elevator (returns to Cashier Cage via Casino level)"],
         "threats": [
             "Rick Green (distracted, checks phone every 3-5 min)"
         ],
@@ -123,7 +123,7 @@ ZONES = {
         ],
         "threats": ["Albert King (vault staff, strict routine)", "2 armed escorts"],
         "required_items": ["B3_KEYCARD"],
-        "flavor": "Millions move through here daily. Both vault keys sit in the lockbox — unguarded 03:00-03:15."
+        "flavor": "Millions move through here daily. Both vault keys sit in the lockbox."
     },
     "VAULT_ELEVATOR": {
         "label": "Vault Elevator",
@@ -152,9 +152,9 @@ ZONES = {
         "label": "B4 — VAULT CHAMBER",
         "exits": ["B4_VAULT_ANTECHAMBER"],
         "objects": ["Diamonds", "Gold bullion", "Rare collectibles", "VIP collateral"],
-        "threats": ["Time-lock (20 sec open window)"],
+        "threats": [],
         "required_items": ["VAULT_KEYS", "VAULT_PIN"],
-        "flavor": "TARGET ACQUIRED. 20 seconds. Take only what you came for."
+        "flavor": "TARGET ACQUIRED. The vault is open. Take only what you came for."
     },
 }
 
@@ -168,7 +168,7 @@ ITEM_DEFINITIONS = {
     },
     "VAULT_KEYS": {
         "label": "Vault Keys (Alpha + Beta)",
-        "desc": "Both physical keys required to open the vault door. Stored in Count Room lockbox, unguarded 03:00-03:15."
+        "desc": "Both physical keys required to open the vault door. Stored in Count Room lockbox."
     },
     "VAULT_PIN": {
         "label": "Vault PIN Code",
@@ -187,6 +187,7 @@ ITEM_DEFINITIONS = {
 # ══════════════════════════════════════════════════════════════════════════════
 # ZONE_ITEMS — items granted when player SEARCHES a zone
 # ══════════════════════════════════════════════════════════════════════════════
+
 ZONE_ITEMS = {
     "CASHIER_CAGE":    ["B3_KEYCARD"],
     "SURVEILLANCE_HQ": ["CAMERA_LOOP_DEVICE"],
@@ -450,7 +451,6 @@ NEVER invent keycards, tools, NPCs, doors, security systems, or objects not pres
 NEVER mention laser grids or weight sensors — they do not exist in this game.
 The ONLY obtainable items in this entire game are: B3 Keycard, Vault Keys (Alpha + Beta), Vault PIN Code, Camera Loop Device.
 The B3/B4 elevator requires the B3 Keycard and works in BOTH directions (up to B3 and down to B4).
-
 SECURITY FACTS (RAG — classified documents):
 {context}
 

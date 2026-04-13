@@ -9,8 +9,7 @@ L0 — Casino Floor: 150,000 sq ft, slot machines, cashier cage on casino floor 
 L1 — Hotel Lobby: Reception, plainclothes guards, guest elevator (accessible from casino)
 L2 — Kitchen: Staff kitchen, HVAC access panel (loose cover, removable without tools)
 HVAC Shaft: Connects L2 Kitchen to B3 Corridor. 80x80 cm duct, traversable. No cameras inside.
-B3 — Operations Level: Surveillance HQ, Security Command, Count Room, elevator to B4
-B4 — Vault Level: Vault antechamber, vault chamber with high-value assets
+B3 — Operations Level: Surveillance HQ, Security Command, Count Room, elevator to B4B4 — Vault Level: Vault antechamber, vault chamber with high-value assets
 
 ## KEY ITEM LOCATIONS (CANONICAL — DO NOT INVENT OTHER ITEMS)
 B3 Keycard: Locked in key lockbox in Cashier Cage (casino floor)
@@ -33,7 +32,6 @@ Route A — Staff Service Elevator (FASTEST):
 Route B — HVAC Shaft (ALTERNATE, no keycard required to enter shaft):
   Casino → Kitchen (L2) → HVAC shaft → B3 Corridor
   No authentication needed for the shaft itself.
-  B3 Corridor entry still requires B3 Keycard at biometric gate.
 
 B4 Elevator (B3 to B4): Requires B3 Keycard
 Vault Chamber: Requires Vault Keys + Vault PIN
@@ -42,4 +40,4 @@ Vault Chamber: Requires Vault Keys + Vault PIN
 1. Insert Vault Key ALPHA (left keyhole) and BETA (right keyhole)
 2. Turn both keys simultaneously within 5-second window
 3. Enter 4-digit Vault PIN on keypad
-4. Vault opens — 20 second window to enter
+4. Vault opens — enter when ready
