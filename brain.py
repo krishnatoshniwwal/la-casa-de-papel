@@ -164,7 +164,7 @@ ZONES = {
 ITEM_DEFINITIONS = {
     "B3_KEYCARD": {
         "label": "B3 Keycard",
-        "desc": "Grants access to all B3 zones and the B4 elevator. Found in Cashier Cage lockbox."
+        "desc": "Grants access to all B3 zones and the elevators. Found in Cashier Cage lockbox."
     },
     "VAULT_KEYS": {
         "label": "Vault Keys (Alpha + Beta)",
@@ -176,7 +176,7 @@ ITEM_DEFINITIONS = {
     },
     "CAMERA_LOOP_DEVICE": {
         "label": "Camera Loop Device",
-        "desc": "Loops B3/B4 camera feed for up to 3 minutes. Found in Surveillance HQ. Not required but highly useful."
+        "desc": "Loops B3/B4 camera feed for up to 3 minutes. Found in Surveillance HQ."
     },
     "SENSORS_DISABLED": {
         "label": "B4 Sensors: Offline",
