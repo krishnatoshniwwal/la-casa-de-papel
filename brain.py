@@ -7,7 +7,8 @@ from langchain_chroma import Chroma
 
 load_dotenv()
 api_key = os.getenv("GOOGLE_API_KEY")
-
+if not api_key:
+    raise ValueError("GOOGLE_API_KEY is not set!")
 # ══════════════════════════════════════════════════════════════════════════════
 # CANONICAL WIN PATH (optimised — ~15 moves minimum):
 #   START: CASINO
