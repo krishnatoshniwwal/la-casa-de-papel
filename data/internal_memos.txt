@@ -7,7 +7,7 @@ Panel can be removed manually without tools.
 This has not been flagged as a security concern.
 
 ## MEMO 2 — Sensor Control Access (Security Operations)
-Motion sensor control panel for B4 is located in B3 Security Command.
+Motion sensor control panel for B4 is located in B3 Surveillance HQ.
 Access should be restricted to senior staff only.
 Currently, access restrictions are not being strictly enforced.
 Any guard with B3 clearance can operate the panel.
@@ -18,10 +18,10 @@ A loop device port is available at the console.
 There is currently NO automated detection system for looped feeds.
 This is a known gap — remediation budget has not been approved.
 
-## MEMO 4 — Count Room Key Storage (Vault Operations)
-Vault Key ALPHA and Vault Key BETA are both stored in the Count Room lockbox.
+## MEMO 4 — Security Command Key Storage (Vault Operations)
+Vault Key ALPHA and Vault Key BETA are both stored in the Security Command lockbox.
 The lockbox is unattended between 03:00 and 03:15 during shift handover.
-Albert King is responsible for both keys — he does not carry them on his person.
+Keys are managed by senior Security Command staff — they are not carried on any person.
 Both keys must be present for vault unlock — neither works alone.
 
 ## MEMO 5 — Security Command Desk (Internal Audit)
@@ -40,4 +40,4 @@ The elevator is unmarked and not included on public casino maps.
 It provides direct access to B3 Corridor — bypassing the Kitchen and HVAC route entirely.
 The elevator requires a B3 Keycard to operate (same keycard as B3 biometric gate).
 No cameras are installed inside the elevator shaft.
-This elevator was installed for rapid cash transport to the count room and is rarely used by staff.
+This elevator was installed for rapid staff access to B3 and is rarely used.

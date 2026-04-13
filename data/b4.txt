@@ -19,13 +19,13 @@ Route 1 — B3 Elevator:
   Arrives at B4 Vault Antechamber.
 
 ## VAULT ANTECHAMBER SECURITY
-Motion sensors (active by default — can be disabled from B3 Security Command sensor panel).
+Motion sensors (active by default — can be disabled from Surveillance HQ sensor control panel).
 5 vault security staff patrolling.
 
 ## VAULT DOOR UNLOCK
 Three items required — all must be present:
-  Vault Key ALPHA — stored in Count Room lockbox (unguarded 03:00–03:15)
-  Vault Key BETA  — stored in Count Room lockbox alongside ALPHA
+  Vault Key ALPHA — stored in Security Command lockbox (unguarded 03:00–03:15)
+  Vault Key BETA  — stored in Security Command lockbox alongside ALPHA
   Vault PIN       — 4-digit code on sticky note in Security Command desk top drawer
 
 Unlock procedure:
@@ -40,7 +40,7 @@ Incorrect PIN 3 times triggers 60-second lockout.
 Alarm system remains active even if motion sensors are disabled.
 
 ## LOOPHOLES
-Sensor control panel in B3 Security Command can disable B4 motion sensors.
-Vault surveillance is controlled from B3 Surveillance HQ — loop feed to move freely.
+Sensor control panel in Surveillance HQ can disable B4 motion sensors.
+Vault surveillance is controlled from Surveillance HQ — loop feed to move freely.
 Both vault keys are stored in the same location — one search yields both.
 Vault PIN is stored in plain text in Security Command desk.

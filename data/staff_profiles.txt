@@ -12,9 +12,6 @@ EMILY PARK (Reception) — L1 Lobby. Fixed at reception desk. Easily distracted 
 
 ERIC CHEN (Surveillance Technician) — B3 Surveillance HQ. Checks all systems on fixed hourly cycle. Focused entirely on monitors.
 
-ALBERT KING (Vault Staff) — B3 Count Room. Strict predictable routine. Slow movement.
-NOTE: Albert King does NOT carry vault keys — keys are in the Count Room lockbox.
-
 MIGUEL DAS (Janitor) — L2 Kitchen. Careless, frequently inattentive.
 
 ## GUARD ROTATION
