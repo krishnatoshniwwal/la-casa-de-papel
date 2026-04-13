@@ -12,8 +12,8 @@ No single item or credential is sufficient alone.
 5. Vault door opens (20-second window)
 
 ## WHERE TO FIND EACH ITEM
-Vault Key ALPHA : Count Room lockbox (unguarded 03:00–03:15)
-Vault Key BETA  : Count Room lockbox (stored alongside ALPHA)
+Vault Key ALPHA : Security Command lockbox (unguarded 03:00–03:15)
+Vault Key BETA  : Security Command lockbox (stored alongside ALPHA)
 Vault PIN       : Written on a note hidden in Security Command desk top drawer
 
 ## DOOR SPECS
@@ -35,5 +35,5 @@ Incorrect key sequence triggers silent alert.
 PIN keypad has no delay between digits.
 Door cannot be stopped once opening sequence begins.
 Time-lock is only checked at the final step — keys and PIN can be staged beforehand.
-Both vault keys are stored in the same lockbox — one search yields both.
+Both vault keys are stored in the same lockbox in Security Command — one search yields both.
 Vault PIN is stored in plain text in the Security Command desk drawer.

@@ -14,8 +14,8 @@ api_key = os.getenv("GOOGLE_API_KEY")
 #   CASINO → CASHIER_CAGE              (grab B3_KEYCARD from lockbox)
 #   CASHIER_CAGE → STAFF_ELEVATOR      (needs B3_KEYCARD)
 #   STAFF_ELEVATOR → B3_CORRIDOR
-#   B3_CORRIDOR → SECURITY_COMMAND     (read sticky note → VAULT_PIN)
-#   B3_CORRIDOR → COUNT_ROOM           (grab keys → VAULT_KEYS)
+#   B3_CORRIDOR → SURVEILLANCE_HQ      (grab loop device → CAMERA_LOOP_DEVICE; disable sensors → SENSORS_DISABLED)
+#   B3_CORRIDOR → SECURITY_COMMAND     (grab vault keys → VAULT_KEYS; read sticky note → VAULT_PIN)
 #   B3_CORRIDOR → VAULT_ELEVATOR       (needs B3_KEYCARD) → B4_VAULT_ANTECHAMBER
 #   B4_VAULT_ANTECHAMBER → VAULT_CHAMBER (needs VAULT_KEYS + VAULT_PIN) → VICTORY
 #   B4_VAULT_ANTECHAMBER → VAULT_ELEVATOR (B3_KEYCARD — works both ways) → B3_CORRIDOR
@@ -23,6 +23,8 @@ api_key = os.getenv("GOOGLE_API_KEY")
 #   CASINO → KITCHEN_L2 → HVAC_SHAFT → B3_CORRIDOR  (still works)
 # NOTE: No laser grids. No weight sensors. Vault elevator is bidirectional with keycard.
 #       Staff elevator is intermediate zone between CASHIER_CAGE and B3_CORRIDOR.
+#       Count Room has been removed — vault keys are now in Security Command.
+#       Motion sensor control panel moved from Security Command to Surveillance HQ.
 # ══════════════════════════════════════════════════════════════════════════════
 
 ZONES = {
@@ -83,7 +85,7 @@ ZONES = {
     },
     "B3_CORRIDOR": {
         "label": "B3 — Central Corridor",
-        "exits": ["SURVEILLANCE_HQ", "SECURITY_COMMAND", "COUNT_ROOM", "VAULT_ELEVATOR", "HVAC_SHAFT", "STAFF_ELEVATOR"],
+        "exits": ["SURVEILLANCE_HQ", "SECURITY_COMMAND", "VAULT_ELEVATOR", "HVAC_SHAFT", "STAFF_ELEVATOR"],
         "objects": ["HVAC shaft junction", "Staff service elevator (returns to Cashier Cage via Casino level)"],
         "threats": [
             "Rick Green (distracted, checks phone every 3-5 min)"
@@ -97,33 +99,23 @@ ZONES = {
         "objects": [
             "Primary camera control terminal",
             "Camera loop device port — loop device is here",
+            "Motion sensor control panel (disables B4 motion sensors)",
             "Vault camera feed (B4)"
         ],
         "threats": ["Eric Chen (technician, checks systems hourly)"],
         "required_items": ["B3_KEYCARD"],
-        "flavor": "1,240 eyes on a single screen. Kill this room and you're a ghost."
+        "flavor": "1,240 eyes on a single screen — and a sensor kill-switch nobody bothered to lock down."
     },
     "SECURITY_COMMAND": {
         "label": "B3 — Security Command",
         "exits": ["B3_CORRIDOR"],
         "objects": [
-            "Sensor control panel (disables B4 motion sensors)",
+            "Key lockbox on wall — contains Vault Key ALPHA and Vault Key BETA (both inside)",
             "Desk with top drawer — vault PIN written on a sticky note inside"
         ],
         "threats": ["2 guards on rotation", "Radio check every 10 min"],
         "required_items": ["B3_KEYCARD"],
-        "flavor": "The guards stare at monitors. Someone was very careless with the desk drawers."
-    },
-    "COUNT_ROOM": {
-        "label": "B3 — Count Room",
-        "exits": ["B3_CORRIDOR"],
-        "objects": [
-            "Cash processing equipment",
-            "Key lockbox on wall — contains Vault Key ALPHA and Vault Key BETA (both inside)"
-        ],
-        "threats": ["Albert King (vault staff, strict routine)", "2 armed escorts"],
-        "required_items": ["B3_KEYCARD"],
-        "flavor": "Millions move through here daily. Both vault keys sit in the lockbox."
+        "flavor": "The guards stare at monitors. Someone was very careless with the desk drawers — and the lockbox on the wall."
     },
     "VAULT_ELEVATOR": {
         "label": "Vault Elevator",
@@ -137,12 +129,12 @@ ZONES = {
         "label": "B4 — Vault Antechamber",
         "exits": ["VAULT_ELEVATOR", "VAULT_CHAMBER"],
         "objects": [
-            "Motion sensors (disable from Security Command sensor panel)",
+            "Motion sensors (disable from Surveillance HQ sensor control panel)",
             "Vault door with dual keyhole and PIN keypad",
             "Elevator keycard reader (B3_KEYCARD — returns to B3)"
         ],
         "threats": [
-            "Motion sensors — active unless disabled from Security Command",
+            "Motion sensors — active unless disabled from Surveillance HQ",
             "5 vault security staff patrolling"
         ],
         "required_items": [],
@@ -168,7 +160,7 @@ ITEM_DEFINITIONS = {
     },
     "VAULT_KEYS": {
         "label": "Vault Keys (Alpha + Beta)",
-        "desc": "Both physical keys required to open the vault door. Stored in Count Room lockbox."
+        "desc": "Both physical keys required to open the vault door. Stored in Security Command lockbox."
     },
     "VAULT_PIN": {
         "label": "Vault PIN Code",
@@ -180,7 +172,7 @@ ITEM_DEFINITIONS = {
     },
     "SENSORS_DISABLED": {
         "label": "B4 Sensors: Offline",
-        "desc": "Motion sensors disabled at Security Command. B4 approach is clear."
+        "desc": "Motion sensors disabled at Surveillance HQ. B4 approach is clear."
     },
 }
 
@@ -190,9 +182,8 @@ ITEM_DEFINITIONS = {
 
 ZONE_ITEMS = {
     "CASHIER_CAGE":    ["B3_KEYCARD"],
-    "SURVEILLANCE_HQ": ["CAMERA_LOOP_DEVICE"],
-    "COUNT_ROOM":      ["VAULT_KEYS"],
-    "SECURITY_COMMAND": ["VAULT_PIN", "SENSORS_DISABLED"],
+    "SURVEILLANCE_HQ": ["CAMERA_LOOP_DEVICE", "SENSORS_DISABLED"],
+    "SECURITY_COMMAND": ["VAULT_KEYS", "VAULT_PIN"],
 }
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -204,9 +195,11 @@ KEY_ITEM_HINTS = {
         "hint": (
             "HINT TO GM: The player is in Security Command. "
             "There is a sticky note with the 4-digit vault PIN tucked inside the top desk drawer. "
+            "There is also a key lockbox on the wall containing both vault keys. "
             "Drop a subtle atmospheric clue that the desk looks hastily used or that a drawer "
-            "wasn't closed properly. Do NOT name the PIN or say directly what is inside. "
-            "Do NOT award the item yet."
+            "wasn't closed properly, and that the lockbox on the wall looks accessible. "
+            "Do NOT name the PIN or say directly what is inside. "
+            "Do NOT award any item yet."
         ),
     },
 }
@@ -311,7 +304,6 @@ class HeistBrain:
             "corridor":           "B3_CORRIDOR",
             "surveillance":       "SURVEILLANCE_HQ",
             "security command":   "SECURITY_COMMAND",
-            "count room":         "COUNT_ROOM",
             # staff elevator (cashier cage ↔ b3) — specific hints before generic
             "staff elevator":     "STAFF_ELEVATOR",
             "service elevator":   "STAFF_ELEVATOR",
@@ -449,8 +441,9 @@ Narrate ONLY what is happening RIGHT NOW in the current zone.
 CRITICAL RULE: Only reference items, routes, people, and objects explicitly listed in ZONE DATA below.
 NEVER invent keycards, tools, NPCs, doors, security systems, or objects not present in the zone data or player inventory.
 NEVER mention laser grids or weight sensors — they do not exist in this game.
-The ONLY obtainable items in this entire game are: B3 Keycard, Vault Keys (Alpha + Beta), Vault PIN Code, Camera Loop Device.
+The ONLY obtainable items in this entire game are: B3 Keycard, Vault Keys (Alpha + Beta), Vault PIN Code, Camera Loop Device, B4 Sensors Disabled.
 The B3/B4 elevator requires the B3 Keycard and works in BOTH directions (up to B3 and down to B4).
+The motion sensor control panel for B4 is in Surveillance HQ. Vault Keys and Vault PIN are BOTH in Security Command (keys in lockbox on wall, PIN in desk drawer). There is NO Count Room.
 SECURITY FACTS (RAG — classified documents):
 {context}
 

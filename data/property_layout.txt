@@ -9,19 +9,21 @@ L0 — Casino Floor: 150,000 sq ft, slot machines, cashier cage on casino floor 
 L1 — Hotel Lobby: Reception, plainclothes guards, guest elevator (accessible from casino)
 L2 — Kitchen: Staff kitchen, HVAC access panel (loose cover, removable without tools)
 HVAC Shaft: Connects L2 Kitchen to B3 Corridor. 80x80 cm duct, traversable. No cameras inside.
-B3 — Operations Level: Surveillance HQ, Security Command, Count Room, elevator to B4B4 — Vault Level: Vault antechamber, vault chamber with high-value assets
+B3 — Operations Level: Surveillance HQ, Security Command, elevator to B4B4 — Vault Level: Vault antechamber, vault chamber with high-value assets
 
 ## KEY ITEM LOCATIONS (CANONICAL — DO NOT INVENT OTHER ITEMS)
 B3 Keycard: Locked in key lockbox in Cashier Cage (casino floor)
-Vault Keys (ALPHA + BETA): Both stored together in Count Room lockbox (B3). Unguarded 03:00-03:15.
+Vault Keys (ALPHA + BETA): Both stored together in Security Command lockbox (B3). Unguarded 03:00-03:15.
 Vault PIN (4-digit): Written on sticky note in Security Command desk top drawer (B3)
 Camera Loop Device: Found in Surveillance HQ (B3). Loops B3/B4 camera feeds for 3 minutes.
+Motion Sensor Control Panel: Located in Surveillance HQ (B3). Disables B4 motion sensors.
 
 ## THE ONLY OBTAINABLE ITEMS IN THE GAME
 1. B3 Keycard — from Cashier Cage lockbox
-2. Vault Keys (Alpha + Beta) — from Count Room lockbox
+2. Vault Keys (Alpha + Beta) — from Security Command lockbox
 3. Vault PIN Code — from Security Command desk drawer
 4. Camera Loop Device — from Surveillance HQ
+5. B4 Sensors Disabled — by operating sensor control panel in Surveillance HQ
 
 ## ACCESS ROUTES
 Route A — Staff Service Elevator (FASTEST):
@@ -33,6 +35,7 @@ Route B — HVAC Shaft (ALTERNATE, no keycard required to enter shaft):
   Casino → Kitchen (L2) → HVAC shaft → B3 Corridor
   No authentication needed for the shaft itself.
 
+B3 Key Objectives: Surveillance HQ (loop device + sensor panel), Security Command (vault keys + vault PIN)
 B4 Elevator (B3 to B4): Requires B3 Keycard
 Vault Chamber: Requires Vault Keys + Vault PIN
 

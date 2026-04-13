@@ -5,7 +5,7 @@ Central surveillance monitors casino, hotel, B3, and B4.
 All feeds controlled from B3 Surveillance HQ.
 
 ## CONTROL
-Primary:   B3 Surveillance HQ (full control — loop, disable, track)
+Primary:   B3 Surveillance HQ (full control — loop, disable, track; also houses B4 motion sensor control panel)
 Secondary: Level 1 security office (limited view only)
 Backup:    B2 recording system (passive archive, 30-minute buffer)
 
@@ -32,3 +32,4 @@ Cameras remain active during power outage (30-min battery backup).
 ## LOOPHOLES
 Feed loop leaves no trace in the system log (current firmware gap).
 Multiple simultaneous events reduce AI tracking focus.
+B4 motion sensor control panel is co-located here — disabling sensors and looping the feed can be done in a single visit.
