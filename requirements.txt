@@ -1,12 +1,11 @@
-## THE FOLLOWING PYTHON MODULES ARE REQUIRED FOR THE PROPER IMPLEMENTATION ##
-1. streamlit module
-2. HeistBrain, ZONES, ITEM_DEFINITIONS from brain module
-3. escape from HTML module
-4. streamlit.components.v1 module
-5. urllib.parse module
-6. os module
-7. load_dotenv from dotenv module
-8. DirectoryLoader, TextLoader from langchain_community.document_loaders module
-9. RecursiveCharacterTextSplitter from langchain_text_splitters
-10. GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI from langchain_google_genai module
-11. Chroma from langchain_chroma module
+streamlit module
+HeistBrain, ZONES, ITEM_DEFINITIONS from brain module
+escape from HTML module
+streamlit.components.v1 module
+urllib.parse module
+os module
+load_dotenv from dotenv module
+DirectoryLoader, TextLoader from langchain_community.document_loaders module
+RecursiveCharacterTextSplitter from langchain_text_splitters
+GoogleGenerativeAIEmbeddings, ChatGoogleGenerativeAI from langchain_google_genai module
+Chroma from langchain_chroma module
